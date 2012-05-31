@@ -55,7 +55,7 @@ body {
 	border-bottom: none;
 	background: #000;
 	background: -webkit-gradient(radial, 50% 100%, 10, 50% 50%, 90, from(rgba(31,169,244,.35)), to(rgba(0,28,78, .35)) );  
-	background: -moz-radial-gradient(center 80px 45deg, circle cover, rgba(31,169,244,.35) 0%, rgba(0,28,78, .35) 100%);
+	background: -moz-radial-gradient(center 80px 45deg, circle cover, rgba(31,169,244,.6) 0%, rgba(0,28,78,.6) 100%);
 }
 
 #menu li.first a {
