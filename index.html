@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Mason2</title>
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
+	<link href="css/style.css" rel="stylesheet" type="text/css" />
+	<style type="text/css">
+	</style>
+</head>
+<body>
+
+	<div id="header">
+		<span class="logo">Mason<span>2</span></span>
+		<span class="description">Powerful, high-performance templating for the web and beyond</span>
+		<a href="/download"><img src="images/download.gif" /></a>
+	</div>
+
+	<ul id="menu">
+		<li class="current"><a href="/">Home</a></li>
+		<li><a href="/">Download</a></li>
+		<li><a href="/">Documentation</a></li>
+		<li><a href="/">FAQ</a></li>
+	</ul>
+
+	<div id="main">
+
+		<h2>Introduction</h2>
+		<div class="section">
+			<p>
+				<strong>Mason is a powerful Perl-based templating system, designed to generate dynamic content of all kinds.</strong><br /><br />
+				Unlike many templating systems, Mason does not attempt to invent an alternate, "easier" syntax for templates. It provides a set of syntax and features specific to template creation, but underneath it is still clearly and proudly recognizable as Perl.<br /><br />
+				Mason is most often used for generating web pages. It has a companion web framework, Poet, designed to take maximum advantage of its routing and content generation features. It can also be used as the templating layer for web frameworks such as Catalyst and Dancer.<br />
+			</p>
+
+<pre style='color:#d1d1d1;background:#000000;'>
+foo<span style='color:#d2cd86; '>.</span>mc<span style='color:#d2cd86; '>:</span>
+<span style='color:#d2cd86; '>%</span> <span style='color:#e66170; font-weight:bold; '>my</span> $name <span style='color:#d2cd86; '>=</span> <span style='color:#00c4c4; '>"Mason"</span><span style='color:#b060b0; '>;</span>
+Hello world<span style='color:#d2cd86; '>!</span> Welcome to <span style='color:#d2cd86; '>&lt;</span><span style='color:#d2cd86; '>%</span> $name <span style='color:#d2cd86; '>%</span><span style='color:#d2cd86; '>></span><span style='color:#d2cd86; '>.</span>
+<span style='color:#9999a9; '>#!/usr/local/bin/perl</span>
+<span style='color:#e66170; font-weight:bold; '>use</span> Mason<span style='color:#b060b0; '>;</span>
+<span style='color:#e66170; font-weight:bold; '>my</span> $mason <span style='color:#d2cd86; '>=</span> Mason<span style='color:#d2cd86; '>-></span>new<span style='color:#d2cd86; '>(</span>comp_root <span style='color:#d2cd86; '>=></span> <span style='color:#00c4c4; '>'...'</span><span style='color:#d2cd86; '>)</span><span style='color:#b060b0; '>;</span>
+<span style='color:#e66170; font-weight:bold; '>print</span> $mason<span style='color:#d2cd86; '>-></span>run<span style='color:#d2cd86; '>(</span><span style='color:#00c4c4; '>'/foo'</span><span style='color:#d2cd86; '>)</span><span style='color:#d2cd86; '>-></span>output<span style='color:#b060b0; '>;</span>
+</pre>
+
+		</div>
+
+		<h2>Quick Start</h2>
+		<div class="section">
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas libero purus, vehicula vel laoreet vitae, pretium non felis. Vestibulum tempus lectus sit amet mauris volutpat eu semper est vulputate. Phasellus imperdiet massa eget sapien cursus sit amet mattis nibh porta. Mauris odio risus, tempor sit amet malesuada eget, convallis sit amet turpis. Vivamus tincidunt erat a orci ullamcorper interdum. Quisque pharetra erat in sem imperdiet mollis. Vestibulum placerat rhoncus egestas.</p>
+		</div>
+
+		<h2>Documentation</h2>
+		<div class="section">
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas libero purus, vehicula vel laoreet vitae, pretium non felis. Vestibulum tempus lectus sit amet mauris volutpat eu semper est vulputate. Phasellus imperdiet massa eget sapien cursus sit amet mattis nibh porta. Mauris odio risus, tempor sit amet malesuada eget, convallis sit amet turpis. Vivamus tincidunt erat a orci ullamcorper interdum. Quisque pharetra erat in sem imperdiet mollis. Vestibulum placerat rhoncus egestas.</p>
+		</div>
+
+	</div>
+
+</body>
+</html>
+
+
+
