@@ -1,18 +1,42 @@
+html {
+	height: 100%;
+}
 body {
 	font-family: 'Open Sans', sans-serif;
 	margin: 0;
 	padding: 0;
-	background-color: white;
+	background-color: black;
+	/*background: black url('../images/diag-line-20.png') repeat;*/
+	/*background: black url('http://www.desktopwallpaperhd.com/wallpapers/6/1328.jpg') no-repeat center;*/
 	color: black;
+	height: 100%;
+}
+#background {
+	width: 100%; 
+	height: 100%; 
+	position: fixed; 
+	left: 0px; 
+	top: 0px; 
+	z-index: -1;
+}
+.stretch {
+	width:100%;
+	height:100%;
+}
+#container {
+	width: 1024px;
+	margin: auto;
+	background-color: white;
+	min-height: 100%;
 }
 #menu {
 	color: white;
-	background-color: #222;
-	background-image: url('../images/menu_bg.png');
+	background-color: black;
 	list-style: none;
 	font-size: 17px;
 	margin:0;
-	padding-left:35px;
+	width: 1024px;
+	padding-left:5px;
 }
 #menu li {
 	display: inline-block;
@@ -24,11 +48,20 @@ body {
 	color: white;
 	text-decoration: none;
 	padding: 15px 20px;
+	border-left: 1px solid rgba(255,255,255,0.1);  
+	border-right: 1px solid rgba(0,0,0,0.1);  
 }
 #menu li.current a, #menu li a:hover {
-	background-color: #000;
-	border: none;
+	border-bottom: none;
+	background: #000;
+	background: -webkit-gradient(radial, 50% 100%, 10, 50% 50%, 90, from(rgba(31,169,244,.35)), to(rgba(0,28,78, .35)) );  
+	background: -moz-radial-gradient(center 80px 45deg, circle cover, rgba(31,169,244,.35) 0%, rgba(0,28,78, .35) 100%);
 }
+
+#menu li.first a {
+	border-left: none;
+}
+
 #header {
 	padding: 15px;
 	padding-left: 30px;
@@ -58,6 +91,7 @@ body {
 #main {
 	padding-left: 30px;
 	padding-right: 30px;
+	padding-bottom: 30px;
 }
 h2 {
 	color: #092B61;
@@ -86,4 +120,56 @@ a {
 
 a:hover {
 	border-bottom: 1px dotted #114486;
+}
+
+#footer {
+	background-color: #F7F7F7;
+	color: black;
+	padding-bottom: 20px;
+	border-top: 1px #CDCDCD solid;
+	text-align: center;
+}
+
+#footer a {
+	color: #707070;
+	font-weight: normal;
+	font-size: 11px;
+}
+
+#footer a:hover {
+	border-bottom: none;
+	color: black;
+}
+
+#footer h5 {
+	margin-bottom: 3px;
+	color: #222;
+	text-shadow: 1px 1px 1px #e6e6e6;
+	font-weight: bold;
+	font-size: 12px;
+}
+
+#footer .column {
+	display: inline-block;
+	vertical-align: top;
+	text-align: left;
+	padding-left: 80px;
+}
+
+#footer .last {
+	padding-right: 90px;
+}
+
+#footer .column ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.copyright {
+	width: 100%;
+	font-size: 11px;
+	text-align: center;
+	padding-top: 50px;
+	color: #888;
 }
