@@ -1,64 +1,100 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<meta charset="utf-8">
-	<title>Mason2</title>
-	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
-	<link href="css/style.css" rel="stylesheet" type="text/css" />
-	<style type="text/css">
-	</style>
-</head>
-<body>
+  <head>
+    <meta charset="utf-8">
+    <title>Mason2</title>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
+    <link href="css/style.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+    </style>
+  </head>
+  <body>
 
-	<div id="header">
-		<span class="logo">Mason<span>2</span></span>
-		<span class="description">Powerful, high-performance templating for the web and beyond</span>
-		<a href="/download"><img src="images/download.gif" /></a>
-	</div>
+    <div id="header">
+      <span class="logo">Mason + Poet</span>
+      <span class="description">Powerful Perl-based web framework and templating</span>
+    </div>
 
-	<ul id="menu">
-		<li class="current"><a href="/">Home</a></li>
-		<li><a href="/">Download</a></li>
-		<li><a href="/">Documentation</a></li>
-		<li><a href="/">FAQ</a></li>
-	</ul>
+    <ul id="menu">
+      <li class="current"><a href="/">Home</a></li>
+      <li><a href="/">Download</a></li>
+      <li><a href="/">Documentation</a></li>
+      <li><a href="/">FAQ</a></li>
+    </ul>
 
-	<div id="main">
+    <div id="main">
 
-		<h2>Introduction</h2>
-		<div class="section">
-			<p>
-				<strong>Mason is a powerful Perl-based templating system, designed to generate dynamic content of all kinds.</strong><br /><br />
-				Unlike many templating systems, Mason does not attempt to invent an alternate, "easier" syntax for templates. It provides a set of syntax and features specific to template creation, but underneath it is still clearly and proudly recognizable as Perl.<br /><br />
-				Mason is most often used for generating web pages. It has a companion web framework, Poet, designed to take maximum advantage of its routing and content generation features. It can also be used as the templating layer for web frameworks such as Catalyst and Dancer.<br />
-			</p>
+      <h2>Introduction</h2>
+      <div class="section">
+        <p>
+          <strong><a href="http://search.cpan.org/perldoc?Mason">Mason</a> is a powerful Perl-based templating system</strong> for generating HTML or other dynamic content.<br/><br/>
 
-<pre style='color:#d1d1d1;background:#000000;'>
-foo<span style='color:#d2cd86; '>.</span>mc<span style='color:#d2cd86; '>:</span>
-<span style='color:#d2cd86; '>%</span> <span style='color:#e66170; font-weight:bold; '>my</span> $name <span style='color:#d2cd86; '>=</span> <span style='color:#00c4c4; '>"Mason"</span><span style='color:#b060b0; '>;</span>
-Hello world<span style='color:#d2cd86; '>!</span> Welcome to <span style='color:#d2cd86; '>&lt;</span><span style='color:#d2cd86; '>%</span> $name <span style='color:#d2cd86; '>%</span><span style='color:#d2cd86; '>></span><span style='color:#d2cd86; '>.</span>
-<span style='color:#9999a9; '>#!/usr/local/bin/perl</span>
-<span style='color:#e66170; font-weight:bold; '>use</span> Mason<span style='color:#b060b0; '>;</span>
-<span style='color:#e66170; font-weight:bold; '>my</span> $mason <span style='color:#d2cd86; '>=</span> Mason<span style='color:#d2cd86; '>-></span>new<span style='color:#d2cd86; '>(</span>comp_root <span style='color:#d2cd86; '>=></span> <span style='color:#00c4c4; '>'...'</span><span style='color:#d2cd86; '>)</span><span style='color:#b060b0; '>;</span>
-<span style='color:#e66170; font-weight:bold; '>print</span> $mason<span style='color:#d2cd86; '>-></span>run<span style='color:#d2cd86; '>(</span><span style='color:#00c4c4; '>'/foo'</span><span style='color:#d2cd86; '>)</span><span style='color:#d2cd86; '>-></span>output<span style='color:#b060b0; '>;</span>
-</pre>
+          Unlike many templating systems, Mason does not invent an alternate, "easier" syntax for templates. It simply lays a friendly templating syntax over the versatile and well-documented Perl language.<br/><br/>
 
-		</div>
+          Mason has been around for fourteen years (originally as HTML::Mason) and has powered thousands of web sites large and small, including <a href="http://amazon.com/">Amazon.com</a> and <a href="http://salon.com/">Salon.com</a>. Mason 2 was launched in 2011.<br></br>
 
-		<h2>Quick Start</h2>
-		<div class="section">
-			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas libero purus, vehicula vel laoreet vitae, pretium non felis. Vestibulum tempus lectus sit amet mauris volutpat eu semper est vulputate. Phasellus imperdiet massa eget sapien cursus sit amet mattis nibh porta. Mauris odio risus, tempor sit amet malesuada eget, convallis sit amet turpis. Vivamus tincidunt erat a orci ullamcorper interdum. Quisque pharetra erat in sem imperdiet mollis. Vestibulum placerat rhoncus egestas.</p>
-		</div>
+          <strong><a href="http://search.cpan.org/perldoc?Poet">Poet</a> is a modern companion web framework for Mason.</strong> It uses <a href="http://plackperl.org/">PSGI/Plack</a> for server integration and a selection of best-of-breed CPAN modules for caching, logging and configuration.<br/><br/>
 
-		<h2>Documentation</h2>
-		<div class="section">
-			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas libero purus, vehicula vel laoreet vitae, pretium non felis. Vestibulum tempus lectus sit amet mauris volutpat eu semper est vulputate. Phasellus imperdiet massa eget sapien cursus sit amet mattis nibh porta. Mauris odio risus, tempor sit amet malesuada eget, convallis sit amet turpis. Vivamus tincidunt erat a orci ullamcorper interdum. Quisque pharetra erat in sem imperdiet mollis. Vestibulum placerat rhoncus egestas.</p>
-		</div>
+          If you are already using another Perl web framework, such as <a href="http://search.cpan.org/perldoc?Catalyst">Catalyst</a> or <a href="http://search.cpan.org/perldoc?Dancer">Dancer</a>, Mason can also be used as its <a href="http://search.cpan.org/perldoc?Catalyst::View::Mason2">templating</a> <a href="http://search.cpan.org/perldoc?Dancer::Template::Mason2">layer.</a><br/><br/>
+        </p>
 
-	</div>
+      </div>
 
-</body>
+      <h2>Quick Start</h2>
+      <div class="section">
+
+        Install <a href="http://search.cpan.org/perldoc?App::cpanminus#INSTALLATION">cpanm</a> if necessary. Then run
+
+        <pre style='color:#d1d1d1;background:#000000;'>
+          % cpanm -S --notest Poet
+        </pre>
+
+        <p>This will install Poet and all prereqs, including Mason.<br/>
+
+          Omit the "-S" if you don't have root, in which case cpanminus will install Poet
+          and prereqs into ~/perl5.<br/>
+
+          Omit the "--notest" if you want to run all the installation tests (will take about
+          x4 as long).<br/><br/></p>
+
+        To create your initial environment:
+
+        <pre style='color:#d1d1d1;background:#000000;'>
+          % poet new MyApp
+          my_app/.poet_root
+          my_app/bin/app.psgi
+          my_app/bin/get.pl
+          ...
+          Now run 'my_app/bin/run.pl' to start your server.
+        </pre>
+
+        Then start your server:
+
+        <pre style='color:#d1d1d1;background:#000000;'>
+          % my_app/bin/run.pl
+          Running plackup --Reload ... --env development --port 5000
+          Watching ... for file updates.
+          HTTP::Server::PSGI: Accepting connections at http://0:5000/
+        </pre>
+
+      </div>
+
+      <h2>Documentation</h2>
+      <div class="section">
+        <p>On search.cpan.org:</p>
+        <ul>
+          <li><a href="http://search.cpan.org/perldoc?Mason">Mason</a></li>
+          <li><a href="http://search.cpan.org/perldoc?Poet">Poet</a></li>
+        </ul>
+        <p>On metacpan.org:</p>
+        <ul>
+          <li><a href="https://metacpan.org/module/Mason">Mason</a></li>
+          <li><a href="https://metacpan.org/module/Poet">Poet</a></li>
+        </ul>
+
+      </div>
+
+    </div>
+
+  </body>
 </html>
-
-
-
