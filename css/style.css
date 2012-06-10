@@ -93,3 +93,9 @@ a {
 a:hover {
 	border-bottom: 1px dotted #114486;
 }
+
+#footer {
+	min-height: 50px;
+	border-top: 1px dashed #222;
+	color: white;
+}

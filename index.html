@@ -5,8 +5,9 @@
     <title>Mason2</title>
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
     <link href="css/style.css" rel="stylesheet" type="text/css" />
-    <style type="text/css">
-    </style>
+    <link rel="stylesheet" href="css/arta.css">
+    <script src="js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
   </head>
   <body>
 
@@ -29,7 +30,6 @@
       <div class="section">
         <p>
           <strong><a href="http://search.cpan.org/perldoc?Mason">Mason</a> is a powerful Perl-based templating system</strong> for generating HTML or other dynamic content.<br/><br/>
-
           Unlike many templating systems, Mason does not invent an alternate, "easier" syntax for templates. It simply lays a friendly templating syntax over the versatile and well-documented Perl language.<br/><br/>
 
           Mason has been around for fourteen years (originally as HTML::Mason) and has powered thousands of web sites large and small, including <a href="http://amazon.com/">Amazon.com</a> and <a href="http://salon.com/">Salon.com</a>. Mason 2 was launched in 2011.<br></br>
@@ -46,9 +46,7 @@
 
         Install <a href="http://search.cpan.org/perldoc?App::cpanminus#INSTALLATION">cpanm</a> if necessary. Then run
 
-        <pre style='color:#d1d1d1;background:#000000;'>
-          % cpanm -S --notest Poet
-        </pre>
+				<pre><code class="no-highlight">% cpanm -S --notest Poet</code></pre>
 
         <p>This will install Poet and all prereqs, including Mason.<br/>
 
@@ -60,23 +58,19 @@
 
         To create your initial environment:
 
-        <pre style='color:#d1d1d1;background:#000000;'>
-          % poet new MyApp
-          my_app/.poet_root
-          my_app/bin/app.psgi
-          my_app/bin/get.pl
-          ...
-          Now run 'my_app/bin/run.pl' to start your server.
-        </pre>
+				<pre><code class="no-highlight">% poet new MyApp
+my_app/.poet_root
+my_app/bin/app.psgi
+my_app/bin/get.pl
+...
+Now run 'my_app/bin/run.pl' to start your server.</code></pre>
 
         Then start your server:
 
-        <pre style='color:#d1d1d1;background:#000000;'>
-          % my_app/bin/run.pl
-          Running plackup --Reload ... --env development --port 5000
-          Watching ... for file updates.
-          HTTP::Server::PSGI: Accepting connections at http://0:5000/
-        </pre>
+				<pre><code class="no-highlight">% my_app/bin/run.pl
+Running plackup --Reload ... --env development --port 5000
+Watching ... for file updates.
+HTTP::Server::PSGI: Accepting connections at http://0:5000/</code></pre>
 
       </div>
 
@@ -94,6 +88,10 @@
         </ul>
 
       </div>
+
+    </div>
+
+    <div id="footer">
 
     </div>
 
