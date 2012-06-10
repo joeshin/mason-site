@@ -36,6 +36,7 @@ body {
 	text-shadow: 1px 1px 1px black;
 	min-width: 1050px;
 	color: white;
+	padding-bottom: 0;
 }
 #header #background {
 	position: absolute;
@@ -98,4 +99,15 @@ a:hover {
 	min-height: 50px;
 	border-top: 1px dashed #222;
 	color: white;
+}
+
+#sub-header {
+	background-color: #083d68;
+	padding-left: 15px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	border-top: 1px solid #222;
+}
+#sub-header .description {
+	font-size: 18px;
 }
