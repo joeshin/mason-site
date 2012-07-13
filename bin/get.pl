@@ -30,8 +30,8 @@ get.pl - Get a URL via command line without a running server
 =head1 DESCRIPTION
 
 Runs a request through your Poet application in a single process without
-actually requiring a running server. The request will use the same psgi.app
-and pass through all the same middleware, etc. Uses
+actually requiring a running server. The request will use the same psgi.app and
+pass through all the same middleware, etc. Uses
 L<Test::WWW::Mechanize::PSGI|Test::WWW::Mechanize::PSGI>.
 
 The url scheme and host are optional, so either of these will work:
@@ -39,7 +39,8 @@ The url scheme and host are optional, so either of these will work:
     get.pl /action
     get.pl http://localhost/action
 
-Because the request runs in a single process, it's easy to run through a debugger:
+Because the request runs in a single process, it's easy to run through a
+debugger:
 
     perl -d get.pl /action
 
