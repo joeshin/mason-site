@@ -1,12 +1,22 @@
 <%class>
 has 'subtitle';
 
-sub title { $.subtitle ? "Mason: " . $.subtitle : "Mason" }
+method title () {
+    $.subtitle ? "Mason: " . $.subtitle : "Mason";
+}
 
 method TrimLines () {
     sub {
-        s/^\s+//m;
-        s/\s+$//m;
+        s/^\s+//mg;
+        s/\s+$//mg;
+        return $_;
+    };
+}
+
+method MarkCurrentPage () {
+    sub {
+        my $uri = $m->req->path;
+        s/<li>(<a href="$uri">)/<li class="current">$1/;
         return $_;
     };
 }
@@ -19,16 +29,14 @@ method TrimLines () {
     <meta charset="utf-8">
     <title><% $.title %></title>
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
-    <link href="css/style.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="css/arta.css">
-    <script src="js/highlight.pack.js"></script>
+    <link href="/static/css/style.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/static/css/arta.css">
+    <script src="/static/js/highlight.pack.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
   </head>
   <body>
 
     <div id="header">
-      <!--img src="images/blue-bg.jpg" id="background" /-->
-      <img src="images/brick-bg.jpg" id="background" />
       <span class="logo">Mason + Poet</span>
     </div>
 
@@ -37,10 +45,11 @@ method TrimLines () {
     </div>
 
     <ul id="menu">
-      <li class="current"><a href="/">Home</a></li>
-      <li><a href="/">Download</a></li>
-      <li><a href="/">Documentation</a></li>
-      <li><a href="/">FAQ</a></li>
+% $.MarkCurrentPage {{
+      <li><a href="/">Home</a></li>
+      <li><a href="/docs">Docs</a></li>
+      <li><a href="/support">Support</a></li>
+% }}      
     </ul>
 
     <div id="main">
