@@ -12,14 +12,6 @@ method TrimLines () {
         return $_;
     };
 }
-
-method MarkCurrentPage () {
-    sub {
-        my $uri = $m->req->path;
-        s/<li>(<a href="$uri">)/<li class="current">$1/;
-        return $_;
-    };
-}
 </%class>
 
 <%augment wrap>
@@ -44,13 +36,7 @@ method MarkCurrentPage () {
       <span class="description">Powerful Perl-based web framework and templating</span>
     </div>
 
-    <ul id="menu">
-% $.MarkCurrentPage {{
-      <li><a href="/">Home</a></li>
-      <li><a href="/docs">Docs</a></li>
-      <li><a href="/support">Support</a></li>
-% }}      
-    </ul>
+    <& menu.mi &>
 
     <div id="main">
       <div class="inner">
