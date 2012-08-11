@@ -1,0 +1,114 @@
+= Installing Mason on Mac OSX 10.3 =
+
+Important Note:
+There is a bug in /System/Library/Perl/5.8.1/darwin-thread-multi-2level/Config.pm on Panther that adversely affects Perl installations.  The fix is to change
+  
+  ld='MACOSX_DEPLOYMENT_TARGET=10.3 cc'
+to
+  ld='env MACOSX_DEPLOYMENT_TARGET=10.3 cc'
+
+Check this before you proceed.    --Bill Bohling 10/25/2004
+
+
+From a clean install of Panther plus the devtools with everything just the way that apple set it up I used CPAN to install HTML::Mason
+
+The first step was a force install of HTML::Mason. There were a few errors in the install (only two infact)
+
+ t/04-misc.............FAILED tests 9-10                                      
+ Failed 2/11 tests, 81.82% okay
+
+ Result for misc: accessor_validate
+ not ok 9 
+ Result for misc: contained_accessor_validate
+ not ok 10
+
+Note that this problem is fixed in the latest release, and is not OS X specific. -- DaveRolsky
+
+Skipping a false restart we then need to install Apache::!TestMM
+this is required by Apache::Request which we then have to force
+
+ apreq/inherit......FAILED test 1                                             
+ Failed 1/1 tests, 0.00% okay
+
+Enable mod_perl in http.conf and added the following to enable 
+Mason to handle the pages.
+
+ <FilesMatch "\.html$">
+    SetHandler perl-script
+    PerlSetVar MasonDataDir /usr/local/mason
+    PerlSetVar MasonCompRoot /Library/WebServer/Documents
+    PerlHandler HTML::Mason::ApacheHandler
+ </FilesMatch>
+
+Restart apache and away we go.
+
+== So in summary ==
+
+0 force install HTML::Mason
+0 install Apache::!TestMM
+0 force install Apache::Request
+0 update http.conf for mod_perl and mason
+0 restart apache
+
+The site is working and the error log contains only the usual hacking attempts.
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------
+
+== The Old-School Method for Compleat Idiots, in case the cpan method doesn't work ==
+
+#  Installing Mason version 1.26    --BGB
+
+Before going through this headache, make sure !XcodeTools is installed on your machine (the package file should be there, you just have to specifically run the install) and try the cpan method.  Open up Applications:Utilities:Terminal and type in. 
+
+   cpan -i HTML::Mason
+
+This should fetch and install all the required modules, with the exception of the aforementioned Apache::!TestMM.  If it fails, here's how to install by hand.  Do cpan -i Apache::!TestMM now just because you need it anyway.
+
+Now, cd ~/.cpan/build directory and take a look.  You should see the following directories
+
+   Apache-Test-1.14
+   Cache-Cache-1.03
+   Class-Container-0.11 
+   Class-Data-Inheritable-0.02
+   Devel-!StackTrace-1.11
+   Digest-1.08
+   Digest-SHA1-2.10
+   Error-0.15
+   Exception-Class-1.19 
+   HTML-Mason-1.26
+   HTML-Mason-!ApacheHandler2-0.01
+   Params-Validate-0.74
+   libapreq-1.3
+
+If anything is missing, get it with cpan or download it from cpan.org.  To install the packages by hand, simply go into each directory and run the following sequence of commands
+
+   perl Makefile.PL
+   make
+   sudo make install          (you will need your admin password for this)
+
+Unfortunately, I wasn't taking notes when I went through this, so I don't know the best order, just that you want to save HTML-Mason-1.26 for last.
+
+When you're done, mkdir -m 0777 /usr/local/mason/cache and /usr/local/mason/obj, and you should have everything where it needs to be to use Mason.
+
+The last step is to turn on mod_perl and enable Mason in Apache, which you do by editing /private/etc/httpd/httpd.conf.  To turn on mod_perl, uncomment the following lines
+
+   !LoadModule perl_module        libexec/httpd/libperl.so
+   !AddModule mod_perl.c
+
+For Mason, add the following directive, (I put it in the handlers section):
+
+    # Enable Mason
+    <FilesMatch "\.html$">
+        SetHandler perl-script
+        PerlSetVar MasonDataDir /usr/local/mason
+        PerlSetVar MasonCompRoot /Library/WebServer/Documents
+        PerlHandler HTML::Mason::ApacheHandler
+    </FilesMatch>
+
+Save the file, start (or restart) httpd, and you should be able to run Mason components.  At this point, /var/logs/httpd/error_log is your friend, so open up Console and follow along.

@@ -1,0 +1,18 @@
+Mason user and fan since the fall of 2000.
+
+I use Mason to run a couple non-profit sites. I wrote
+applications for displaying mailing list-archives, maintaining
+contact info and event lists, running surveys and a simple
+content update mechanism with Wiki-like text to html converter.
+
+Although I find working in Mason delightful and I've implemented
+a few small applications I wish there was a mechansim or at
+least conventions that make deploying an application easier.
+I don't feel comfortable posting my code because it depends
+on component/file paths, how I've chosen to arrange my 
+component roots, module names, perl load paths, etc. It would
+be nice to package everything up into a tar file and have some
+installer add it to a Mason component tree automatically ala
+Zope. It would make it easier to leverage other peoples code.
+
+Happy hacking.

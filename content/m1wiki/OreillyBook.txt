@@ -1,0 +1,5 @@
+/Embedding Perl in HTML with Mason/, written by KenWilliams and DaveRolsky and published by O'Reilly in October 2002, is the first book devoted solely to Mason. It covers Mason from the basics on up to extending the Mason core with your own subclasses. Read it online at [http://www.masonbook.com/]. The official O'Reilly page is [here http://www.oreilly.com/catalog/perlhtmlmason/].
+
+There is a review [here http://www.dave.org.uk/reviews/mason.html]
+
+http://www.masonbook.com/i/cover_large.jpg

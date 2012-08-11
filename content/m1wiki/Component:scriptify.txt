@@ -1,0 +1,28 @@
+ <%doc>
+   Example: release a widget like this:
+   <script type="text/javascript" src="http://www.mydomain.com/widgetcontent.html?param=...."></script>
+
+   Where widgetcontent is like that:
+
+   <&| scriptify.mas &>
+     <h1>This is my widget content</h1>
+   </&>
+  
+   by jerome eteve http://www.eteve.net/
+
+ </%doc>
+ <%args>
+  $div_id => '' ;
+ </%args>
+ <%init>
+ my $content = $m->content() ;
+ $content =~ s/'/\\'/g ; # protect javascript from embeded ';
+ my @lines = split("\n" , $content );
+ $content =~ s/\n/ /gs ;
+ </%init>
+ % if ( $div_id ){
+ document.getElementById('<% $div_id %>').innerHTML += '<% $content %>';
+ % } else {
+ % foreach my $line ( @lines ){
+ document.write('<% $line %>') ;
+ %} }

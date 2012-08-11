@@ -1,0 +1,299 @@
+[&TOC FAQ:Components]
+
+
+=== What is a component? ===
+A component is a file that contains some combination of text (typically HTML), perl code and HTML::Mason directives.
+
+Some components are accessed directly by web browsers. These are called top-level components. A top-level component might consist purely of static HTML.
+
+Other components are support components, which are called by top-level components or other support components. These components are analogous to perl subroutines -- they allow you to create small packages of code that you can reuse throughout your project.
+
+=== How do components communicate with each other? ===
+Components can return values to their callers, just like subroutines.
+
+Some components may have very simple return values. As an example, consider a component called isNetscape which returns a true value when the client's browser is Netscape and undef when it is not. The isNetscape component could then be used easily in an if() or other control statement.
+
+Of course, components can also return strings of text, arrays, hashes or other arbitrarily complex perl data structures.
+
+=== How do I use modules in components? ===
+Technically you can just say "use module-name" at the beginning of a component. The disadvantages of this method are that:
+
+* the module will be used separately by every httpd child process, costing both time and memory.
+
+* it is difficult to keep track of all the modules being used on a site.
+
+A more efficient method is to put the use line in the handler.pl or use the PerlModule directive. If you want components to be able to refer to symbols exported by the module, you need to use the module inside the HTML::Mason::Commands package. See the "External modules" section of the Administrator's Guide:
+
+      http://www.masonhq.com/docs/manual/Admin.html#external_modules
+
+=== Can I define subroutines in components? ===
+Defining a named subroutine in a <%perl> or <%init> section does not work reliably because such a definition would end up residing inside another subroutine, and Perl doesn't like that.
+
+You can technically define named subroutines inside the <%once> section of any component, but we highly discourage this, because all components are executed in the same namespace. This makes it easy to create two subroutines with the same name in two different components.
+
+Consider the following options:
+
+* If the routine is going to display HTML, use a separate component or a <%def> subcomponent.
+
+* If the subroutine is only of use in your component, use an anonymous subroutine defined in <%once>. Even though you could define the anonymous subroutine in any section, a <%once> is recommended, both for performance and to avoid nested-anonymous-subroutine leaks in Perl <=5.6. Example:
+
+      <%once>
+      my $foo = sub {
+        ...
+      };
+      </%once>
+
+      ...
+
+      % $foo->()
+
+* If the subroutine is of interest to more than just your component, have you considered putting it in a module?
+
+Note that calling a component, while reasonably fast, is about an order of magnitude slower than calling an equivalent subroutine. So if you're going to call the routine many times in a loop, you may wish to use the anonymous subroutine for performance reasons. Benchmark for yourself.
+
+=== Does Mason set the current working directory (".") for me? ===
+Mason does not touch the working directory, as this would entail an unnecessary performance hit for the majority of users that don't need it.
+
+In an Apache environment, the working directory will be set in a more-or-less random way, depending on such seemingly irrelevant factors as whether you started the server in single-process mode or not. In a non-Apache environment the working directory will be whatever it was before Mason started executing.
+
+Often people expect the working directory to be the directory of the current component. You can, instead, get that directory manually with
+
+       $m->current_comp->source_dir
+
+=== How do I exit from all components including the ones that called me? ===
+Use $m->abort, documented in the Request manual:
+
+      http://www.masonhq.com/docs/manual/Request.html#item_abort
+
+=== Why does my output have extra newlines/whitespace and how can I get rid of it? ===
+Any newlines that are not either inside a tag or on a %-line will become part of the output. Since browsers ignore extra whitespace this is not generally a problem, but there are situations where it matters, e.g. within <pre> tags.
+
+First, for components that only return a value and shouldn't output *any* content, you should always use <%init>:
+
+      <%args>
+       $foo
+      </%args>
+
+      This content will be ignored.
+
+      <%init>
+       my $bar = $dbh->selectrow_array("SELECT bar FROM t WHERE foo=?", $foo);
+       return $bar;
+      </%init>
+
+In components that do display content, there are various strategies. To eliminate selected newlines, use the backslash. For example,
+
+       <PRE>
+       foo\
+       % if (1) {
+       bar\
+       % }
+       baz
+       </PRE>
+
+outputs "foobarbaz" with no newlines.
+
+To prevent a component from outputting any newlines, use a filter:
+
+       <%filter>
+       s/\n//g;
+       </%filter>
+
+To emit binary data without the risk of inserting extra whitespace, surround your code with $m->clear_buffer and $m->abort, to suppress any preceding and following content:
+
+      <%init>
+       $m->clear_buffer;
+       my $fh = IO::File->new('< binary_file') or die $!;
+       my $buffer;
+       while (read $fh, $buffer, 8192) {
+         $m->print($buffer);
+       }
+       $m->abort;
+      </%init>
+
+At some point Mason will probably offer a "reasonable" whitespace removal feature, controlled by parameter. See http://www.masonhq.com/resources/todo/view.html?id=459
+
+=== I'm trying to generate an image or other binary file, but it seems to be getting corrupted.
+
+This is almost always caused by unwanted whitespace at the beginning or end of your binary data. Put a $m->clear_buffer before, and an $m->abort after, your code. See the last part of the answer above.
+
+In Apache 1.0 a real working example looks like this:
+
+   my $fh;
+   my $fileName = '/tmp/mypic.jpg';
+   open ( $fh, $fileName ) or die $!;
+
+   $m->clear_buffer();
+   $r->content_type( 'image/jpeg' ); # set mime-type 
+   $r->send_http_header;
+   $r->send_fd ( $fh );
+   close ( $fh );
+
+In Apache 2.0 use:
+
+   use Apache2::Const qw(HTTP_OK)
+
+   my $fileName = 'someimage.jpg';
+   $m->clear_buffer();
+   $r->content_type( 'image/jpeg' );
+   $r->sendfile( $fileName )
+   $r->abort( Apache2::Const::HTTP_OK );
+
+=== How do I put comments in components? ===
+* Put general comments in the <%doc> section.
+
+* In the <%init> and <%cleanup> sections, and in a <%perl> block, use standard Perl comments ('#').
+
+* In Mason 1.3 and beyond, use <%# %> for single or multi-line comments anywhere outside of Perl sections. Before 1.3, this syntax isn't guaranteed to work; one alternative is to begin a line with %#.
+
+* If you are producing HTML, you can use standard HTML comments delimited by <!-- -->. The difference is that these comments will appear in the final output.
+
+=== What's a good way to temporarily comment out code in a component? ===
+For HTML, you might be tempted to surround the section with <!-- -->. But be careful! Any code inside the section will still execute. Here's a example of commenting out a call to an ad server:
+
+      <!-- temporarily comment out
+      <& FetchAd &>
+      -->
+
+The ad will still be fetched and counted, but not displayed!
+
+A better way to block out a section is if (0):
+
+      % if (0) {
+        ...
+      % }
+
+Code blocked out in this way will neither be executed nor displayed, and multiple if (0) blocks can be nested inside each other (unlike HTML comments).
+
+Another way to block out code is with a <%doc> tag or a <%# %> comment, although these not cannot be nested.
+
+=== How can I capture the output of a component (and modify it, etc.) instead of having it automatically output? ===
+Use $m->scomp, documented in the Request manual:
+
+http://www.masonhq.com/docs/manual/Request.html#item_scomp
+
+=== Can I use globals in components? ===
+All HTML::Mason components run in the same package (HTML::Mason::Commands), so if you set a global variable in one you'll be able to read it in all the others. The only problem is that Mason by default parses components with strict mode on, so you'll get a warning about the global (and Mason considers all such warnings fatal). To avoid errors, simply declare your globals via the MasonAllowGlobals parameter.
+
+      PerlSetVar MasonAllowGlobals $dbh
+      PerlAddVar MasonAllowGlobals $user
+
+If you have a handler.pl file, you can also declare global variables in the handler() subroutine as long as you explicitly put them in the HTML::Mason::Commands package.
+
+      package HTML::Mason::Commands;
+      use vars qw(...);
+
+or use the Parser allow_globals parameter.
+
+See the section on globals in the Administrator's Guide for more details:
+
+      http://www.masonhq.com/docs/manual/Admin.html#global_variables
+
+Alternatively you can turn off strict entirely by passing:
+
+      use_strict => 0
+
+when you create the Parser object. Then you can use all the globals you want. Doing this is terribly silly, however, and is bound to get you in trouble down the road.
+
+=== How do I share variables between components? ===
+First, you can pass variables from one component to another. See
+
+        http://www.masonhq.com/docs/manual/Devel.html#passing_parameters.
+
+Second, you can use globals. All components run in the same package (HTML::Mason::Commands as of this writing), so globals in this package are visible to all components. See the previous question.
+
+There is no way to share a variable between just a few components; this is a limitation of Perl's scoping rules. You can make a variable /visible/ to only certain components using 'our' declarations:
+
+        <%once>
+        our ($shared_var);
+        </%once>
+
+See the Perl documentation on 'our' to make sure you understand what this is doing.
+
+The <%shared> section is /not/ for sharing variables among different file components. It is for sharing variables among the subcomponents and methods of a single file component.
+
+=== Why does the order of output get mixed up when I use print or $r->print? ===
+This should no longer happen with Mason 1.10+. For those users still using older versions of Mason, read the following:
+
+Since your server is most likely in batch mode, all Mason output gets buffered til the end of the request. print and $r->print circumvent the buffer and thus come out before other Mason output.
+
+Solution: don't use print or $r->print. Use $m->out if you must output inside a Perl section. See the section on output mode in the Administrator's Guide:
+
+      http://www.masonhq.com/docs/manual/1.05/Admin.html#out_mode
+
+and the section on $m->out in the Request manual:
+
+      http://www.masonhq.com/docs/manual/1.05/Request.html#item_out_string
+
+=== Why doesn't my <%cleanup> code run every time the component runs? ===
+
+A <%cleanup> block is equivalent to a C<< <%perl> >> block at the end of the component. This means it will NOT execute if the component explicitly returns, or if an abort or error occurs in that component or one of its children.
+
+If you need code that is guaranteed to run when the component or
+request exits, consider using a mod_perl cleanup handler, or creating
+a custom class with a DESTROY method.
+
+=== Is <%args> exactly like %ARGS, and do I need to worry about it? ===
+Mason allows you to predeclare arguments to components by specifying variables to hold those arguments in an <%args></%args> section. Because these are perl variables that you are predeclaring, they must have legal perl identifier names -- they can't, for example, contain periods.
+
+If you want to pass arguments that are not identified with legal perl names, you must manually pull those arguments out of the %ARGS hash that mod_perl sets up for you. Why would you want to name your arguments un-legally, you ask? Well, just for starters, the form input element <input type="image" name="clickable"> will pass arguments clickable.x and clickable.y to the action url automatically. If you want to access these, you'd have to use $ARGS{clickable.x} and $ARGS{clickable.y} rather than trying to declare them in <%args>.
+
+=== Why does Mason display the wrong line numbers in errors? ===
+Due to limitations in the 1.0x parser, Mason can only display line numbers relative to object files.
+
+In 1.1 and on, error line numbers correctly reflect the component source.
+
+=== How can I get a list of components matching a path pattern? ===
+Use the resolver's glob_path method:
+
+      my @paths = $m->interp->resolver->glob_path('/some/comp/path/*');
+
+This will work even with multiple component roots; you'll get a combined list of all matching component paths in all component roots.
+
+=== Can I access $m (the request object) from outside a component, e.g. inside a subroutine? ===
+In 1.1x and on, use
+
+      my $m = HTML::Mason::Request->instance;
+
+Before 1.1x, use
+
+      my $m = HTML::Mason::Commands::m;
+
+=== How can I make the |h escape flag work with my Russian/Japanese/other-non-western encoding? ===
+The |h flag is implemented with [=HTML::Entities::encode_html]. This function, by default, escapes control chars and high-bit chars as well as <, >, &, and ". This works well for ISO-8559-1 encoding but not with other encodings.
+
+To make |h escape just <, >, &, and ", which is often what people want, put the following in your Apache configuration:
+
+       PerlSetVar  MasonEscapeFlags  "h => \&HTML::Mason::Escapes::basic_html_escape"
+
+Or, in a top-level autohandler:
+
+       $m->interp->set_escape( h => \&HTML::Mason::Escapes::basic_html_escape );
+
+=== When using multiple component roots, is there a way to explicitly call a component in a specific root? ===
+
+Multiple component roots were designed to work just like Perl's @INC.  A given component path matches exactly one file, the first file found in an ordered search through the roots. There is no way to explicitly ask for a file in a specific root.
+
+People sometimes ask for the ability to do this. We feel it's a bad idea because it would endanger the cleanliness of multiple component roots in both behavior and implementation. As it stands now, the rules are very easy to understand and the implementation is very clean and isolated; only the resolver really needs know about multiple component roots.
+
+If you want to be able to explicitly refer to components in a given root, put an extra subdirectory between the root and the components.  e.g. put your components in
+
+    /usr/local/htdocs/global/global/...
+
+then add the root as
+
+    ['global', '/usr/local/htdocs/global']
+
+Now you can prefix a path with /global to refer to any component in that root.
+
+Alternatively, [http://search.cpan.org/dist/MasonX-Request-ExtendedCompRoot MasonX::Request::ExtendedCompRoot] is a subclass of Mason that does allow you to call components in a specific component root.
+
+=== Is there a syntax checker like perl -c for components? ===
+
+It is impossible to write a truly generic standalone script to syntax check components, because components rely on certain globals and modules to be present in their environment. Mason may report compile errors from such a script even though they would not occur in your normal web environment.
+
+The best you can do is write a standalone script (http://www.masonhq.com/docs/manual/Admin.html#using_mason_from_a_standalone_sc) that mimics your web environment as much as possible - in particular, declaring the same globals and loading the same modules. Instead of actually executing components, your script need only load them with $interp->load(). This method will throw a fatal error if a component fails to load.
+See this contribution: http://www.masonhq.com/?Compile
+
+
+

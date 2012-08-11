@@ -1,0 +1,9 @@
+I've been programming with Mason since mid-2002.  I heard Amazon uses it as its templating system, and I've always been interested in working with them.  So I checked out MasonHQ and stuck it on my web server.  The primary piece of non-Amazon-related web work I'm partially responsible for that uses Mason is a server I build for Dr. Horton and the Computational Biology Research Center of Japan.  You can see it in action here:
+
+[http://wolfpsort.org/]
+
+I keep a [http://cjcollier.livejournal.com/ journal] or [http://wp.colliertech.org/cj two], so if you're interested in finding out about me in context unrelated to Mason, check that.
+
+Every now and then, I show up to SPUG.
+
+C.J. Adams-Collier

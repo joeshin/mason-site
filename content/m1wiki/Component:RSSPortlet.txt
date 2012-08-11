@@ -1,0 +1,98 @@
+ <& template:top, qq|<a href="$rss->{'channel'}->{'link'}">$rss->{'channel'}->{'title'}</a>| &>
+ % # Output channel image if it exists
+ % if ($rss->{'image'}->{'link'} && $rss->{'image'}->{'url'}) {
+ <center>
+ <a href="<%$rss->{'image'}->{'link'}%>"><img src="<%$rss->{'image'}->{'url'}%>" alt="<%$rss->{'image'}->{'title'}%>" border="0" <%$rss->{'image'}->{'width'} ? qq|width="$rss->{'image'}->{'width'}"| : ''%> <%$rss->{'image'}->{'height'} ? qq|height="$rss->{'image'}->{'height'}"| : ''%>></a>
+ </center>
+ % }
+ <p />
+ % # Output channel items
+ <ul>
+ % foreach my $item (@{$rss->{'items'}}) {
+ % next unless defined($item->{'title'}) && defined($item->{'link'});
+ <li><a class="nav" href="<%$item->{'link'}%>"><%$item->{'title'}%></a></li>
+ % }
+ </ul>
+ <p />
+ % # Output textinput element if it exists
+ % if ($rss->{'textinput'}->{'title'}) {
+ <center>
+ <form method="get" action="<%$rss->{'textinput'}->{'link'}%>">
+ <span class="title"><% $rss->{'textinput'}->{'description'} %></span><br /> 
+ <input type="text" name="<%$rss->{'textinput'}->{'name'}%>"><br />
+ <input type="submit" value="<%$rss->{'textinput'}->{'title'}%>">
+ </form>
+ </center>
+ % }
+ % # Output copyright element if it exists
+ % if ($rss->{'channel'}->{'copyright'}) {
+ <p /><sub><%$rss->{'channel'}->{'copyright'}%></sub>
+ % }
+ <& template:bottom &>
+ <%args>
+ $src
+ </%args>
+ <%once>
+ use XML::RSS;
+ use LWP::Simple;
+ </%once>
+ <%init>
+ my $rss = new XML::RSS;
+ my $content = $m->cache->get($src);
+ # my $content = $m->cache(action=>'retrieve', key=>$src);
+ # This syntax didn't work for me, but $m->cache->get($src) did.
+
+ if (! defined $content) {
+    $content = get($src);
+    die "Could not retrieve $src" unless $content;
+    $m->cache->set($src => $content, '1 hour');
+    #  $m->cache(action=>'store', key=>$src, expire_in=>'1 hour', value=>$content);
+    #  Similar to above - I don't know if this is an older/different interface to the cache or what...
+ }
+ $rss->parse($content);
+ </%init>
+ <%doc>
+ 
+ * WHAT
+ 
+ A 'portlet' like component for fetching and displaying RSS syndicated content.
+ 
+ * VERSION
+ 
+ .01 - First release.
+ 
+ * FEATURES
+ 
+  - Easy to incorporate into any Mason server.
+  - Low dependancies.  Only needs XML::RSS and LWP::Simple.
+  - Uses Mason caching to avoid overloading RSS servers.
+ 
+ * HOW
+ 
+  - Drop rss component into
+ 
+  - Define a 'template' to wrap the portlet.  A template is a Mason component with 'top' and 'bottom' methods.
+    These methods should describe a nice table for the content. 'top' method should take a title as first arg.
+    Alternatively, you can put the wrapper HTML in the rss component. 
+ 
+  - Call rss in your autohandler or HTML page like so <& '/portlets/rss', src=>'http://search.cpan.org/recent.rdf' &>
+    Assumes rss component is in "portlets" directory.
+
+  - Note that XML::RSS (and all other modules build on XML::Parse) are incompatible with the standard expat built 
+    in to Apache.  You'll need to compile Apache without expat in order to have this work.  If you try to use this 
+    and get segfaults from Apache, that's probably the cause.
+
+ * CREDITS
+ 
+ Jonathan Swartz made HTML::Mason.
+ Jonathan Eisenzopf made the XML::RSS package and rss2html.pl upon which the rss component is based.
+ "Dennis Watson" <dwatson@dwatsonconsulting.com> combined the two into this package.
+ Rick Ford made some minor edits & comments
+
+ * COPYRIGHT
+ 
+ The rss component is free software.  
+ It is distributable under the same terms as HTML::Mason itself.
+ 
+ </%doc>
+

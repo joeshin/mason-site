@@ -1,0 +1,8 @@
+I'm a Computer Officer in the [Engineering Department http://www.eng.cam.ac.uk/] of the [University of Cambridge http://www.cam.ac.uk/].
+
+I've been using Mason to create dynamic pages for about three years now.
+The latest and greatest is an on-line module selection and management
+system for our modular course.
+
+Right now I'm trying to design a generic dynamic navigation framework for 
+Mason, which might appear under MasonX at some stage.

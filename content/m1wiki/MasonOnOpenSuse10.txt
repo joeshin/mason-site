@@ -1,0 +1,159 @@
+If you want Mason to use most of SuSE's binaries and Apache2 structure try this:
+
+We start from OpenSuse10.x with these packages:
+(Use YaST2 to install them if they aren't already there)
+    apache2                Version 2.0.49-27.63 at the time of writing
+    apache2-devel          Gives you apxs2
+    apache2-prefork
+    apache2-example-pages  For a test static page
+    info2html              For a test CGI script
+
+We will try and bull through to
+    Mason
+    MasonX::Request2
+    MasonX::Request::WithApacheSession 
+ 
+
+We'll do this largely using CPAN
+In installing CPAN I'm a bit bullish,
+I set prerequisites to  "follow"  and  "UNINST=1"
+ie: Give me what I asked for with all prerequisites
+and blow away any old versions that get in the way.
+
+So don't practice these recipies on a production machine!
+
+Start CPAN by typing:
+    root>  perl -MCPAN -e shell
+    install CPAN            Upgrade CPAN itself FIRST
+    install Test::Pod
+    install Test::Pod::Coverage
+    install Module::Signature
+    install ExtUtils::ParseXS
+    install version
+    install Pod::Readme
+    install PAR::Dist
+    install IO::Compress::Bzip2
+    install HTML::Tagset    libwww-perl will fail without this
+    install libwww-perl     Even if it's not essential it's useful
+    install Bundle::CPAN    Lots of goodness in the CPAN bundle
+
+By now you will have seen a truly impressive amount of ``stuff''
+all hopefully tested and installed without a hitch.
+Now, where were we? Oh Yes, installing Mason.
+
+    install CGI             Upgrade CGI
+    install mod_perl2       Tell it apxs is  /usr/sbin/apxs2
+    install ExtUtils::MakeMaker
+    install ExtUtils::XSBuilder
+    install autoconf
+    install Apache2::Request   It will fail testing, we have to go manual
+    look Apache2::Request      Will dump you into the install dir
+    make clean                 Dump the earlier compile
+    ./configure --with-apache2-apxs=/usr/sbin/apxs2      Magic!
+    make
+    make test                  Now it works?
+    ^D                         Quit the shell
+    install Apache2::Request   Should work this time
+
+Now, where were we? Oh Yes, inside CPAN installing Mason.
+    install HTML::Mason        The stupid thing will try and install G/GO/GOZER/mod_perl-1
+                               Just hit it on the head with a ^C when it asks for your apache source
+                               It should all go on, with a note to say mod_perl-1 failed. Good!
+
+Some red herrings still exist in CPAN, they appear to have been abandoned long before they worked:
+    MasonX::Request::WithApache2Session
+    MasonX::Request::WithApacheSession2
+They talk of Apache2 and then  "use"  lots of mod_perl (Apache-1.3) stuff.
+Correct me if I'm wrong but they seemed to be nothing but dead ends.
+
+This is the one to go for
+    install MasonX::Request::WithApacheSession   The prerequisites should go on but
+                                                 DROLSKY/MasonX-Request-WithApacheSession-0.30
+                                                 will fail the subrequest1.
+
+It needs patching.  Thanks to this link for the patch
+    http://permalink.gmane.org/gmane.comp.web.mason.devel/1648
+
+To fix it from inside CPAN
+    look MasonX::Request::WithApacheSession      start a shell in the build dir
+    vi /lib/MasonX/Request/WithApacheSession.pm  or use your editor-of-choice
+    /is_subrequest                               Look for the first instance
+    return if $self->is_subrequest;              The line should look like this
+    return $self if $self->is_subrequest;        Change it to this 
+    :wq                                          Write and quit the editor
+    make test                                    Should pass all tests now
+    ^D                                           Quit the shell back to CPAN
+    install MasonX::Request::WithApacheSession   Should work this time
+    quit                                         Exit CPAN
+
+
+Hurrah! We have all the bits we need, now to put them together.
+I assume you've got the default SuSE apache2 setup with some default pages.
+Probably best to test it before we change anything.
+    /etc/init.d/apache2 start                    Should give you a green  "done"
+    /etc/init.d/apache2 status                   Should report  "running"
+    Can you get a page out of it?                Maybe fight with Susefirewall2?
+
+Activate mod_perl2
+    vi /etc/sysconfig/apache2                    You could even use emacs
+    /^APACHE_MODULES                             Look for the active APACHE_MODULES line
+    add  mod_perl                                I list them alphabetically Seems to work.
+    /etc/init.d/apache2 reload                   Reloading apache2 using the SuSE init script
+                                                 puts the loadmodule statements into
+                                                 /etc/apache2/sysconfig.d/loadmodule.conf
+    /etc/init.d/apache2 restart                  Better re-test apache2, still starts?
+
+DON'T add  mod_apreq  this way, IT WON'T WORK. See this explaination
+    http://www.plainblack.com/install/upgrade_help/how-i-got-libapreq6.08-to-install-on-suse-10.1/1
+
+Now let's set up a little Mason demo area.
+Put this into the file  /etc/apache2/conf.d/mason.conf
+
+#   /etc/apache2/conf.d/mason.conf
+#
+# This sets up a little Mason demo area in the suse default install
+#
+#       Michael James works-at CSIRO Australia          2007-02-21
+#
+# SuSE stuff this up so put the LoadModule here
+LoadModule apreq_module /usr/lib/apache2/mod_apreq2.so [http://www.logoinn.com logo design]
+PerlModule HTML::Mason::ApacheHandler
+PerlModule CGI
+
+<Directory /srv/www/mason/>
+        Options +Indexes
+        Allow from all
+
+
+        SetHandler perl-script
+        PerlHandler HTML::Mason::ApacheHandler
+
+        ### configure Mason
+
+        PerlAddVar  MasonCompRoot     "main    => /srv/www/htdocs
+        PerlAddVar  MasonCompRoot     "private => /srv/www/mason/m_bits
+
+        PerlSetVar  MasonStaticSource 0
+
+        PerlSetVar  MasonDataDir      /srv/www/mason/cache
+        PerlSetVar  MasonDeclineDirs  0
+        PerlSetVar  MasonArgsMethod   mod_perl
+
+        PerlSetVar MasonRequestClass            MasonX::Request::WithApacheSession
+        PerlSetVar MasonSessionCookieDomain     .cbf.csiro.au
+        PerlSetVar MasonSessionClass            Apache::Session::File
+        PerlSetVar MasonSessionDirectory        /srv/www/mason/sessions/data
+        PerlSetVar MasonSessionLockDirectory    /srv/www/mason/sessions/locks
+        PerlSetVar MasonSessionUseCookie        1
+
+    # Can't do this, must figure out another way
+    #        <LocationMatch "\.(m(html|pl)|dhandler|autohandler)$">
+    #                SetHandler perl-script
+    #                PerlInitHandler Apache::Constants::NOT_FOUND
+    #        </LocationMatch>
+    </Directory>
+
+
+
+
+To be Continued  michaelj 2007-02-20

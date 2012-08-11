@@ -1,0 +1,13 @@
+*masonsh* in !MasonX::Shell allows one to use Mason outside of apache, as a general templating tool. 
+
+It is possible to compile mason pages from the command line with it:
+
+   $ masonsh mytemplate.mc
+
+*masonsh* can be downloaded from [https://sourceforge.net/project/showfiles.php?group_id=145414&package_id=159962 SourceForge, MasonX-Shell-x.x.tar.gz] or the [anonymous svn https://svn.cs.elte.hu/svn/dongo/trunk/tools/masonsh].
+
+After the project gets some critics from people, depending on good or bad, it will be uploaded to CPAN. Until that, it is available from the previous link.
+
+= News =
+
+2005-11-04: Released v0.2.1, that fixed a number of trivial bugs

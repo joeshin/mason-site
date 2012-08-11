@@ -1,0 +1,176 @@
+ <%doc>
+ This component provides a simple read-only interface to a typical cooperate
+ LDAP server. It allows to search in a subtree for persons and organisation
+ using a search query and it allows to browse through the directory tree.
+ 
+ While ldap.mc tries to minimize the constraints on the used LDAP objectClasses,
+ it needs to know when something is a
+ 
+   - organisation
+   - organisational unit
+   - role
+   - person
+ 
+ The defaults are defined in the <%once> section and correspond to the OpenLDAP
+ schema definitions.
+ 
+ The component will display three areas:
+ 
+   - the current position in the tree
+   - the current node's content
+   - the current node's children (roles first, then organisations, then persons)
+ 
+ 
+ (C)Copyright 2001 Robert (\rho) Barta,  rho@telecoma.net
+ This software is to be used and distributed under the GNU Public License.
+ </%doc>
+ 
+ % my @dn = split /,/, $dn;
+ % my @nd = reverse @dn;
+ % my @dn2;
+ % foreach my $rdn (@nd) {
+ %   unshift @dn2, (pop @dn);
+ %   if (scalar @dn2 < scalar @base) {
+ <%$rdn%>
+ %   } else {
+ <A HREF="<%$self_ref%>?action=browse&dn=<%uri_escape(join(",",@dn2))%>"><%$rdn%></A>
+ %   }
+ <BR>
+ % }
+ 
+ <H4>Search subtree by phrase</H4>
+ 
+ <FORM>
+ <INPUT TYPE="HIDDEN" NAME="dn"     VALUE="<%$dn%>">
+ <INPUT TYPE="TEXT"   NAME="phrase" VALUE="<%$phrase%>">
+ <INPUT TYPE="SUBMIT" NAME="action" VALUE="search">
+ </FORM>
+ 
+ % if (!$phrase) {
+ 
+ % if (grep ($_ eq $LDAPorg, $node->get_value('objectClass'))) {
+        <H4><%$node->get_value('o')%></H4>
+ % } elsif (grep ($_ eq $LDAPorgunit, $node->get_value('objectClass'))) {
+        <H4><%$node->get_value('ou')%></H4>
+ % } elsif (grep ($_ eq $LDAProle, $node->get_value('objectClass'))) {
+        <H4><%$node->get_value('cn')%></H4>
+ % } elsif (grep ($_ eq $LDAPperson, $node->get_value('objectClass'))) {
+        <H4><%$node->get_value('cn')%></H4>
+ % }
+ 
+ <TABLE>
+ % foreach my $attr ($node->attributes) {
+ %  next if $attr eq 'objectClass';
+ %  my @values = $node->get_value($attr);
+ %  foreach my $v (@values) {
+ %     $v = qq|<A HREF="mailto:$v">$v</A>|         if $attr eq 'mail';
+ %     $v = qq|<A HREF="$v" TARGET="alien">$v</A>| if $attr eq 'labeledURI';
+ %     $v = qq|<A HREF="$self_ref?dn=|.uri_escape($v).qq|">$v</A>|          if $attr eq 'roleOccupant';
+ %  }
+ <TR><TD><% $attr %></TD><TD> <% join(", ", @values) %></TD></TR>
+ % }
+ </TABLE>
+ 
+ % }
+ 
+ % if ($list) {
+ <HR>
+ 
+ <UL>
+ % foreach my $dn (sort { join ('',@{$list->{$a}->{cn}}) cmp join ('',@{$list->{$b}->{cn}}) }
+ %                 grep (grep (/$LDAProle/, @{$list->{$_}->{'objectclass'}}), keys %$list)) {
+ 
+ %   my $e = $list->{$dn};
+ %   my $s = join (",", @{$e->{cn}});
+ %   $s = $dn unless defined $s;
+     <LI><A HREF="<%$self_ref%>?action=browse&dn=<%uri_escape($dn)%>"><%$s%></A>
+ % }
+ </UL>
+ 
+ <UL>
+ % foreach my $dn (sort { join ('',@{$list->{$a}->{ou}}) cmp join ('',@{$list->{$b}->{ou}}) }
+ %                 grep (grep (/$LDAPorgunit/, @{$list->{$_}->{'objectclass'}}), keys %$list)) {
+ %   my $e = $list->{$dn};
+ %   my $s = join (",", @{$e->{ou}});
+ %   $s = $dn unless defined $s;
+     <LI><A HREF="<%$self_ref%>?action=browse&dn=<%uri_escape($dn)%>"><%$s%></A>
+ % }
+ </UL>
+ 
+ <UL>
+ % foreach my $dn (sort { join ('',@{$list->{$a}->{sn}}) cmp join ('',@{$list->{$b}->{sn}}) }
+ %                 grep (grep (/$LDAPperson/, @{$list->{$_}->{'objectclass'}}), keys %$list)) {
+ %   my $e = $list->{$dn};
+ %   my $s = join (",", @{$e->{cn}}).($e->{description} ? ' ('.join (",", @{$e->{description}}).')' : '');
+ %   $s = $dn unless defined $s;
+     <LI><A HREF="<%$self_ref%>?action=browse&dn=<%uri_escape($dn)%>"><%$s%></A>
+ % }
+ </UL>
+ 
+ % }
+ 
+ 
+ <%once>
+ use Net::LDAP;
+ use URI::Escape;
+ 
+ my $ldap_server = 'namod'; # which server is to contact?
+ my @base        = split (/,/, 'o=Bond University, c=au');  # where to start from
+ my $self_ref    = 'wp.mc'; # how to reference myself
+ 
+ # what classes are used
+ my $LDAPorg     = 'OpenLDAPorg';      # or 'organization'
+ my $LDAPorgunit = 'OpenLDAPou';       # or 'organizationalUnit'
+ my $LDAProle    = 'organizationalRole';
+ my $LDAPperson  = 'OpenLDAPperson';   # or 'person'
+ </%once>
+ 
+ 
+ <%init>
+ my $list;
+ my $node;
+ 
+ my $ldap = Net::LDAP->new($ldap_server) or die "$@";
+ $ldap->bind;
+ 
+ $dn = join (",", @base) unless $dn;
+ 
+ {
+   my $res = $ldap->search (base   => $dn,
+ 			   scope  => 'base',
+ 			   filter => '(objectClass=*)',
+ 			   );
+   $res->code && warn $res->error;
+   $node = $res->entry(0);
+ }
+ if ($phrase) {
+   my $mesg = $ldap->search (base   => $dn,
+ 			    scope  => 'sub',
+ 			    filter => "(|(cn=*$phrase*) (ou=*$phrase*))"
+ 			   );
+   $mesg->code && warn $mesg->error;
+  
+   $list = $mesg->as_struct;
+ } else {
+   my $mesg = $ldap->search (base   => $dn,
+ 			    scope  => 'one',
+ 			    filter => '(objectClass=*)',
+ 			    attrs  => [ 'objectClass', 'cn', 'o', 'ou', 'description', 'sn' ]
+ 			   );
+   $mesg->code && warn $mesg->error;
+  
+   $list = $mesg->as_struct;
+ }
+   $ldap->unbind;
+ </%init>
+ 
+ <%args>
+ $dn     => undef
+ $action => 'browse'
+ $phrase => undef
+ </%args>
+
+Like this
+
+http://www.your-bookmarks.co.cc
+http://www.submityourstory.co.cc

@@ -1,0 +1,4 @@
+
+MovableType is a piece of weblog software. It's available at: http://movabletype.org/
+
+There is an article here about using MasonAndMovableType together.

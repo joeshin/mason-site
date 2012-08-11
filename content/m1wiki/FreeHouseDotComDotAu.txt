@@ -1,0 +1,31 @@
+Thanks to all the people who downloaded my source code, installed it, played with it, and had interesting comments and questions. However, since the market was flooded, it was just too hard to compete.
+
+Instead I've focused my spare time into [http://www.share-house.com.au]. It's all about niche markets these days :)
+
+If you're still wanting to see FreeHouse's source code, [http://www.share-house.com.au/ramblings/freehouse.com.au.tar.gz you can find it here]. I'm still willing to help out installing it on your server and getting your hands dirty with HTML::Mason.
+
+[http://www.share-house.com.au/ramblings/ alfie {at} share-house.com.au]
+
+--
+
+Ever since I read The Art of Unix Programming, I fell in love with the ideals of the hacker culture and the Open Source way.
+
+This book started me on a wild journey down the adventurous path of the GNU. It talked about the advantages of using "higher level languages" and that C/C++ wasn't always the answer. This prompted me towards learning Perl. As they say... the rest is history.
+
+The Perl programming language has taught me a lot. Not just about the way I code, but about community. Perl has this great thing called the CPAN (Comprehensive Perl Archive Network) that is totally community driven which no other language can even compete with, not even Python and PHP combined.
+
+So when I received an email asking to help out another real estate start-up, I was at first apprehensive. But then it came to me. Instead of just helping the sender, why not help the community out there who might be learning how to use Perl and HTML::Mason to build their website or just dipping their feet at Web 2.0.
+
+That's why i've decided to [http://freehouse.com.au/blog/source.tar.gz release the entire source code] to Freehouse.com.au.
+
+Just be nice. It wasn't made for public consumption so there is no documentation or comments. although I did try to make it as maintainable as possible.
+
+Technologies:
+
+    * Perl
+    * HTML::Mason
+    * Class::DBI
+
+Feel free to give me some feedback. If you send me a patch, I might even include it into the site :)
+
+alfie {at} share-house.com.au

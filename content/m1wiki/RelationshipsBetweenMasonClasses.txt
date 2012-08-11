@@ -1,0 +1,19 @@
+== Relationships Between HTML::Mason Classes ==
+
+One of the goals for future versions of Mason is that the various classes like the Compiler, Lexer, Request, ApacheHandler, and so on should be more "pluggable", i.e. a site administrator should be able to substitute a different class for the Lexer.  In order to achieve this, we need to define the behaviors of the various classes, and how they relate to each other.
+
+We're not quite ready for this yet.  The current Mason code is in a state of flux in preparation for the 1.1 release, and because the class hierarchies have undergone substantial (but incremental) changes, certain tasks are delegated to one class when they should really be delegated to another.  So we need to figure some of this stuff out.
+
+In order to help visualize the relationships between classes, I've written a short GraphViz script.  Currently it shows "has-a" relationships with solid lines, and "makes-a" relationships with dashed lines.  It doesn't show "is-a" relationships yet, but that's not very interesting in this setting anyway.
+
+I'm just reading the source by hand (or eye, I suppose) to figure out the relationships, not using any kind of auto-generation.  Auto-generation probably won't be possible.
+
+The GIF output from the script looks like this:
+
+http://www.mathforum.com/~ken/mason/class_rels.gif
+
+The source is here: http://www.mathforum.com/~ken/mason/class_rels.pl
+
+Check the Last-Modified date on the source file to see whether I've made any updates to it recently.  And please let me know if you see any errors or omissions in the relationships.  Eventually a diagram like this could become part of the online Mason documentation.
+
+-- KenWilliams

@@ -1,0 +1,3 @@
+= This is my page =
+
+I don't have and content to put here though.  I work on a Mason based site at work  and hence I find myself here.

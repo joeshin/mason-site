@@ -1,0 +1,77 @@
+As discused in http://www.perlmonks.org/index.pl?node_id=328687
+there is a problem when you try to limit the upload file Size of a POST Request.
+The reason for this is that the $r Object in your mason code is already 
+checked from Mason::ApacheHandler.
+There is no way to pass the needed option POST_MAX => yourFileSize to $r.
+It's too late for that.
+
+So the suggestion was to create your own My::ApacheHandler like this:
+
+
+ package My::ApacheHandler;
+
+ use base 'HTML::Mason::ApacheHandler';
+
+ sub prepare_request {
+   my $self = shift;
+   my $r     = shift;
+   my @args;
+
+   my $post_max = $r->dir_config( 'MAH_POST_MAX' );
+   unless( $post_max =~ /^none/ ) {
+     push @args, POST_MAX => $post_max;
+   } 
+
+  Apache::Request->instance( $r, @args );
+
+  return $self->SUPER::prepare_request( $r, @_ );
+ }
+
+ 1;
+
+
+And in yout httpd.conf do this for your locations:
+
+ PerlHandler My::ApacheHandler 
+ <Location /foo>
+  PerlSetVar MAH_POST_MAX 1024
+ </Location>
+ <Location /bar>
+  PerlSetVar MAH_POST_MAX none
+ </Location>
+
+
+This will do the right stuff for your need:
+
+example mason code:
+
+ <%perl>
+ my $status = $r->parse;
+ if ($status) {
+  print "Too big";
+ }else{
+  print "OK";
+ }
+ </%perl>
+
+
+---------------------
+
+I often write my own handler subroutine that looks like this:
+
+ package MyApp::Handler
+
+ use HTML::Mason::ApacheHandler;
+
+ sub handler
+ {
+     my $r = shift;
+
+     my $max_upload_size_mb = 5;
+
+     my $apr = Apache::Request->instance( $r, POST_MAX => (1024 ** 2) * $max_upload_size_mb );
+
+     return HTML::Mason::ApacheHandler->handler($apr);
+ }
+
+-- DaveRolsky

@@ -1,0 +1,36 @@
+This is a page where you can request a component you need but don't want to write yourself or perhaps you can't write it yourself.
+
+Maybe someone's written it already!
+
+List it here.
+----
+
+==== Rename this page as "Wishlist" ====
+
+I would like to see this page renamed as "Wishlist".
+Calling it "Requests" makes it sound like it has something 
+to do with http requests. 
+
+==== Mason components that leave tracks ====
+
+I'd like a way to have every mason component leave tracks in the 
+output html in the form of comments that explain which mason 
+component generated the following content. The idea is that anyone who looks at the generated html should see immediately which file 
+they need to edit to fix a problem in the output. 
+
+
+==== Popup date selector ====
+A module that inserts a button that open a popup with a calendar where you can select a date.
+ RT has this, not sure how portable it is.
+
+==== Mason wiki ====
+A mason implementation of wiki
+
+==== Page load progressbar ====
+Show a progressbar while a big page is loaded in the background
+
+==== Syntax Highlighter for Mason ====
+
+Well, I did it myself.  It's available on CPAN as
+Syntax::Highlight::Mason
+

@@ -1,0 +1,246 @@
+BrianBober writes:
+
+What I thought was the biggest downside to using HTML::Mason was even though its a great templating solution, there are so many nice PHP applications. I saw other people talking on the mailing lists archives about creating Mason-based equivalents of PHPbb, etc. I thought, "Why reinvent the wheel? We should just get PHP working in concert with HTML::Mason for the ultimate Web Server setup!"
+
+
+
+I needed a way to get PHP working in Mason. Hopefully someone can take what I did and create an HTML::Mason::PHP::ApacheHandler module, cause I am not an expert at writing Perl modules, and don't know the HTML::Mason code that well (Though I had to peruse it quite a bit to get this working).
+
+Believe it or not, I got PHP applications working with Mason. This is what you could consider somewhere between a clever hack, and an evil hack. I tried many things before I found this working combination. * This assumes you are using mod_perl2 and apache2 because I haven't tried with apache1 and mod_perl1*
+
+Take a look: http://www.thenetdragon.net/blog/
+Am I crazy? You bet I am! :-)
+
+I wanted to use [NucleusCMS http://nucleuscms.org/], a PHP application, with its output wrapped by HTML::Mason. What I did (skip the "What Works" if you aren't interested):
+*I initially created a file called PHPhandler.html, which called NucleusCMS's index.php and returned the output into a scalar.
+*I then setup Necleus's PHP templates to return code that will be parsed by HTML::Mason.
+*I then tested wrapping the PHP output with PHPhandler.html (shown after the steps below)
+*I then made PHPhandler.html remove the HTTP headers the PHP application added (that were wrapped within the autohandler and shouldn't be), but save the cookie information for HTML::Mason to put in the HTTP headers.
+*I then painstakingly converted PHPhandler.html into PHPhandler.pm (module PHPhandler) to be used as the PerlHandler for PHP files.
+*I then modified PHPhandler.pm so it can carry over environment variables.
+
+== What works ==
+
+==== 1. Create a working autohandler ====
+Create an autohandler.html that has a consistent look that you like throughout your site. You should already know how to do this.
+
+==== 2. Modify your PHP application's skins ====
+First, setup your PHP templates/skins within the PHP application to output HTML HTML::Mason will like. There should be methods that are consistent with your autohandler and any HTML-based pages you'd have on your site outside the directory for the PHP application. Since things like <%method navbox> throw off the PHP interpreter, you need to wrap your HTML::Mason identifiers with the <!-- mason() --> comment. This has the added benefit of not appearing in HTML if you decide not to wrap for a while. My script will replace:
+
+    <!-- mason(attr) --> with <%attr>
+and
+    <!-- mason(method navbox) --> with <%method navbox>
+
+Also, you'll need to manually remove any doctypes, etc, from the PHP skin/template. I used <%method addhead > and <%method addstyle> for filling up methods accessed in the normal autohandler.html wrapper.
+
+==== 3. Test your skin output ====
+
+Now just try out the index for the PHP application, and you should see output that can be handled by HTML::Mason. It should also have, most likely, some HTTP headers, we'll remove those later.
+
+==== 4. Create PHPhandler.pm ====
+
+Save PHPhandler.pm as /etc/httpd/lib/perl/PHPhandler.pm
+
+Notice the unsafe perl code:
+
+    # XXX FIXME Is there a better way to do this? CGI environment variables are not passed to children
+    my $ret = `$env REDIRECT_STATUS=1 php /var/www/html/thenetdragon/www/blog/index.php`;
+
+There is an security "feature" with mod_perl that when you call subprocesses, the CGI environment variables are replaced with regular shell variables. Well, that would be fine if the PHP application didn't expect CGI variables (like if passing CGI params). I couldn't use a piped open because there is no way to pass the environment variables. I've also tried Apache::SubProcess to no avail. I therefore had to use backticks. My suggestion is to make sure that nothing that could be passed as a parameter to CGI could result in something you don't want executed on your system. I don't think you really need to worry much, though.
+
+
+You'll need to modify the paths here:
+
+    my $interp = HTML::Mason::Interp->new
+        (comp_root  => '/var/www/html/thenetdragon/www',
+         data_dir   => '/usr/local/mason/www',
+        );
+
+*TODO* Spawn the PHP application by beginning a mod_php request from within the perl script and/or get mod_perl people to add a way to allow CGI params to go to children. Or find a better way to call PHP without using backticks.
+
+*TODO* De-hardcode comp_root and data_dir and retrieve them from PerlSetVar MasonCompRoot and PerlSetVar MasonDataDir.
+
+*TODO* Support for POST by passing STDIN to child process
+
+
+PHPhandler.pm:
+
+| <<END |
+
+# Written by Brian "netdragon" Bober <http://www.thenetdragon.net/software/>
+# http://www.masonhq.com/?MasonAndPHP
+# License: GPL
+
+# Directions (for Fedora):
+# mkdir -p /etc/httpd/lib/perl
+# cp ./PHPhandler.pm /etc/httpd/lib/perl/PHPhandler.pm
+# /sbin/service httpd restart
+
+package PHPhandler;
+
+require Apache::RequestUtil;
+#no warnings 'redefine';
+
+# mod_perl2 issue with $r http://www.masonhq.com/?ApacheModPerl2
+my $sub = *Apache::request{CODE};
+*Apache::request = sub {
+      my $r;
+      eval { $r = $sub->('Apache'); };
+      # warn $@ if $@;
+      return $r;
+};
+
+use HTML::Mason; 
+use HTML::Mason::ApacheHandler;
+use strict;
+use CGI;
+
+sub handler {
+    # Get Apache request object
+    my ($r) = @_;
+
+    # You can use this for $s->warn() Error log warnings for debugging
+    #my $s = $r->server;
+    
+    # text/html content type
+    $r->content_type('text/html');
+
+    # Get Mason ApacheHandler object
+    my $ah;
+    $ah ||= HTML::Mason::ApacheHandler->make_ah($r);
+
+    # Get the name of the .php file being run
+    my $req = $ah->prepare_request($r);
+    my $src = $req->request_comp->source_file;
+
+
+    # Get environment variables to pass to php
+    my $key;
+    my $env;
+
+    foreach $key (sort keys(%ENV)) {
+      $env="$env $key=\"$ENV{$key}\"";
+    }
+
+
+    # XXX FIXME Is there a better way to do this? CGI environment variables are not passed to children
+    # php needs to be in the path
+    my $ret = `$env REDIRECT_STATUS=1 php $src`;
+
+    # Expects a content-type header
+    my ($HTMLHead,$HTMLBody) = split(/\n.*?[C,c]ontent-[T,t]ype:.*?\n/,$ret,2);
+    
+    # Replaces <!-- mason(method somemethod) --> with <%method somemethod>
+    $HTMLBody =~ s/<!--[[:blank:]]*mason\((.+)\)[[:blank:]]*-->/<%$1>/g;
+    
+    # Retrieve specific headers
+    my @headercheck = ("set-cookie","x-powered-by","generator");
+    my @headerlines = split(/\n/,$HTMLHead);
+    my $Headersave;
+    foreach (@headerlines) {
+        my ($front,$back) = split(/:\ /,$_,2);
+        chop($back);
+        foreach (@headercheck) {
+            if (lc($front) eq lc($_)) {
+                 $r->headers_out->add($front,$back);
+            }
+        }
+    }
+
+    # XXX FIXME Unhardcode this
+    my $interp = HTML::Mason::Interp->new
+        (comp_root  => '/var/www/html/thenetdragon/www',
+         data_dir   => '/usr/local/mason/www',
+        );
+
+    # The component
+    my $MasonFlags = <<EOF;
+    <%flags>
+        inherit => '/autohandler.html'
+    </%flags>
+EOF
+
+    my $HTMLSource = "$HTMLBody $MasonFlags";
+
+    # Make and execute the component
+    my $component = $interp->make_component(comp_source => "$HTMLSource");    
+    $interp->exec($component);
+
+    return Apache::OK;
+}
+
+1;
+
+
+END
+
+==== 5. Modify httpd.conf ====
+
+    <FilesMatch "(\.php)$">
+     SetHandler perl-script
+     PerlHandler PHPhandler
+     # Uncomment this and comment above to turn the handler off
+     #SetHandler None
+     #PerlHandler None
+    </FilesMatch>
+
+==== 6. Restart the server ====
+
+Things should be working now.
+
+
+== PHPhandler.html ==
+
+In case you wanna test with PHPhandler.html first (no headers will be preserved). You'll need to change the line:
+
+    my $ret = `php /var/www/html/thenetdragon/www/blog/index.php`;
+
+
+| <<END |
+
+<%init>
+
+    # Generate a Component object from the given text
+
+    my $ret = `php /var/www/html/thenetdragon/www/blog/index.php`;
+
+    # Expects content-type
+    my ($v,$i) = split(/\n.*?[C,c]ontent-[T,t]ype:.*?\n/,$ret,2);;
+    
+  my $j = <<EOF;
+
+
+  <%flags>
+   inherit => '/autohandler.html'
+  </%flags>
+
+
+EOF
+
+$i = "$i $j";
+ my $component = $m->interp->make_component(comp_source => "$i");
+
+  # Invoke the component, with output going to STDOUT
+      $m->subexec($component);
+
+</%init>
+
+
+  <%flags>
+   inherit => ''
+  </%flags>
+
+END
+
+
+== And There You Go ==
+
+Does anyone wanna try getting [MasonAndphpBB] working? Good luck ;-)
+
+-- BrianBober
+
+== Bad CLI, No Cookie! ==
+
+GregBoyington writes:
+
+This approach works up to a point, but thanks to PHP's CLI (Command-Line Interface) API, running PHP via the shell won't preserve header information, cookies, and so forth, meaning many apps (including phpBB) just won't work.  My solution?  I got [MasonAndphpBB] working with a single dhandler and some sneaky Apache setups.

@@ -1,0 +1,31 @@
+Apache::Reload is a useful module that automatically loads modules when they change. It is more flexible and more maintained than the original Apache::!StatINC. It does, however, have one nasty interaction with Mason; read on.
+
+==== Persistent error problem
+
+If you use Apache::Reload in its default mode, e.g. just
+
+    PerlInitHandler Apache::Reload
+
+and you use Mason object files (the default), then you will get an annoying "persistent error" problem. Once you create an error in a component, 
+you'll repeatedly see that error appearing in the error logs, with a call stack originating in Apache/Reload.pm. The error will persist no matter how many times you fix the component and reload.
+
+There are two fixes:
+
+1. Turn off !ReloadAll mode and explicitly tell Apache::Reload what to reload:
+
+     PerlSetVar ReloadAll Off
+     PerlSetVar ReloadModules "My::Foo My::Bar Foo::Bar::Test"
+
+2. Turn off Mason object files, e.g.
+
+     PerlSetVar MasonUseObjectFiles 0
+
+Both of these apply only to development servers. For maximum performance on production servers, you should turn off Apache::Reload and use Mason object files.
+
+But, even on development, we recommend #1 if you can manage it. Otherwise Apache:Reload will stat every CPAN module you are using on every request.
+
+==== Explanation
+
+The reason this happens is because, by default, Apache::Reload checks everything in %INC. That includes, rather inappropriately, Mason's object files (because Mason loads them with a 'do' command.) The first time you put an error in a component, Mason will create an object file with an error in it. Thereafter, Apache::Reload will notice the object file has changed and continually try to reload it - before Mason ever gets a chance to recompile it from the fixed source file. There is, of course, no earthly reason for Apache::Reload to look at Mason's object files, but there's no way for it to know that.
+
+Thanks to MichaelDavis and KatePorter for helping to track this down.

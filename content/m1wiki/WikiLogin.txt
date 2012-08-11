@@ -1,0 +1,23 @@
+With the 2004 revamping of Mason HQ, users must [http:/account/login.html log in] before editing or creating wiki pages.  Admittedly this is very un-wiki behavior (only a few wikis require logins). In fact I debated this but ultimately decided that the benefits would be worth the cost *if* the logging in could be kept very low-effort for users.
+
+Here's how I tried to keep effort to a minimum:
+
+* Existing Mason HQ accounts still work. If you don't remember whether you have an account, you can enter your email address in the [http:/account/login.html forgot password] form.
+
+* [http:/account/register.html Registering] requires just three pieces of information. 
+
+* Once logged in, you'll be given a *permanent cookie* unless you explicitly uncheck that box. That means you only have to log in once per machine.
+
+The immediate benefits include: 
+
+* Having a WikiName for every page creation and edit. This makes page history much more useful. On kwiki you can enter a preferred name, but it's optional, thus the frequent appearance of IP addresses.
+
+* Ensuring that a user uses the same WikiName everywhere. Again, on kwiki, you might accidentally change your name when you change machines or delete your cookies. I could never remember if I was !JonSwartz or !JonathanSwartz.
+
+* Providing a good login implementation example for users of the SourceForThisSite.
+
+And possible future benefits include:
+
+* Storing user preferences.
+
+* Remembering when a user has last visited the recent changes page, and only showing them changes since their last visit.

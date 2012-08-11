@@ -1,0 +1,34 @@
+A CPAN namespace for Mason eXtensions that don't belong in the core, e.g. [http://theoryx5.uwinnipeg.ca/mod_perl/cpan-search?distinfo=3530 MasonX::Request::WithApacheSession], which adds session support.
+
+
+
+
+The name was borrowed from the DBIx hierarchy.
+
+[http://theoryx5.uwinnipeg.ca/mod_perl/cpan-search?search=MasonX&filetype=+distribution+name+or+description&join=and&age=&arrange=file&case=clike&site=ftp.funet.fi&stem=no&download=auto Search all of MasonX]
+
+
+Modules in this namespace include:
+
+* [http://search.cpan.org/dist/MasonX-Interp-WithCallbacks MasonX::Interp::WithCallbacks] - Trigger callbacks before component execution based on the query string and POST parameters.
+
+* [http://search.cpan.org/dist/MasonX-Lexer-MSP MasonX::Lexer::MSP] - A more ASP/JSP-like syntax for Mason.
+
+* [http://search.cpan.org/dist/MasonX-Profiler MasonX::Profiler] - Profile component execution times.
+
+* [http://search.cpan.org/dist/MasonX-Resolver-CVS MasonX::Resolver::CVS] - component path resolver for components in CVS.  Currently, this subclass only supports local CVS repositories.  As such, it is able to deliver component source without checking the files out into a working directory.  Future versions will keep a working copy checked out in the document root and will support remote repositories.
+
+
+* [http://search.cpan.org/dist/MasonX-Resolver-PAR/ MasonX::Resolver::PAR] - This is a custom Mason Resolver which loads its content from a PAR archive. This is meant to be used in conjunction with Apache::PAR. Read the description for this module first. The web.conf above should be inside the par archive as specified by Apache::PAR. It will be appended to your apache conf.
+
+* [http://search.cpan.org/dist/MasonX-Resolver-Polyglot/ MasonX::Resolver::Polyglot] - A resolver that supports internationalization.
+
+* [http://search.cpan.org/dist/MasonX-Request-ExtendedCompRoot MasonX::Request::ExtendedCompRoot] - Allows you to call components in a specific component root.
+
+* [http://search.cpan.org/dist/MasonX-Request-HTMLTemplate MasonX::Request::HTMLTemplate] - Another alternative syntax for Mason.
+
+* [http://search.cpan.org/dist/MasonX-Request-WithApacheSession/ MasonX::Request::WithApacheSession] - integrate Apache::Session into the Mason request object, allowing you to configure a session along with the rest of Mason, and providing an $m->session() method.  Also includes [http://search.cpan.org/dist/MasonX-Request-WithApacheSession/ MasonX::Request::WithMultiSession], which allows for multiple "sub-sessions" inside a single parent session.
+
+
+* [http://search.cpan.org/dist/MasonX-WebApp/ MasonX::WebApp] - code that works with Mason to let you do processing before Mason is called.
+

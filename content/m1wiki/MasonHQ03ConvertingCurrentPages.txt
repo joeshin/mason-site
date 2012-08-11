@@ -1,0 +1,58 @@
+A summary of how current pages will be converted in MasonHQ03. Most pages on the current site can either become simple wiki pages, some will remain dynamic Mason pages, a few will be eliminated, and a few require special handling.
+
+| PAGE                          | RESULT |
+| Home                            | Wiki, but perhaps with a special navigation bar. No need to retain current site categories (about, code, etc.) except as needed to organize the home page. |
+| About ||
+|   Feature Summary               | Wiki |
+|   Mason-Powered Sites           | See below |
+|   Mason-Powered Apps            | Wiki |
+|   Credits                       | Pulled from distribution |
+|   License                       | Wiki  - This has to be at least partly static.  We can't allow people to change the license text itself. - DaveRolsky |
+|   Powered-by Logo               | Wiki |
+|   Contact us                    | Wiki |
+| Code ||
+|   Download                      | Wiki with a MasonHQ03WikiComponentCall to get current and last few release numbers |
+|   Revision History              | Pulled from distribution |
+|   Contributed Code              | Wiki category - e.g. DateSelectorComponent, SwishSearchComponent |
+|   Source for this Site          | Wiki |
+| Resources ||
+|   Announcements                 | See below |
+|   Mailing Lists                 | Wiki, ideally with a table - note that CGI::Wiki formatting does not include tables by default |
+|   Todo List                     | Like now (dynamic using Mason tracker) |
+|   Known Bugs                    | Like now (dynamic using Mason tracker) |
+|   Sourceforge Project           | Wiki |
+| Docs ||
+|   Manual                        | Like now (pulled from latest distribution) |
+|   FAQ                           | Like now (dynamic using FAQ admin tool) |
+|   Articles                      | Wiki |
+|   Books                         | Wiki. Articles & books should definitely link to each other, if not merge a single page. |
+| Account ||
+|   Login                         | Like now, if we end up using logins - see MasonHQ03AccountsAndLogins |
+|   Create an Account             | Like now but simpler and combine with login page - just enter email address, wiki name, and password |
+|   Work in Content Area          | Gone |
+|   Account Manual                | Gone |
+|   Edit Account Information      | Like now but simpler - just edit email address or wiki name |
+|   Change Your Password          | Like now |
+|   View Quotas                   | Gone |
+|   Logout                        | Like now |
+| Admin ||
+|   Approve Published Items       | Gone |
+|   Manage Downloads              | Like now |
+
+== Special notes
+
+=== Mason-powered Sites
+
+This is a difficult one, because the contributed information is a bit more structured (each site has an image and link) and we have a featured sites section at the top that requires editorial discretion.
+
+Could make each site description a separate wiki page with a common category and/or naming convention (e.g. SiteHongKongMovieDatabase) and have the !MasonPoweredSites page pulls them automatically (and prepend !FeaturedMasonPoweredSites). Would this pollute the wiki namespace unnecessarily?  Does it matter?
+
+Should provide a form that takes name / url / image / description and opens up an edit window to a new mason-powered site node with the information structured in the standard template. Not as good as data-driven generation, but better than nothing.
+
+=== Announcements
+
+Wiki with a special date/title/content form that automatically adds to the top. Allow anyone to submit. Remove announcements from home page and just link. But would anyone look? Maybe combine recent changes and announcements onto a single page using MasonHQ03WikiComponentCalls.
+
+...Now I'm thinking, maybe we don't need an announcement/news page, we just need an appropriate page for every category of news item that we might post. e.g. RecentDownloads, RecentSiteChanges, etc. These will all show up on the recent changes page. Even better to make these pages the same format (e.g. date - announcement -author, one per paragraph) that could be parsed by an uber RecentEverything page. Crazy? Yes.
+
+A wiki isn't a great way to get time-based news, anyway - who wants to keep going back to a "what's new" page and trying to remember what they've read?

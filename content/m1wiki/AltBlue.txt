@@ -1,0 +1,9 @@
+homepage - http://www.altblue.com/
+
+AltBlue's been coding with [=HTML::Mason] since the /dark ages/ (0.8) and proudly sticking on to it ;-)
+
+Been using [http://perl.apache.org/ mod_perl]/[=HTML::Mason] to build almost anything web enabled: [http://www.n0i.net/ community portals], groupware, CRM, ERP, e-shops, network administration/monitoring suites, web services, [http://www.altblue.com/ personal homepages], [http://www.neomedia.ro/ company] websites, financial services, publishing systems, [http://www.cuvinte.org/ literary] sites, [http://hints.n0i.net/ knowledge base] apps, etc, etc, etc.
+
+Currently is being paid by [http://www.neomedia.ro/ NeoMedia] for developing various (open standards based) [http://www.neomedia.ro/work/technology/ web enabled solutions].
+
+Is also the main maintainer of the [Reb00t] project and in the same time tries to keep together the [http://www.n0i.net/ n0i.net] community.

@@ -1,0 +1,104 @@
+  <%doc>
+    Google Search snippet
+
+    Parameters:
+        $q = search query
+        $start = start Index
+        $num   = max results
+
+    Configuration:
+        edit your Apache server configuration and add these two vars:
+        PerlAddVar GOOGLE_KEY "[your Google KEY here]"
+        PerlAddVar GOOGLE_WSDL "scheme://URI/to/GoogleSearch.wsdl"
+
+        Optional, enable SOAP transport tracing with:
+        PerlAddVar GOOGLE_TRACE 1
+
+    Note:
+     this snippet uses plain SOAP::Lite service
+     (Net::Google could be a leaner option)
+
+  </%doc>
+  <%args>
+    $q     => undef
+    $start => 0
+    $num   => 10
+  </%args>
+  <%once>
+    use SOAP::Lite ();
+  </%once>
+  <%init>
+    my $results;
+    my $gs = eval { SOAP::Lite->service( $r->dir_config('GOOGLE_WSDL') ) };
+    if ($gs) {
+        if ( $r->dir_config('GOOGLE_TRACE') ) {
+          SOAP::Lite->import(
+              +trace => [
+                  transport => sub {
+                      my $in = shift;
+                      if ( ref ($in) =~ /^HTTP::/xm ) {
+                          warn
+                              q{-} x 80 . "\n"
+                              . '### ' . ref($in) . ": \n"
+                              . $in->as_string
+                              . q{-} x 80 . "\n";
+                      }
+                      else {
+                          warn Data::Dumper::Dumper($in);
+                      }
+                  },
+              ]
+          );
+          $gs->readable(1);
+        }
+
+        $gs->on_fault(
+            sub {
+                my ( $s, $r ) = @_;
+                $r->log->debug(
+                    ref $r
+                    ? 'SOAP Fault: '
+                        . $r->faultstring
+                        . ( $r->faultdetail->{trigger}
+                            ? q{ for input '}
+                              . $r->faultdetail->{trigger}
+                              . q{'}
+                            : q{}
+                          )
+                        . ' (Error Code '
+                        . $r->faultdetail->{code}
+                        . q{)}
+                    : $s->transport->status
+                );
+            }
+        );
+        if ($q) {
+            $results = $gs->doGoogleSearch( $r->dir_config('GOOGLE_KEY'),
+                $q, $start, $num, 'false', q{}, 'false', q{}, 'utf-8',
+                'utf-8' );
+        }
+    }
+    else {
+        $r->log->debug("Cannot create Google Search SOAP Service: $@");
+    }
+  </%init>
+  % if ($results && @{$results->{resultElements}}) {
+      <ul class="results">
+  %    foreach my $res (@{$results->{resultElements}}) {
+          <li>
+              <a href="<% $res->{URL} %>"><% $res->{title} %></a>
+              <div class="snippet"><% $res->{snippet} %></div>
+          </li>
+  %    }
+      </ul>
+  % } else {
+      <div class="error">
+  %    if ($gs) {
+          No results for "<% $q |h %>".
+  %    } else {
+          Cannot search. :((
+
+The site requires Mason 1.16 or above. Also, importing the "content" download (mentioned below) into mysql appears to have a dependency on mysql v4.1.xxx (or greater?).
+  %    }
+      </div>
+  % }

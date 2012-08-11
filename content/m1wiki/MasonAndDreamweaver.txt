@@ -1,0 +1,93 @@
+=== The Problem ===
+
+If you use the syntax of Mason in Dreamweaver most of the code isn't properly displayed, mainly as simple text. Which is totally uncool for <%INIT> or similar blocks. In a standard DW installation only <% some code %> is displayed as an ASP icon. Specially when you work with graphic designers which are used to WYSIWYG this will help a lot, as HTML looks more like HTML :-)
+
+
+
+=== The Solution ===
+
+Dreamweaver Ultradef 4 and MX supports third party tags. Find on of the following file, depending which Dreamweaver you have: 
+
+    C:\Program Files\Macromedia\Dreamweaver4\Configuration\ThirdPartyTags\ASP.xml
+    C:\Program Files\Macromedia\DreamweaverMX\Configuration\ThirdPartyTags\Tags.xml
+
+Replace the content with the following code:
+
+   <tagspec tag_name="M-CALL" start_string="<&" end_string="&>" detect_in_attribute="false" 
+    content_model="script_model" icon="dw_mason-incall.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-CALL-END" start_string="</&" end_string=">" detect_in_attribute="false"
+    content_model="script_model" icon="dw_mason-incall.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-SHARED" start_string="<%SHARED>" end_string="</%SHARED>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-shared.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-DOC" start_string="<%DOC>" end_string="</%DOC>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-doc.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-TEXT" start_string="<%TEXT>" end_string="</%TEXT>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-text.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-ARGS" start_string="<%ARGS>" end_string="</%ARGS>" detect_in_attribute="true"
+    content_model="script_model" render_contents="false" icon="dw_mason-args.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-ATTR" start_string="<%ATTR>" end_string="</%ATTR>" detect_in_attribute="true"
+    content_model="script_model" render_contents="true" icon="dw_mason-attr.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-FLAGS" start_string="<%FLAGS>" end_string="</%FLAGS>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-args.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-ONCE" start_string="<%ONCE>" end_string="</%ONCE>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-once.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-CLEANUP" start_string="<%CLEANUP>" end_string="</%CLEANUP>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-cleanup.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-INIT" start_string="<%INIT>" end_string="</%INIT>" detect_in_attribute="false"
+    content_model="script_model" icon="dw_mason-init.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-PERL" start_string="<%PERL>" end_string="</%PERL>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-perl.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-METHOD-START" start_string="<%METHOD" end_string=">" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-method-start.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-METHOD-END" start_string="</%METHOD" end_string=">" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-method-end.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-DEF-START" start_string="<%DEF" end_string=">" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-def-start.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-DEF-END" start_string="</%DEF" end_string=">" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-def-end.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="ASP" start_string="<%" end_string="%>" detect_in_attribute="true"
+    icon="ASP.gif" icon_width="17" icon_height="15"></tagspec></pre>
+   <!-- lower case versions: dreamweaver is case-sensative -->
+   <tagspec tag_name="M-shared" start_string="<%shared>" end_string="</%shared>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-shared.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-doc" start_string="<%doc>" end_string="</%doc>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-doc.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-text" start_string="<%text>" end_string="</%text>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-text.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-args" start_string="<%args>" end_string="</%args>" detect_in_attribute="true"
+    content_model="script_model" render_contents="false" icon="dw_mason-args.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-attr" start_string="<%attr>" end_string="</%attr>" detect_in_attribute="true"
+    content_model="script_model" render_contents="true" icon="dw_mason-attr.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-flags" start_string="<%flags>" end_string="</%flags>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-args.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-once" start_string="<%once>" end_string="</%once>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-once.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-cleanup" start_string="<%cleanup>" end_string="</%cleanup>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-cleanup.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-init" start_string="<%init>" end_string="</%init>" detect_in_attribute="false"
+    content_model="script_model" icon="dw_mason-init.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-perl" start_string="<%perl>" end_string="</%perl>" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-perl.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-method-START" start_string="<%method" end_string=">" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-method-start.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-method-END" start_string="</%method" end_string=">" detect_in_attribute="true"
+    content_model="script_model" icon="dw_mason-method-end.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-def-START" start_string="<%def" end_string=">" detect_in_attribute="false"
+    content_model="script_model" icon="dw_mason-def-start.gif" icon_width="50" icon_height="15"></tagspec>
+   <tagspec tag_name="M-def-END" start_string="</%def" end_string=">" detect_in_attribute="false"
+    content_model="script_model" icon="dw_mason-def-end.gif" icon_width="50" icon_height="15"></tagspec>
+
+Find a documentation on <tagspec> in the Dreamweaver help. For each block a icon will be displayed in the rendered Dreamweaver view. [Download the Mason style icons http://www.itassistance.biz/Technology/download/dreamweaver-mason-icons.tar.gz]. 
+
+=== Limitations ===
+
+Dreamweaver expects some normal code before the first and after the last <%WHATEVER> block. Normally you have some HTML so no problem, otherwise place a "% #" at the first and last line of the textfile. I also could not catch % perl lines properly, so they still are displayed and renderd by Dreamweaver. They only can be changed in the code view because of > becomes >.
+
+=== Other Dreamweaver Settings ===
+
+While working with Mason files Dreamweaver should be stopped to change source code automatically. Do so by adding Mason specific file extension to the stoplist in DW preferences. 
+]
+
+
+
+-- ChristianHauser

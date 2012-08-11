@@ -1,0 +1,24 @@
+See OreillyBook for information about /Embedding Perl in HTML with Mason/.
+
+Other books with chapters or sections about Mason:
+
+* [Automating Unix and Linux Administration http://www.amazon.com/exec/obidos/tg/detail/-/1590592123/104-9079155-8957551], by Kirk Bauer. APress, September 2003.
+* [Open Source Development with LAMP http://www.amazon.com/exec/obidos/ASIN/020177061X/qid%3D1039737787/sr%3D11-1/ref%3Dsr%5F11%5F1/002-2764132-6348859], by Brent Ware and James B. Lee. Addison Wesley Professional, December 2002.
+* [Perl for Oracle DBAs http://www.amazon.com/exec/obidos/tg/detail/-/0596002106/qid=1039737672/sr=8-1/ref=sr_8_1/002-2764132-6348859?v=glance&s=books&n=507846], by Andy Duncan and Jared Still. O'Reilly & Associates, August 2002.
+* [Web Development with Apache and Perl http://www.amazon.com/exec/obidos/tg/detail/-/1930110065/qid=1039737844/sr=1-3/ref=sr_1_3/002-2764132-6348859?v=glance&s=books], by Theo Peterson. Manning Publications, May 2002.
+* [Writing CGI Applications with Perl http://www.amazon.com/exec/obidos/ASIN/0201710145/qid%3D1039737904/sr%3D11-1/ref%3Dsr%5F11%5F1/002-2764132-6348859], by Kevin Meltzer and Brent Michalski. Addison-Wesley Pub Co, February 2001.
+ Prentice Hall PTR, December 2001. 
+* [Perl for Dummies http://www.amazon.com/Perl-Dummies-Fourth-Paul-Hoffman/dp/0764537504/] by Paul Hoffman, For Dummies, March 2003 (4th edition)
+* [Perl Cookbook http://www.amazon.com/Perl-Cookbook-Second-Tom-Christiansen/dp/0596003137/], by Tom Christiansen and Nathan Torkington, O'Reilly Media, Inc., August 2003 (2nd edition).
+* [Advanced Perl Programming http://www.amazon.com/Advanced-Perl-Programming-Simon-Cozens/dp/0596004567/] by Simon Cozens, O'Reilly Media, Inc., June 2005 (2nd edition).
+* [Beginning Perl Web Development: From Novice to Professional http://www.amazon.com/Beginning-Perl-Web-Development-Professional/dp/1590595319/], by Steve Suehring, Apress, November 2005.
+* [RT Essentials http://www.amazon.com/RT-Essentials-Jesse-Vincent/dp/0596006683/]  by Jesse Vincent, Robert Spier, Dave Rolsky, Darren Chamberlain, and Richard Foley, O'Reilly Media, Inc., August 2005.
+* [Developing Web Applications with Apache, MySQL, memcached, and Perl http://www.amazon.com/Developing-Applications-Apache-memcached-Programmer/dp/0470414642/] by Patrick Galbraith, Wrox, July 2009.
+
+
+[http://www.masonhq.com/?Books Books] on HTML:
+
+
+
+
+See also  [Articles].

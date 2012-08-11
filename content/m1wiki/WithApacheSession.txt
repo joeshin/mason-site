@@ -1,0 +1,57 @@
+A popular MasonX module that implements sessions.
+----
+I was able to get this to work with debian etch with Apache 2 and mod_perl 2, after initially encountering the following error:
+
+  The 'param_object' parameter ("Apache2::RequestRec=SCALAR(0x845bc48)") to Apache::Session::Wrapper->new() does not have the method: 'param'
+
+  Stack:
+  [/usr/share/perl5/HTML/Mason/ApacheHandler.pm:88]
+  [/usr/share/perl5/HTML/Mason/ApacheHandler.pm:829]
+  [(eval 31):8]
+  [-e:0]
+
+You need to install libapreq2, which is available in etch's repo (package libapache2-mod-apreq2).  Don't forget to also install libapache2-request-perl and use 'a2enmod apreq' to load the module into Apache2.
+
+
+You also need to tell Mason to use mod_perl instead of CGI, and you need to specifically enable cookies by telling WithApacheSession to tell Apache::Session::Wrapper to set them.  Here is an example of the necessary Apache configuration:
+
+  LoadModule apreq_module /usr/lib/apache2/modules/mod_apreq2.so
+  PerlModule HTML::Mason::ApacheHandler
+  <LocationMatch "(\.html|\.pl)$">
+        SetHandler perl-script
+        PerlHandler HTML::Mason::ApacheHandler
+        PerlSetVar MasonArgsMethod              mod_perl
+        PerlSetVar MasonRequestClass            MasonX::Request::WithApacheSession
+        PerlSetVar MasonSessionCookieDomain     .example.com
+        PerlSetVar MasonSessionClass            Apache::Session::File
+        PerlSetVar MasonSessionDirectory        /tmp/sessions/data
+        PerlSetVar MasonSessionLockDirectory    /tmp/sessions/locks
+        PerlSetVar MasonSessionUseCookie        1
+  </LocationMatch>
+
+Note the LoadModule, the "MasonArgsMethod mod_perl" and the "MasonSessionUseCookie 1"
+
+The above example, if implemented programatically in, for example, a handler.pl using MasonX::Request::WithApacheSession, would like something like this:
+
+  sub handler {
+    my ($r) = @_;
+    my $ah = HTML::Mason::ApacheHandler->new(
+        comp_root => "/path/to/comp/root",
+        data_dir  => "/path/to/data/dir",
+        args_method   => "mod_perl",
+        request_class => 'MasonX::Request::WithApacheSession',
+        session_class            => 'Apache::Session::File',
+        session_cookie_domain    => '.example.com',
+        session_directory        => '/tmp/sessions/data',
+        session_lock_directory   => '/tmp/sessions/locks',
+        session_use_cookie       => 1,
+        );
+    my $status = $ah->handle_request($r);
+    return $status;
+  }
+
+Note the parameters beginning with "session_", which get forwarded to the Apache::Session::Wrapper class, which in turn passes them to (in this case) Apache::Session::File.
+
+
+
+

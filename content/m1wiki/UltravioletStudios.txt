@@ -1,0 +1,1 @@
+Wedding and Family Photography website.  The web content management system is based on PhotoDynamo, which is built on Mason and ImageMagick.   http://ultravioletstudios.com

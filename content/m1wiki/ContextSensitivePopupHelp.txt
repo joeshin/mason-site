@@ -1,0 +1,189 @@
+By making use of Mason's templating and object-oriented programming (OOP) features, with a pinch of JavaScript thrown in, it's a breeze to add a popup help system that will display context-sensitive help for any of your top-level components.
+
+
+This article will take you step by step through a complete example to illustrate the techniques needed. You can then adapt these techniques to your Mason applications.
+
+
+The steps involved in our sample application are:
+
+* Create the Template
+* Create Some Content 
+* Add the Help System
+
+----
+
+=== Create the Template ===
+
+Mason implements templates through a component called /autohandler/.  When a request is made for a top-level component, Mason looks by default in that component's directory for an /autohandler/ and calls it.  /autohandler/ is typically used to provide content and behavior common to all top-level components.
+
+
+Before creating the template, let's set up a separate location for our demo application. Do this by creating a new directory beneath your Mason component root called /pophelp/. We'll place our /autohandler/ and our content in this directory to make a demo application.
+
+Now let's create the /autohandler/:
+
+   <pre>
+   <html>
+   <head>
+   <title>< SELF:title &></title>
+   </head>
+   <body>
+   <% $m->call_next() %>
+   </body>
+   </html>
+
+   <%method title>Popup Help Demo</%method>
+
+   <%flags>
+   inherit => undef
+   </%flags>
+   </pre>
+
+Our /autohandler/ is very straightforward. It provides the skeletal HTML that all pages will need. After opening the body tag, the /<% $m->call_next() %>/ call will display the content from our top-level component.
+
+The /< SELF:title &>/ notation in the title tag is a Mason method call. It calls on the title method defined at the bottom of the file to provide a page title. The advantage of using a method call here is that we can override the page title for any component by simply defining a /<%method title>/ in that component. Mason will call the method in the component if it exists, or will call the method in /autohandler/ if it does not exist in the component.
+
+
+The use of /inherit => undef/ in the /<%flags>/ section is used to prevent Mason from looking for additional /autohandler/'s in parent directories. Normally, Mason will build a chain of /autohandler/'s starting from the component root. By using this /inherit => undef/ flag, we can be assured our template will be the starting point.
+
+
+----
+
+=== Create Some Content ===
+
+Now that we have our template, let's create a page with some content. Since the /autohandler/ provides the HTML skeleton, our pages only need to contain the contents of the body tag.
+
+
+Create the component /foo.html/ in the same directory as /autohandler/:
+
+   <pre>
+   <h1>foo</h1>
+   This is foo.
+   </pre>
+
+Pretty simple, right? Note that since we didn't define a /<%method title>/ in this component, the title is taken from the default defined in the template.
+
+Here's what /foo.html/ looks like in the browser:
+
+<img src="http://www.greene.xtn.net/~bshow/pophelp/foo.gif" border="0">
+
+----
+
+=== Add the Help System ===
+
+The steps to add the help system to our application are:
+
+0 Add a "Help" link to each page that will open our help window.
+0 Create a component to display in the popup window.
+0 Create a mechanism for showing the appropriate (context-sensitive) help text based on which page the user clicks the "Help" link from.
+
+Since we want a help link on every page, we should add it to /autohandler/. Let's add it like this:
+
+   <pre>
+   <html>
+   <head>
+   <title>< SELF:title &&gt</title>
+   </head>
+   <body>
+   <% $m->call_next() %>
+   < SELF:helplink &>
+   </body>
+   </html>
+
+   <%method title>Popup Help Demo</%method>
+
+   <%method helplink>
+   <hr>
+   <a href="javascript:showHelp()">Help!</a>
+   <script language="javascript">
+   function showHelp()
+   {
+           var w;
+           w = window.open("help.html?<% $m->base_comp->path %>",
+                   "help", 
+                   "width=400,height=250,status=no,location=no,menubar=no,
+   toolbar=no,resizable=yes");
+           w.focus();
+   }
+   </script>
+   </%method>
+
+   <%flags>
+   inherit => undef
+   </%flags>
+   </pre>
+
+What's going on here is that after our top-level component has drawn its content, we call on a method named /helplink/.  This method draws a horizontal rule and then a "Help!"  link. The link calls the javascript /showHelp()/ function which is defined on the lines immediately following.
+
+/showHelp()/ loads /help.html/ in a new window and brings that window forward. Note that we are passing a query argument to /help.html/ consisting of the result of /$m->base_comp->path/. More about that later.
+
+The reason for placing the help link into a method is so we can override that method in components for which we don't want to show a help link, such as the help page itself.
+
+Here's what /foo.html/ now looks like in the browser:
+
+   <img src="http://www.greene.xtn.net/~bshow/pophelp/foo2.gif" border="0">
+
+Now we need to create a basic help component. Let's create a simple window with a heading and a "Close" button so the user can dismiss the help window, in /help.html/:
+
+   <pre>
+   <h1>Help</h1>
+   <input type="button" value="Close" onclick="javascript:window.close()">
+
+   <%method title>Help</%method>
+   <%method helplink></%method>
+   </pre>
+
+Notice how the /title/ method has been overridden to change the window title, and how the /helplink/ method has been overridden with an empty method to suppress drawing a help link on the help window.
+
+Here's what the help window looks like when you click "Help!" from /foo.html/
+
+   <img src="http://www.greene.xtn.net/~bshow/pophelp/foo3.gif" border="0">
+
+Now let's put the pieces together to provide context-sensitve help for /foo.html/. What we're going to do is to place the help text in a method inside /foo.html/ and then call on that method from /help.html/.
+
+First, add a /help/ method to /foo.html/:
+
+   <pre>
+   <h1>foo</h1>
+   This is foo.
+
+   <%method help>
+   Here is the help text for foo.
+   </%method>
+   </pre>
+
+Now, remember how we passed an argument to /help.html/ from the help link? The argument was set to the result of /$m->base_comp->path/. What is this value? It's the component-root-relative path to the "base" (i.e. top-level) component.  When called from /foo.html/, it will be something like /'/pophelp/foo.html'/. This is a component name sutiable for passing to /$m->comp()/. Thus /help.html/ will always know which top-level component it was linked from. (Note: you could also use the HTTP Referer: header to find this information, but the Referer: header is not a required header, and you would have to do your own translation from URL to component path.)
+
+To have the help text displayed, make the following addition to /help.html/:
+
+   <pre>
+   <h1>Help</h1>
+   <% $m->comp($r->args . ":help") %>
+   <p>
+   <input type="button" value="Close" onclick="javascript:window.close()">
+
+   <%method title>Help</%method>
+   <%method helplink></%method>
+   </pre>
+
+We use the Apache request object's /$r->args/ method to retrieve the query string with the component path for which we need help text. We then construct a method call by appending /:help/ to the component name. (Note: if you are using mod_cgi, you can get the component path via the /QUERY_STRING/ environment variable.)
+
+Here is the help window with the help text now showing:
+
+   <img src="http://www.greene.xtn.net/~bshow/pophelp/foo4.gif" border="0">
+
+That's all there is to it. Now we can add help to any of our other components by simply adding a /<%method help>/ to the component. Try creating another simple component and defining a /help/ method.
+
+Another thing you should do is add a /help/ method to the /autohandler/. This will provide a default help message for any component for which you have not yet defined the help text, and prevents Mason from complaining about a non-existent method.
+
+
+
+I hope this simple example has shown you some of the power Mason provides, and that you can make use of these techniques in your applications. 
+
+
+
+
+/Copyright 2001 Bob Showalter bob_showalter@taylorwhite.com. Reproduce freely./
+
+-- BobShowalter
+
+Recompile your .HHP file. Now your application can call help using context help ID's instead of topic file names.

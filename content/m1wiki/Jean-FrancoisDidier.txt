@@ -1,0 +1,1 @@
+Rien de particulier, le fait que Perl soit derrière Mason me semble prometteur. A explorer plus en détails.

@@ -1,0 +1,7 @@
+If you have a question or bug report about Mason or this site, send it to the
+mason-users list (mason-users@lists.sourceforge.net).
+This allows other users to respond and benefit from the answers. But please check the [list archives http://marc.theaimsgroup.com/?l=mason], [FAQ http:/docs/faq/], and [known bugs http:/resources/bugs.html] page first to see if your question has already been addressed. See MailingLists for more information.
+
+Due to the inordinate amount of spam we were receiving, posts to mason-users are now only accepted from subscribers - see YouMustBeSubscribedToPost.
+
+You can change your own password and personal data [http://www.masonhq.com/account/ here]. If you still have an account problem, email site-admin /at/ masonhq /dot/ com or contact.

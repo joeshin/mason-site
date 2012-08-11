@@ -1,0 +1,10 @@
+If you look at isomerica.net's URLs, they are all very neat and readable. The engine behind the current site uses HTML::Mason to map path info into content stored in a database. Many sites these days are database driven; It is generally a very convenient method of collecting content and managing it. 
+
+Not all CMS (Content Management Software) uses such friendly URLs, however. Look at the URLs for sites like amazon.com, or E-Bay. These companies are using huge software solutions, yet their URLs are unreadable and unfriendly. 
+
+Is this such a big deal? Friendly URLs help users navigate the site, remember URLs, and prevent the classic long-url syndrome. Sites using complex URLs with mainly numerical "id" components are difficult to navigate or bookmark. 
+
+The author of the article I read (link below), states that lower cost CMS applications tend to have nicer URLs. This isn't really true. However, there is no excuse for million dollar software with crappy URL handling. 
+
+Take a look at the web links below, and the URLs they are accessed with. Some of them have friendly URLs, but the majority don't. In fact, even those complaining about lack of friendly URLs don't have them. I suggest CMS developers try to mimic good URL practices they see on the web, in order to further usability. 
+

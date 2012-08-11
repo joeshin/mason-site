@@ -1,0 +1,146 @@
+Lets say you have a template specified by an autohandler, but your requested component should specify certain things such as the title of the page or the background color.
+
+Luckly, there are a few ways to do it. One such method is described in the manual. This document describes the best way (or as best as I know how).
+
+According to the "Object-oriented Techniques" section of the official documentation  (http://www.masonhq.com/docs/manual/Devel.html#objectoriented_techniques), you can use implicit inheritance and call a method within each requested component. This certainly works, but it makes the code a bit complicated... the problem is that any variables read from that method would have to be defined from within a <%shared> section and/or computed by other methods in the requested component. 
+
+   <table bgcolor="lightblue"><tr><td>
+   /
+   --- BEGIN "OFFICIAL METHOD" EXAMPLE ---<br />
+   My Title is <& SELF:gettitle &><br />
+   <br />
+   <%method gettitle><br />
+   %# return anything that will find the title for us.<br />
+   <% $dbh->selectrow_array("select title from pages where
+      pages.filename='".$m->current_comp->title()."'") %>
+   <br />
+   </%method><br />
+   <br />
+   <%method title><br />
+   < SELF:gettitle &amp><br />
+   &/%method&<br />
+   --- END "OFFICIAL METHOD" EXAMPLE ---<br />
+   /
+   </td></tr></table>
+
+The official method will connect to the database and fetch the information twice... it is impossible to work arround that limitation with their suggested method.
+
+MY example would be as followed:
+
+   <table bgcolor="lightblue"><tr><td>
+   /
+   --- BEGIN "MY METHOD" EXAMPLE ---<br />
+   My Title is <% $Title %><br />
+   <br />
+   <%init><br />
+   # set $Title to anything that gives us the title ;)<br />
+   $Title=$dbh->selectrow_array("select title from pages where
+   pages.filename='".$m->current_comp->title()."'") <br />
+   </%init><br />
+   <br />
+   <%cleanup><br />
+   return {Header=>{Title=>$Title}}<br />
+   </%cleanup><br />
+   --- END "MY METHOD" EXAMPLE ---<br />
+   /
+   </td></tr></table>
+
+With my example, $Title is only found ONCE.. I could also make the code smaller by removing the <%INIT> section and putting it at the top of the component.
+
+I put into my autohandler the following:
+
+   <table bgcolor="lightblue"><tr><td>
+   /
+   --- BEGIN "MY METHOD" EXAMPLE AUTOHANDLER ---<br />
+   <title><% $nret->{Header}->{Title} %></title><br />
+   <% $nbuf %><br />
+   FOOTER<br />
+   <br />
+   <%init><br />
+   $next=$m->fetch_next;<br />
+   my $nbuf;<br />
+   my $nret=$m->comp({store => \$nbuf }, $next, %ARGS);<br />
+   </%init><br />
+   --- END "MY METHOD" EXAMPLE AUTOHANDLER ---<br />
+   /
+   </td></tr></table>
+
+This stores both the return value AND stores the stdout of the component so we can retrieve values from the returned hashref and print the STDOUT where it belongs :) This does expose one limitation of my method, without using sub-methods such as used by the 'official' way.. you cannot retrieve the information without executing the entire component; If you need to retrieve information without executing the component, you will need to define sub-methods or attributes.
+
+I hope this helps and doesn't confuse you much.. good luck.
+
+-- EricWindisch
+
+----
+
+== THE REAL DEAL ==
+
+So what I found out is, for truly dynamic content neither <%attr></%attr> nor <%shared> nor <%once> nor <%method> would do what I wanted. Here's what the nice folks at masonhq.com had to share with me in their own UTSL way:
+
+UNBELIEVABLE! Mason has the ability to pre and post process any request. The inheritance (oo) techniques work well for simple stuff like:
+
+   <%attr>
+
+   show_optional_advertisement=>'yes'
+
+   </%attr>
+
+For that I use 2 simple sections like this in my header.mhtml file:
+
+   % #in the content area
+
+   % if ($self->attr_exists('show_optional_advertisement') ) {
+
+   <tr>
+
+   <td><& /components/optional_ad.mhtml &></td>
+
+   </tr>
+
+   % }
+
+and in the init section:
+
+   my $self = $m->request_comp;
+
+And no kidding, it works great. So what if I want:
+
+   <%attr>
+
+   show_dynamic_header=>$mycustomheadergraphic
+
+   </%attr>
+
+and realise it doesn't work that way.....
+
+== Here is the solution: ==
+
+* Start with masonhq.com sample site
+* Edit sys/substitutions.mhtml and add a new tag:
+
+   <%def headergraphic_placeholder></%def>
+
+* Edit sys/do_substitutions.mpl and add these 2 lines:
+
+   $headergfx = ($$content =~ s{<mhq:headergraphic>(.*?)</mhq:headergraphic>>}{}g) ? $1 : "";
+   $begin_subs{headergraphic_placeholder} = $headergfx;
+
+* Edit your header (or footer) file and add the placeholder in the apropriate place in your template like so:
+
+   <td width="774" colspan="3"><mhq:headergraphic_placeholder></td>
+
+You can set up placeholders for anything, and override those placeholders with custom content using the same inheritance model, and none of the hassle of <%shared> sections.
+
+To override:
+
+in any component or autohander:
+
+add this line in the content area:
+
+   <mhq:headergraphic><img src="/newimages/reviews-header.gif"></mhq:headergraphic>
+
+Because it is in the content area, you can use <%init> and do all the variable substitution you want, like so:
+
+   <mhq:headergraphic><img src="$mycustomgraphic"></mhq:headergraphic>
+
+-- webmaster

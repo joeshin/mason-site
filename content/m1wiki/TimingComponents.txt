@@ -1,0 +1,13 @@
+I found this handy for figuring out which subcomponents were killing my site performance:
+
+In httpd.conf:
+
+ PerlSetVar MasonPreamble 'use Time::HiRes qw(gettimeofday tv_interval); my $prof_start_time = [gettimeofday];'
+ PerlSetVar MasonPostamble 'warn __FILE__ . " executed in " . tv_interval($prof_start_time) . "\n";'
+
+Results in output like this in the apache error log:
+
+ /var/www/test/session.mpl executed in 0.046672
+ /var/www/test/autohandler executed in 0.00034
+
+-- AneelNazareth

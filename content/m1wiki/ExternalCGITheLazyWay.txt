@@ -1,0 +1,24 @@
+The other day I decided to update the search engine on my www site, and came across the wonderful swish-e package.  After playing with it for a while, I decided that was the new search engine for me, and wanted to integrate it into my Mason powered www site.  I really liked the (not so) little cgi program that actually ran the search, and feeling lazy, did not want to dig through the perl api and "rewrite" the thing in my existing Mason enviroment.  So I came across the following solution, which I am not claiming is profound, but because I almost didn't think of it and almost caused myself a bunch of extra work, I'm sharing it here with you.
+
+----
+
+   Put whatever text you want before the search form here
+
+   <% $content %>
+
+   Put whatever text you want after the search form here
+
+   <%init>
+   # next two lines needed to make CGI.pm and swish.cgi happy
+   local($ENV{MOD_PERL}) = '';
+   local($ENV{GATEWAY_INTERFACE}) = '';
+   my $content = `perl /path/to/cgi-bin/swish.cgi`;
+   $content =~ s/^.*<body>//sm;
+   $content =~ s/<\/body>.*$//sm;
+   </%init>
+
+----
+
+It just doesn't get much easier than that!
+
+-- HenryLaxen

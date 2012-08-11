@@ -1,0 +1,17 @@
+Revamping and wikifying the Mason HQ site in 2003.
+
+Summary: I want the site to be mostly wiki, but retain certain pages (or parts of pages) as dynamically generated and/or centrally controlled. My main goals are to
+
+0 Tear down whatever barriers remain to user contributions.
+0 Eliminate the current over-engineered content management system.
+0 Reduce to an absolute minimum the amount of site content that must be maintained by the site administrators (i.e. myself and DaveRolsky).
+
+Topics about the redesign:
+
+* MasonHQ03AccountsAndLogins
+* MasonHQ03ConvertingCurrentPages
+* MasonHQ03WikiCategorySupport
+* MasonHQ03WikiComponentCalls
+* MasonHQ03WikiFeatures
+
+-- JonathanSwartz

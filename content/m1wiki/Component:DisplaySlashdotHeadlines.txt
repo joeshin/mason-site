@@ -1,0 +1,91 @@
+ <%doc>
+ ##################################################################### 
+ # Slashdot Headlines - Simple
+ # last update: 05/27/2003
+ #--------------------------------------------------------------------
+ # author: Christopher R. Wheeler <christopher197777 @ yahoo.com>
+ #--------------------------------------------------------------------
+ # synopsis: Gets and parses Slashdot's xml headlines for display
+ # 	    in one's own mason interpreted page.
+ #
+ # requires: XML::Simple,LWP::UserAgent
+ #
+ # example call: <& slashdot.html &>
+ # 
+ ##################################################################### 
+ </%doc>
+ <% $output %>
+ 
+ <%init>
+ # 30 minute cache per Slashdot request (otherwise run risk of ip ban)
+ return if $m->cache_self(expire_in => '30 min');
+ 
+ use LWP::UserAgent;
+ use XML::Simple;
+ 
+ my $output;
+ my $slashdot_xml;
+ 
+ # Grab xml
+ my $ua = LWP::UserAgent->new;
+ my $request = HTTP::Request->new('GET', 'http://slashdot.org/slashdot.xml');
+ my $reply = $ua->request($request);
+ if ( $reply->is_success() ) {
+ 	$slashdot_xml = $reply->content;
+ }
+ 
+ # Parse and Display
+ if ( $slashdot_xml ) {
+ 	my $xs1 = XML::Simple->new();
+ 	my $doc = $xs1->XMLin($slashdot_xml);
+ 	$output = $m->comp('.displayHeadlines', stories=>$doc->{'story'});
+ } else {
+ 	$output = 'No XML to parse';
+ }
+ </%init>
+ 
+ %#-------------------------------------------------- Display Headlines
+ <%def .displayHeadlines>
+ <%doc>
+ ########################################################
+ #	Available Story Attributes:
+ #
+ #	title,url,time,author,department,
+ #	topic,comments,section,image
+ #
+ ########################################################
+ </%doc>
+ 
+ <%args>
+ @stories
+ </%args>
+ 
+ <%init>
+ my $output = qq|<table border=0 cellspacing=3 cellpadding=0>|;
+ foreach ( 0 .. $#stories ) {
+ 	
+ 	$output .= qq|
+ 		<tr>
+ 		<td bgcolor=#EEEEEE colspan=2>
+ 		<font face="arial,helvetica" size="4">
+ 		<b><a href="$stories[$_]->{'url'}">$stories[$_]->{'title'}</a></b>
+ 		</font>
+ 		</td>
+ 		</tr>
+ 
+ 		<tr>
+ 		<td>
+ 		Posted by $stories[$_]->{'author'} on $stories[$_]->{'time'}<br>
+ 		<font size="2">
+ 		<b>from the $stories[$_]->{'department'} department</b>
+ 		</font>
+ 		</td>
+ 		<td>
+ 		<img src="http://images.slashdot.org/topics/$stories[$_]->{'image'}">
+ 	       </td>
+ 	       </tr>|;
+ }
+ return $output . '</table>';
+ </%init>
+ </%def>
+

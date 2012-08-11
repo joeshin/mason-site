@@ -1,0 +1,7 @@
+Eric has been using Mason since 1999, Perl since 1993, and various other programming languages and platforms since 1980.
+
+Eric Hammond led the Mason implementation of the web services at [http://www.thisnext.com/ ThisNext.com], [http://www.rent.com/ Rent.com], and [http://www.stamps.com/ Stamps.com].
+
+Eric also implemented the URL shortening web service [http://notlong.com notlong.com].
+
+Eric Hammond's personal web site is [http://www.anvilon.com Anvilon].

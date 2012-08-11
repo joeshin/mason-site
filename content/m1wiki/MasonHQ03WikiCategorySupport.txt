@@ -1,0 +1,7 @@
+The WikiWikiWeb has a nice [http://c2.com/cgi/wiki?WikiCategories convention for categories] that does not require any core support. I think it would be nice to have a little built-in category support in MasonHQ03, namely:
+
+* A form input to select the categor(ies) for a page (auto-generated checkboxes or multi-select menu)
+* Each category page automatically lists all of the pages in that category, rather than requiring a separate click to the title.
+* The !CategoryCategory page automatically lists all of the categories, rather than requiring a separate click to the title.
+
+The first would need to be added to the wiki edit page. The second and third could be handled with a single WikiComponentCall that does a reverse search for an arbitrary string (default to the current page title) and inserts the results inline. That would be generally useful.

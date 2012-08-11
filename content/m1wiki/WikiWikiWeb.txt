@@ -1,0 +1,1 @@
+The original wiki, created by Ward Cunningham in 1995. Resides at http://c2.com/cgi/wiki. Also known as the Portland Pattern Repository. Among other things, a great place to learn about general wiki concepts, philosophy, and style guidelines.

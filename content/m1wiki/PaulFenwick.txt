@@ -1,0 +1,3 @@
+Hi, I'm Paul.  I'm managing director of [Perl Training Australia http://perltraining.com.au/].
+
+I keep a dull journal and other bits and pieces at http://pjf.id.au/

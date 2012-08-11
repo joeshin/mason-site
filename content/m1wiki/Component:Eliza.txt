@@ -1,0 +1,93 @@
+ <%doc>
+ This componet makes use of the clever Chatbot::Eliza library - 
+ which takes me back about 25 years when I first got interested in CS.  
+ Eliza, the primitive AI psychologist, has been around at least that long.
+ 
+ - The component simply generates a form that calls itself, 
+ reiterating the transcript and prompting the user with a new question.
+ - The Eliza program makes use of a 'memory' to ask questions 
+ based on replies given several answers ago. 
+ The debug flag can be used to split out the contents of this 
+ memory in an HTML comment under the form.
+ - The session_id can be used for keeping track of the same user's conversation, 
+ if you were to say, log all the transcripts somewhere ;-)
+ 
+ I actually wrote this a few years ago, but thought it might be good for some laughs ...
+ </%doc>
+ 
+ <%once>
+ use Chatbot::Eliza;
+ </%once>
+ 
+ <%args>
+ $transcript=>undef
+ $question=>undef
+ $name=>'Human'
+ $num_lines=>2
+ $session_id=>undef
+ $debug=>0
+ </%args>
+ 
+ <%init>
+ my $mybot = new Chatbot::Eliza;
+ 
+ $session_id = ($session_id) ? $session_id : (int(rand(100000)) + 1);
+ $num_lines += 2;
+ 
+ if($question){
+         $transcript .= "$name|$question#\n";
+ }
+ my $count=0;
+ my ($transcript_string);
+ my @ts_arr = split(/#/, $transcript);
+ foreach my $line (@ts_arr){
+         my ($nm, $res) = split(/\|/, $line);
+         $nm =~ s/\n//g;
+         $nm =~ s/\s*$//;
+         if($nm && $res){
+                 if($count > ($num_lines-15)){
+                         $transcript_string .= "<tr><td valign=top>";
+                         if($nm eq "Meliza"){
+                                 $transcript_string .= "<font size=2 face=Arial color=red>$nm:</td>\n";
+                                 $transcript_string .= "<td valign=top";
+                                 $transcript_string .= ' bgcolor="#FFFFCC" ';
+                         } else {
+                                 $transcript_string .= "<font size=2 face=Arial color=blue>$nm:</td>\n";
+                                 $transcript_string .= "<td valign=top";
+                                 push(@{$mybot->memory}, $res);
+                         }
+                         $transcript_string .= "><font size=2 face=Arial>$res</td></tr>\n";
+                 }
+                 $count++;
+         }
+ }
+ if(!$question){
+         $question = "Hello";
+ }
+ my $reply  = $mybot->transform( $question );
+ $transcript .= "Meliza|$reply#\n";
+ </%init>
+ 
+ <form action="" method="POST">
+ <table>
+ <%$transcript_string%>
+ <tr><td valign=top align=right><font size=2 face=Arial color=red><b>Meliza:</td>
+ <td valign=top bgcolor="#FFFFCC"><font size=2 face=Arial><%$reply%></td></tr>
+ <input name="transcript" type="hidden" value="<%$transcript%>">
+ <input name="debug" type="hidden" value="<%$debug%>">
+ <input name="name" type="hidden" value="<%$name%>">
+ <input name="num_lines" type="hidden" value="<%$num_lines%>">
+ <tr><td align=right valign=top><font size=2 face=Arial><%$name%>:</td>
+ <td valign=top><nobr><input name="question" type="text" size="50">
+ <input name="submit" type="submit" value="Ask"></nobr></td></tr>
+ </table>
+ <input name="session_id" type="hidden" value="<%$session_id%>">
+ </form><p>
+ 
+ % if($debug) {
+ %       my $i=0;
+ %       foreach my $n(@{$mybot->memory}){
+                 <!-- memory line <%$i%>: <%$n%> -->
+ %               $i++;
+ %       }
+ % }

@@ -1,0 +1,21 @@
+There are several mailing lists for Mason now. If you are just starting out, 
+we recommend the mason-users list, which is most general and most suited 
+to new users. Browse through the archives to get a feel for the list 
+before posting.
+
+All lists are hosted at sourceforge and archived at MARC, among other
+places. Thanks to Hank Leininger and others for an excellent archive
+interface.
+
+NNTP versions of these mailing lists are available at Gmane, thanks to
+Lars Magne Ingebrigtsen.
+
+| [mason-users http://lists.sourceforge.net/mailman/listinfo/mason-users] | Questions, installation problems, bug reports, job and site announcements, other general discussion.  YouMustBeSubscribedToPost. | [Archives http://marc.theaimsgroup.com/?l=mason] | [NNTP http://news.gmane.org/gmane.comp.web.mason.user] |
+| [mason-announce http://lists.sourceforge.net/mailman/listinfo/mason-announce] | Official announcements from the Mason team. These are always cc'd to mason-users, so you need not subscribe to both. Very low traffic. (read-only except for core developers) | [Archives http://marc.theaimsgroup.com/?l=mason-announce] | [NNTP http://news.gmane.org/gmane.comp.web.mason.announce] |
+| [mason-devel http://lists.sourceforge.net/mailman/listinfo/mason-devel] | In-depth discussions about new development directions, proposed features, implementation details.  YouMustBeSubscribedToPost. | [Archives http://marc.theaimsgroup.com/?l=mason-devel] | [NNTP http://news.gmane.org/gmane.comp.web.mason.devel] |
+| [mason-checkins http://lists.sourceforge.net/mailman/listinfo/mason-checkins] | CVS context diffs for all checkins to the Mason repository. (read-only) | [Archives http://marc.theaimsgroup.com/?l=mason-cvs] | - |
+| [modperl http://perl.apache.org/maillist/index.html] | Official mod_perl list; a better place to post for issues that are not Mason specific. | [Archives http://marc.theaimsgroup.com/?l=apache-modperl] | - |
+
+
+
+

@@ -1,0 +1,1 @@
+I am a developer using Mason to power the GUI of a credit card fraud detection system. It's truly a great product, easy to get started with, and still rather deep.

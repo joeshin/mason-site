@@ -1,0 +1,7 @@
+=== Synergy ===
+
+Hey, wow, Wiki + Mason.  Sounds like winning combination.
+
+Found this via http://www.google.com/search?q=wiki+mason
+and expected to find some 3rd party hacks combining the two.
+Imagine my surprise at seeing the hack^H^H^H^H WikiImplementation on the official Mason site.

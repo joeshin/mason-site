@@ -1,0 +1,116 @@
+In Mason 1.1x /Request::new()/ and /Request::exec()/ have a seemingly strange design: /new()/ requires the component and component arguments. Any errors occurring during /new()/ (such as component not found) are placed in a /prepare_error/ slot and not triggered until the /exec()/. Why this design, and can we change it?
+
+----
+
+It all began innocently enough, when I was trying to think of an elegant way to replace the [top_level_predicate http://www.masonhq.com/docs/manual/1.05/ApacheHandler.html#item_top_level_predicate] parameter in 1.1. There were two reasons I didn't like /top_level_predicate/:
+
+0 The function could only rely on the component path; I wanted it to be able to access the whole component object. For example, you might have a /top_level/ attribute, set in various autohandlers, that would indicate whether or not a directory of components was accessible from the top level.
+0 I didn't like that /top_level_predicate/ was a parameter at all - would rather let the user write equivalent code in their handler.pl. (This is back when more people were using handler.pl, before the glory days of ConfigurationByHttpd.)
+
+I also knew that in 1.1 we were going to officially allow users to create a request, inspect and fiddle with it, and then execute it (or not) as separate steps:
+
+   # Create a request
+   my $request = $interp->make_request();
+
+   # inspect request object, possibly set some properties
+   ...
+
+   # Execute it (or not)
+   $request->exec(comp=>..., args=>...);
+
+This seemed the perfect place to write one's own /top_level_predicate/ code. But how to get the initial component object? It isn't as easy as it seems, because there might be dhandlers involved and so on. All of the logic of determining the initial component object was trapped in /Request::exec()/.
+
+So I had the idea of determining the initial component object in /Request::new()/. This would allow users to grab it via the already-documented /$request->request_comp()/. Now you could write your /top_level_predicate/ code like this:
+
+   # Create a request
+   my $request = $interp->make_request(comp=>..., args=>...);
+
+   # If this is a top-level component, execute the request;
+   # otherwise return 403 (Forbidden).
+   if ($request->request_comp->attr('top_level')) {
+       $request->exec;
+   } else {
+       return 403;
+   }
+
+But what if the top level component was not found? Should /$interp->make_request()/ throw an error? That might be acceptable when /error_mode/='fatal', but not when /error_mode/='html'. In the latter case you want the error to go to the browser, just like any other error. 
+
+My solution was to place any errors occurring inside /Request::new()/ in a prepare_error slot that gets checked and thrown inside /$request->exec()/.
+
+Recently DavidWheeler proposed a change wherein /Request::new()/ would handle an error just like /Request::exec()/, dying or displaying in the browser as appropriate. This might be an improvement, but to make it work for html error mode, any code that calls /$interp->make_request()/ separately will need some way to know that an error occurred, so that it doesn't go on to call /$request->exec()/. Perhaps checking for the existence of /$request->request_comp()/ is enough?
+
+   # Create a request
+   my $request = $interp->make_request(comp=>..., args=>...);
+
+   # If no error occurred during preparation...
+   if ($request->request_comp) {
+      ...
+      $request->exec;
+   }
+
+Or perhaps /Request::new()/ shouldn't return the request object at all if it was invalid?
+
+   # Create a request
+   if (my $request = $interp->make_request(comp=>..., args=>...)) {
+      ...
+      $request->exec;
+   }
+
+Or perhaps this whole replacement of /top_level_predicate/ with custom handler.pl code doesn't work at all. It just occurred to me that, in the case of subrequests or /$m->decline()/, the new top-level component won't be checked. Arggh. In general, subrequests can foil any handler.pl code that attempts to do something before every request.
+
+-- JonathanSwartz
+
+----
+
+On that latter point (being foiled by subrequests), this may be an argument in favor of just throwing the error in /Request::new()/, and telling people who want the /top_level_predicate/ functionality to just create a request subclass.
+
+-- DaveRolsky
+
+----
+
+I second Dave's suggestion, in great part because I need /Request::new()/ -- or at least /Interp::make_request()/ -- to be able to throw errors so that my subclass of /Interp/ can short-circuit Mason processing and do something else, including throw an exception (e.g., for a redirect). But also because users can actually use my Callbacks class instead of /top_level_predicate/! Here's what my subclass is doing:
+
+  sub make_request {
+      my ($self, %p) = @_;
+      # We have to grab the parameters and copy them into a hash.
+      my %params = @{$p{args}};
+
+      # Grab the apache request object, if it exists.
+      my $apache_req = $p{apache_req}
+        || $self->delayed_object_params('request', 'apache_req')
+        || $self->delayed_object_params('request', 'cgi_request');
+
+      # Execute the callbacks.
+      my $ret =  $self->{cb_request}->request(\%params, $apache_req ?
+                                              (apache_req => $apache_req) :
+                                              ());
+
+      # Abort the request if that's what the callbacks want.
+      HTML::Mason::Exception::Abort->throw
+          ( error         => 'Callback->abort was called',
+            aborted_value => $ret )
+            unless ref $ret;
+
+      # Copy the parameters back and continue. Too much copying!
+      $p{args} = [%params];
+      $self->SUPER::make_request(%p);
+  }
+
+
+So you can see what I'm trying to do, and how I need to be able to throw exceptions from /Interp::make_request()/ -- and not only for aborts; any kind of exception can be thrown by the callbacks.
+
+But I'll also just outline here the points I made in a message to mason-devel.
+
+From my POV, it's a bad idea to stash away an exception thrown by /Request::new()/ and actually throw it from /Request::exec()/ for three reasons:
+
+* First, this design is action at a distance. An exception may be triggered in /Request::_initialize()/ (that is, when /Request::new()/) is called, but it actually isn't thrown until /Request::exec()/ is called.
+
+* Second, it makes it much more difficult to subclass /Request/ without being familiar with the internals of Mason (i.e., the use of /prepare_error/) -- which is the whole reason I sent in the patches in the first place.
+
+* And third, it defers throwing an exception until a whole lot more processing has been done -- the results of which will be thrown out when the exception if finally thrown, which is a waste of resources.
+
+And finally, for what it's worth, /Interp::make_request()/ wasn't even a documented method until I submitted a patch to document it -- for the benefit of subclassers like me -- last week. (/Egads -- this was a major oversite!/ -- JonathanSwartz)
+
+Thanks for listening!
+
+--DavidWheeler

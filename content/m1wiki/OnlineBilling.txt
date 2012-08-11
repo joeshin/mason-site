@@ -1,0 +1,3 @@
+Online Billing system is powerful billing system for comprehensive set of services of Internet Service Providers (ISPs). It uses Mason for core templating system for all interfaces in the system. Onling Billing system can process VoIP, dilaup, leased lines IP-traffic billing, WiFi. This billing system can integrate with wide set of access servers.
+
+

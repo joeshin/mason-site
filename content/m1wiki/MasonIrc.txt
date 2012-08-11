@@ -1,0 +1,9 @@
+There is an active #Mason IRC channel on [http://www.efnet.org Efnet]. 
+
+
+I didn't find this so active. I started #mason on [http://www.irc.perl.org/ MagNET], which seemed a more logical place.
+
+
+Connect using your favorite client and /join #mason if you have some questions, or just want general discussion. 
+
+

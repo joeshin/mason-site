@@ -1,0 +1,8 @@
+While working on MasonHQ03 it helps to see how various wikis have handled various design decisions that come up.
+
+*What happens when you navigate to a non-existent page?*
+
+* c2.com: Displays "describe TheNewPage".
+* openguides: Displays blank page; can click on edit link.
+* kwiki: Edits TheNewPage with "Describe the new page here."
+* [http://www.wikipedia.org Wikipedia] colors links to an empty page red so you know they will be blank.  I'm not sure how it handles links that are outside the system... it probably doesn't think about them (though since we've got LWP we could look for a 404 and cache the info in a database.  Overkill?) --GordonMcCreight

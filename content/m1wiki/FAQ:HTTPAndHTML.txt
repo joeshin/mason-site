@@ -1,0 +1,198 @@
+[&TOC FAQ:HTTPAndHTML]
+
+=== How do I access GET or POST arguments? ===
+GET and POST arguments are automatically parsed and placed into named component arguments just as if you had called the component with <& &> or $m->comp. So you can get at GET/POST data by pre-declaring argument names and/or using the %ARGS hash which is always available. 
+
+=== How can I access the raw content of a POST in a Mason component? ===
+It depends on your environment as to what you can do.
+
+Apache/mod_perl has an easier way of doing it than CGI/FCGi, which uses
+FakeApache. As you can see from the comment, since FakeApache implements read, I couldn't get it to be completely dynamic:
+
+        my $inputText;
+        # FakeApache implements read, so we can't automatically tell 
+        # if we're in mod_perl or FCGI
+        if (0 && $r->can('read')){ 
+                $r->read( $inputText, $r->headers_in->{'Content-length'} );
+                } 
+        else {
+                my %params = $r->params;
+                my $posted_content = $params{POSTDATA} || $params{keywords};
+                $posted_content ||= join '', %params if ($r->method eq 'POST');
+                $posted_content = join '', @$posted_content if (ref $posted_content eq 'ARRAY');
+                $inputText = $posted_content
+        }
+
+-- Gareth Kirwan
+
+Probably $r->params does not work. there is no such method
+in 'man Apache'
+
+-- Rajesh Kumar Mallah.
+
+=== What happens if I include query args in a POST? ===
+As of Mason 1.01, query string and POST arguments are always combined.
+
+=== Should I use CGI.pm to read GET/POST arguments? ===
+No! HTML::Mason automatically parses GET/POST arguments and places them in declared component arguments and %ARGS (see previous question). If you create a CGI object in the usual way for a POST request, it will hang the process trying to read $r->content a second time.
+
+=== Can I use CGI.pm to output HTML constructs? ===
+Yes. To get a new CGI object, use
+
+      my $query = new CGI('');
+
+You have to give the empty string argument or CGI will try to read GET/POST arguments.
+
+To print HTML constructs returned by CGI functions, just enclose them in <%%>, e.g.
+
+      <% $query->radio_group(...) %>
+
+=== How do I modify the outgoing HTTP headers? ===
+Use the usual Apache.pm functions, such as $r->header_out. See the "Sending HTTP Headers" section in the Component Developer's Guide:
+
+      http://www.masonhq.com/docs/manual/Devel.html#sending_http_headers
+
+=== How do I do an external redirect? ===
+In Mason 1.0x, use code like this:
+
+        $m->clear_buffer;
+        # The next two lines are necessary to stop Apache from re-reading
+        # POSTed data.
+        $r->method('GET');
+        $r->headers_in->unset('Content-length');
+        $r->content_type('text/html');
+        $r->header_out('Location' => $location);
+        $m->abort(301);
+
+In Mason 1.1x, use the [=$m->redirect] method.
+
+See the next question if your redirect isn't producing the right status code.
+
+=== When trying to use $m->redirect I get 'Can't locate object method "redirect" via package "HTML::Mason::!ApacheHandler"'. ===
+$m->redirect is supported only in Mason 1.1x and on. Check your Mason version by putting
+
+       Version = <% $HTML::Mason::VERSION %>
+
+in a component.
+
+=== Why isn't my status code reaching users' browsers? ===
+If you are using a handler.pl, your handler() routine should always return the error code that handle_request($r) produces. Otherwise, things like $m->abort() will not work correctly. So a very, very simple handler() routine would look like this:
+
+      sub handler {
+        my $r = shift;
+        $ah->handle_request($r);
+      }
+
+If you are using $m->abort or $m->redirect and there is an eval() wrapped directly or indirectly around the call, you must take care to propagate abort exceptions after the eval(). This looks like:
+
+       eval { $m->comp('...') };
+       if ($@) {
+          if ($m->aborted) {
+              die $@;
+          } else {
+              # deal with non-abort exceptions
+          }
+       }
+
+=== How can I handle file uploads under Mason? ===
+The basic HTML for an upload form looks like:
+
+       <form action="..." method="post" enctype="multipart/form-data">
+       Upload new file:
+       <input name="userfile" type="file" class="button">
+       <input type="submit" value="Upload">
+
+The way you handle the submission depends on which args method you chose for the !ApacheHandler class.
+
+Under the 'CGI' method (default for 1.0x), you can use the [=$m->cgi_object] method to retrieve a CGI.pm object which can be used to retrieve the uploaded file. Here is an example using the 'CGI' method:
+
+  <%init>
+  my $query = $m->cgi_object;
+
+  # get a filehandle for the uploaded file
+  my $fh = $query->upload('userfile');
+
+  # print out the contents of the uploaded file
+  while (<$fh>) {
+        print;
+  }
+  close($fh);
+  </%init>
+
+Please see the [CGI.pm http://search.cpan.org/~lds/CGI.pm-3.05/CGI.pm#CREATING_A_FILE_UPLOAD_FIELD documentation] for more details.
+
+Under the 'mod_perl' method (default for 1.1x), the request object available as [=$r] in your components will be an object in the Apache::Request class (as opposed to the Apache class). This object is capable of returning Apache::Upload objects for parameters which were file uploads. Please see the [Apache::Request http://search.cpan.org/~joesuf/libapreq-1.3/Request/Request.pm#Apache%3A%3AUpload_METHODS documentation] for more details.  Here is an example using the 'mod_perl' method:
+
+  <%init>
+
+   # NOTE: If you are using libapreq2 + mod_perl2 + Apache 2,
+   # you will need to uncomment the following line:
+   # use Apache::Upload;
+
+   # you can store the file's contents in a scalar
+   my $file_contents;
+
+   # create an Apache::Upload object
+   my $upload = $r->upload;
+
+   # get a filehandle for the uploaded file
+   my $upload_fh = $upload->fh;
+
+   while(<$upload_fh>) {
+       # loop through the file and copy each line to $file_contents
+       $file_contents .= $_;
+   }
+   close($upload_fh);
+  </%init>
+
+
+
+For more information on how to manually set the args method, see the !ApacheHandler documentation.
+
+If you are using CGI.pm, there are some configuration issues to be aware of. CGI.pm needs a tmp directory, and you probably want to be able to specify what that directory is.
+
+Try doing this in your httpd.conf or handler.pl:
+
+      <Perl>
+      use CGI qw(-private_tempfiles);
+      </Perl>
+
+You must do this _before_ you load either the HTML::Mason or HTML::Mason::!ApacheHandler modules.
+
+That may change which directories CGI tries to use.
+
+You could also try
+
+      $CGI::TempFile::TMPDIRECTORY = '/tmp';
+
+during startup, either in your httpd.conf or handler.pl
+
+The root of the problem is probably that the temp directory is being chosen when the module loads uring server startup while its still root. It sees it can write to /usr/tmp and is happy. Then when actually running as nobody it dies.
+
+I bet Lincoln would welcome a patch (hint, hint). One solution would be to check if you're running under mod_perl and you're root. If so, then check Apache->server->uid and see if that id can write to the temp directory too.
+
+=== How can I redirect the current request to be a file download? ===
+A detailed explanation is provided in ForceFileDownload.
+
+=== How can I manipulate cookies? ===
+You can use the helpful modules Apache::Cookie and CGI::Cookie. It's also fairly easy to roll your own cookie-manipulation functions, using the methods provided by the $r global.
+
+One thing to avoid: the combination of CGI::Cookie, Apache::Request, and POST requests has caused people problems. It seems that Apache::Cookie and Apache::Request make a better pair.
+
+=== How can I populate form values automatically? ===
+Several CPAN modules provide form-filling capabilities. HTML::!FillInForm is one good choice and works well with Mason. Here's a sample code snippet:
+
+     <%filter>
+     $_ = HTML::FillInForm->new->fill(scalarref => \$_, fdat => \%ARGS );
+     </%filter>
+
+This will work for any component that contains a complete form in its output.
+
+If you are using Apache::Request to process incoming arguments under mod_perl (the default as of 1.10), then you can also do this:
+
+     <%filter>
+     use HTML::FillInForm;
+     $_ = HTML::FillInForm->new->fill(scalarref => \$_, fobject => $r );
+     </%filter>
+
+These two examples are slightly different from each other, in that each makes a different set of parameters available to HTML::!FillInForm. In the first example, the arguments used are those that were explicitly passed to the component. In the second example, the arguments are those that were passed in the initial HTTP request. Of course, variations on this are possible by mixing and matching %ARGS, $m->request_args, $m->caller_args, and so on.

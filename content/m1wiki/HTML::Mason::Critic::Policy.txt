@@ -1,0 +1,28 @@
+An HTML::Mason::Critic::Policy defines a set of code formatting rules.  When a policy is applied to a piece of code, warnings are generated when or if the policy is violated.  These violations are represented as [HTML::Mason::Critic::Violation] objects.
+
+HTML::Mason::Critic::Policy is conceptually based on [http://search.cpan.org/~elliotjs/Perl-Critic/lib/Perl/Critic/Policy.pm Perl::Critic::Policy]
+
+Dave Rolsky recommended creating policies for two sections:
+
+1) templates
+and
+2) code inside <%args>, <%perl>, <%init>, <%once>, /^\%/ etc. blocks
+
+Modules which verify compliance with policies applying to templates will for the time being live in the HTML::Mason::Critic::Policy::Template namespace.
+
+* [HTML::Mason::Critic::Policy::Template::ProhibitPerlBlocks]
+* [HTML::Mason::Critic::Policy::Template::ProhibitConditionalDeclarations]
+* Too many <%perl> blocks (>1, >0?)
+* <%once> and <%init> not at the beginning or end of component source
+* Component does not generate output, use a module
+* More than X methods/subcomponents (2? 3?), use a separate component file
+
+Modules which verify compliance with policies applying to code blocks will for the time being live in the HTML::Mason::Critic::Policy::Logic namespace.
+
+* Too many lines in <%perl> blocks
+* Too many %-lines in a row, use a <%perl> block
+* Abuse of %ARGS (use <%args> to declare expected parameters)
+* Top-level autohandler calls SELF:method without defining method
+** I'm not sure if this is bad, and figuring it out is tricky, since determining what is a top-level autohandler requires looking at a whole tree of components
+* Use of print()
+* Use of $m->print() instead of <% ... %>

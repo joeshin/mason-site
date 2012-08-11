@@ -1,0 +1,4 @@
+Part of the software house http://www.wi-not.com
+Wi-Not Inc is all about spending energy and time between our mobile passion while exploring next-web territories.
+
+We are already working on our first Mason Component, trying to bring our assets onto this new exciting platform.

@@ -1,0 +1,51 @@
+= Using !SQLite with !MasonX::Request::!WithApacheSession =
+
+I set up this nice combination, and since it was not just straight down the road, here is how I did it:
+
+== Requirements ==
+
+The following modules are required
+
+  DBD::SQLite
+  Apache::Session
+  MasonX::WithApacheSession
+
+== Configuration ==
+
+!MasonX::!WithApacheSession is using Apache::Session::Wrapper, which checks that the required configuration variables are in place, but it does not support Apache::Session::!SQLite. Solution: use Apache::Session::Flex instead.
+
+In httpd.conf (or whatever your apache config file is), the following lines will set up the configuration:
+
+  # Cookie based session management
+  PerlSetVar MasonRequestClass 'MasonX::Request::WithApacheSession'
+  PerlSetVar MasonSessionCookieDomain '.yourdomain.com'
+  PerlSetVar MasonSessionClass Apache::Session::Flex
+  PerlSetVar MasonSessionStore 'MySQL'
+  PerlSetVar MasonSessionUserName 'dummy'
+  PerlSetVar MasonSessionPassword 'dummiest'
+  PerlSetVar MasonSessionLock 'Null'
+  PerlSetVar MasonSessionGenerate 'MD5'
+  PerlSetVar MasonSessionSerialize 'Base64'
+  PerlSetVar MasonSessionDataSource 'DBI:SQLite:dbname=/path/to/sessions.db'
+
+The dummy username and password is required for passing the tests in Apache::Session::Wrapper.
+
+== Creating the databse ==
+You need to create the database youself, and since DBI::!SQLite comes with it's own copy of the !SQLite engine you better use that module to do so (I tried using my own sqlite installation and commandline tool, which lead to errors, version mismatch it appears). Luckily creating the database is simple:
+
+
+  $ perl -MDBI
+  my $dbh = DBI->connect("dbi:SQLite:dbname=/path/to/sessions.db","","");
+  $dbh->do( "CREATE TABLE sessions ( d char(32) not null primary key, a_session text" ););
+  $dbh->disconnect;
+  # press CTRL + D here
+
+
+The last step is making sure that apache can access the database file, and you should be going.
+
+== This wiki formatter SUCKS ==
+-- it it either makes text in inline code links, or does not render them as code: [=!ThisIsNotAWikiWordSUCKERS] or [=ThisIsNotAWikiWordSUCKERS] *BWADR*
+
+Oh, and your server had about 20 500's while I tried to make this short page readable :-\
+
+... *I give up* If there are more formatting errors, go yell at the kwiki authors !IIUTC.

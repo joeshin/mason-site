@@ -1,0 +1,108 @@
+In versions earlier than Mason 1.27, your best bet is start with Beau Cox's handler for Apache/mod_perl 2.0 here:
+http://search.cpan.org/~beau/MasonX-Apache2Handler-0.05/lib/MasonX/Mason-with-mod_perl2.pod
+
+This is a follow up to this how-to:
+http://beaucox.com/mason/mason-with-apmp2-mini-HOWTO.htm
+(archived in case the above is down)
+http://web.archive.org/web/20030604112031/http://beaucox.com/mason/mason-with-apmp2-mini-HOWTO.htm
+----
+There is apparently a problem using $m->redirect on Apache/mod_perl 2.0. See ApacheModPerl2Redirect for a description and patch.
+
+
+----
+The GlobalRequest option is supposed to ensure that $r is available, but apparently it is (or was until recently) buggy. You may see this in the logs when running Mason:
+
+   [error] Global $r object is not available. Set:
+       PerlOptions +GlobalRequest
+   in httpd.conf.
+
+BeauCox says: "StasBekman at mod_perl has given me a temp fix to allow running mod_perl-1.99-09-dev (cvs) with mason using a startup script; near the top of the script, add these lines:"
+
+   # temp fix for mp2-09... make a dummy Apache->request
+   require Apache::RequestUtil;
+   no warnings 'redefine';
+   my $sub = *Apache::request{CODE};
+   *Apache::request = sub {
+        my $r;
+        eval { $r = $sub->('Apache'); };
+        # warn $@ if $@;
+        return $r;
+   };
+
+On the other hand, PerrinHarkins on the mod_perl list responds to the same problem with: "Make sure you have the very latest CGI.pm.  There were some changes related to mod_perl 2 recently."
+----
+Users of recent versions of Red Hat or Fedora (which include Apache and mod_perl 2) should look at MasonAndRedHat and/or MasonAndFedora.  -- StevenPritchard
+
+A note from FurkanKirac about parameter passing in mod_perl 2 on RedHat 9:
+
+Recently I had asked you about a parameter passing problem. I defined the problem and found a solution and wanted to let you know about it.
+ 
+Problem was the buggy ModPerl 1.99_07 that came with RedHat 9 distribution. It is so buggy that it truncates the parameters passed to it by POST methods! So for example you pass a string of length 360 like
+ 
+    param1=value1&param2=value2&param3=value3......
+
+The environment contains the content-length as 360 correctly, but when you read STDIN for the parameters you most probably get less than 360 bytes, which means that some parameters are lost.
+
+So this is not related to a bug in mason, but in perl. Therefore using $m->cgi_object->param or param directly doesn't matter.
+ 
+What I did is to upgrade the Apache from 2.0.40 to 2.0.48 (which is needed to upgrade modperl), and all its modules (damn it took ages)
+Then I upgraded modperl to 1.99_10. And CGI.pm to 3.00 (this is also important). That solves the problem.
+ 
+Hope you don't have to work on a Red Hat 9 server before it comes with production release components. But if you have to, then take my word and update modperl to its last version along with CGI.pm.
+
+
+----
+Using a custom handler, my session handler looks something like this:
+
+use Apache::compat;
+
+(lots of generic and application-specific stuff)
+
+my $ah = new HTML::Mason::ApacheHandler (
+   comp_root => $somedir,
+   args_method => 'CGI',
+   data_dir => '/var/mason/data');
+
+That should be sufficient for those using custom handlers.
+
+-----
+Windows users can try ApacheModPerl2OnWin32. You get to keep the many, sharp pieces if it breaks :)
+-----
+If you get an error
+
+   Can't locate Apache/Constants.pm in @INC
+
+It's looking for the mod_perl 1 module Apache::Constants, whose functionality is in Apache::Const in mod_perl 2. Try one of the following:
+
+1. Replace
+   
+   use Apache::Constants qw( REDIRECT );
+
+near the top of HTML/Mason/ApacheHandler.pm by
+
+   use Apache::Const -compile => qw(:common);
+
+And then replace any occurrences of REDIRECT by Apache::REDIRECT.
+
+2.Put
+
+   use Apache2;
+   use Apache::compat;
+
+in a mod_perl startup file, but this will slow things down.
+
+--RandyKobes
+----
+A few times I've gotten the error above and found it was due to having mod_perl 1.29 with Apache2. It can be resolved by removing mod_perl from perl.
+
+ http://www.cpan.org/misc/cpan-faq.html#How_delete_Perl_modules
+
+Once removed I simply did an 'apt-get install perl-HTML-Mason' and it worked fine afterwards.
+
+--NickGerakines
+
+-----
+=> *As of Mason 1.27 (released 10/28/2004), there is support for Apache/mod_perl 2.0 in the core Mason code.* <=
+
+
+

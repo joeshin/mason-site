@@ -1,0 +1,93 @@
+== HTTP Compression and HTML::Mason ==
+
+HTTP Compression consists of compressing HTML for browsers capable of reading compressed text.  There is an apache module that can do this for every page of your site.
+
+Yet depending on your current server's configuration, this might not be enabled.
+
+You can do this manually for any mason page you want that way:
+
+   This is a <%"Mason"%> enabled Page!
+
+   <%once>use Compress::Zlib;</%once>
+
+   <%filter>
+   if($ENV{'HTTP_ACCEPT_ENCODING'} =~ /gzip/ )
+   { 
+         if($ENV{'HTTP_ACCEPT_ENCODING'} =~ /x-gzip/)
+         {
+              $r->header_out('Content-encoding'=>'x-gzip');
+         }
+         else
+         {
+              $r->header_out('Content-encoding'=>'gzip');
+         }
+         $_ = Compress::Zlib::memGzip($_) ;
+   }
+   </%filter>
+
+-- LionelSiffre
+
+--------
+
+I think it'd be easier to use Apache::Filter and Apache::Compress.
+
+- DaveRolsky
+
+--------
+
+I tried to use this method, and succeeded only after I changed it in this way:
+
+if ($r->header_in('Accept-Encoding') =~ m/gzip/) {
+  if ($r->header_in('Accept-Encoding') =~ m/x-gzip/) {
+    $r->content_encoding('x-gzip');
+  } else {
+    $r->content_encoding('gzip');
+  }
+  $_ = Compress::Zlib::memGzip($_);
+}
+
+because in my Mason implementation the %ENV hash didn't seem to have all the client parameters.
+
+- MarkTorrance
+
+-------
+
+Perhaps another argument in favor of Apache::Compress when possible.  It looks at $r->header_in('Accept-Encoding')
+
+- DaveRolsky
+
+-------
+
+A shorter (IMHO cleaner) version of the above code:
+
+if ($r->header_in('Accept-Encoding') =~ /((?:x-)?gzip)/) {
+ $r->content_encoding($1);
+ $_ = Compress::Zlib::memGzip($_);
+}
+
+While Apache::Compress might be more universal, I'm for compression in autohandler. You can cache compressed content with it, among other things.
+
+- Egor Shipovalov
+
+-------
+
+To make sure that this works correctly with $m->redirect and $m->aborted:
+
+if ( !$m->aborted ) {
+  if ($r->header_in('Accept-Encoding') =~ /((?:x-)?gzip)/) {
+    $r->content_encoding($1);
+    $_ = Compress::Zlib::memGzip($_);
+  }
+}
+
+- OliverPaukstadt
+
+--------
+
+Have a look at MasonX::Plugin::Compress:
+
+"Negotiates a preferred compression method (currently, gzip, bzip2 or deflate) with the client, compresses the response and sets appropriate headers."
+
+- DaveBaird
+
+

@@ -1,0 +1,28 @@
+Mason can be downloaded from CPAN: http://search.cpan.org/dist/HTML-Mason/
+
+See the version history page for changes and incompatibilities between versions.
+
+Latest branch
+
+The latest branch of Mason is 1.3x. This branch is considered fairly stable, as it has been around and in use at various sites for almost a year. We do anticipate minor bugs to crop up as its adoption grows.
+
+Older branch
+
+The older branch of Mason is 1.2x. It has been around for several years and is extremely stable, but development has ceased on this branch. If you're just starting out with Mason, we recommend 1.3x as it will be better supported going forward.
+
+    * Perl, version 5.6.1 or later. 
+
+    * The Apache web server (recommended). 
+
+    * The mod_perl package (recommended). 
+
+Note: Mason is typically used in conjunction with Apache and mod_perl, but it will also work with CGI or even as a standalone script.
+
+Source repository
+
+You can access the latest committed sources via subversion:
+
+    svn co https://svn.urth.org/svn/Mason/trunk Mason-trunk
+
+
+or view the repository via websvn: http://svn.urth.org/listing.php?repname=Mason

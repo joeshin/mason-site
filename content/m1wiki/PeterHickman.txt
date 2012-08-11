@@ -1,0 +1,7 @@
+Mason and Mac OSX user
+
+See InstallingMasonOnPanther for all the fun and games about getting Mason up and running.
+
+I have an AI Expert System on CPAN and am currently working on yet another graphics package - Graph::Timeline. Hopefully sometime this year (2003).
+
+I work for Semantico

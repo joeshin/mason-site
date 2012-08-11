@@ -1,0 +1,130 @@
+ <?xml version="1.0"?>
+ 
+ <!DOCTYPE MODE SYSTEM "xmode.dtd">
+ 
+ <!-- mason edit mode for JEdit -->
+ 
+ <MODE>
+ 	<PROPS>
+ 		<PROPERTY NAME="commentStart" VALUE="&lt;!--" />
+ 		<PROPERTY NAME="commentEnd" VALUE="--&gt;" />
+ 	</PROPS>
+ 	<RULES IGNORE_CASE="TRUE">
+ 		<!-- SGML comment -->
+ 		<SPAN TYPE="COMMENT1">
+ 			<BEGIN>&lt;!--</BEGIN>
+ 			<END>--&gt;</END>
+ 		</SPAN>
+ 		<!-- MASON blocks -->
+ 		<EOL_SPAN TYPE="FUNCTION" AT_LINE_START="TRUE" DELEGATE="perl::MAIN">%</EOL_SPAN>
+ 		<SPAN TYPE="FUNCTION" DELEGATE="perl::MAIN">
+ 			<BEGIN>&lt;%perl&gt;</BEGIN>
+ 			<END>&lt;/%perl&gt;</END>
+ 		</SPAN>
+ 		<SPAN TYPE="FUNCTION" DELEGATE="perl::MAIN">
+ 			<BEGIN>&lt;%args&gt;</BEGIN>
+ 			<END>&lt;/%args&gt;</END>
+ 		</SPAN>
+ 		<SPAN TYPE="FUNCTION" DELEGATE="perl::MAIN">
+ 			<BEGIN>&lt;%init&gt;</BEGIN>
+ 			<END>&lt;/%init&gt;</END>
+ 		</SPAN>
+ 		<SPAN TYPE="FUNCTION" DELEGATE="perl::MAIN">
+ 			<BEGIN>&lt;%shared&gt;</BEGIN>
+ 			<END>&lt;/%shared&gt;</END>
+ 		</SPAN>
+ 		<SPAN TYPE="FUNCTION" DELEGATE="perl::MAIN">
+ 			<BEGIN>&lt;%once&gt;</BEGIN>
+ 			<END>&lt;/%once&gt;</END>
+ 		</SPAN>
+ 		<SPAN TYPE="FUNCTION" DELEGATE="perl::MAIN">
+ 			<BEGIN>&lt;%cleanup&gt;</BEGIN>
+ 			<END>&lt;/%cleanup&gt;</END>
+ 		</SPAN>
+ 		<SPAN TYPE="FUNCTION" DELEGATE="perl::MAIN">
+ 			<BEGIN>&lt;%filter&gt;</BEGIN>
+ 			<END>&lt;/%filter&gt;</END>
+ 		</SPAN>
+ 		<SPAN TYPE="COMMENT1">
+ 			<BEGIN>&lt;%doc&gt;</BEGIN>
+ 			<END>&lt;/%doc&gt;</END>
+ 		</SPAN>
+ 		<SPAN TYPE="FUNCTION" DELEGATE="perl::MAIN">
+ 			<BEGIN>&lt;%flags&gt;</BEGIN>
+ 			<END>&lt;/%flags&gt;</END>
+ 		</SPAN>
+ 		<SPAN TYPE="FUNCTION" DELEGATE="perl::MAIN">
+ 			<BEGIN>&lt;%attr&gt;</BEGIN>
+ 			<END>&lt;/%attr&gt;</END>
+ 		</SPAN>
+ 		<SPAN TYPE="FUNCTION" DELEGATE="mason::MAIN">
+ 			<BEGIN>&lt;%text&gt;</BEGIN>
+ 			<END>&lt;/%text&gt;</END>
+ 		</SPAN>
+ 		<!-- def and method blocks - roll on regexp -->
+ 		<SPAN TYPE="FUNCTION">
+ 			<BEGIN>&lt;%def</BEGIN>
+ 			<END>&gt;</END>
+ 		</SPAN>
+ 		<SEQ TYPE="FUNCTION">&lt;/%def&gt;</SEQ>
+ 		<SPAN TYPE="FUNCTION">
+ 			<BEGIN>&lt;%method</BEGIN>
+ 			<END>&gt;</END>
+ 		</SPAN>
+ 		<SEQ TYPE="FUNCTION">&lt;/%method&gt;</SEQ>
+ 		<!-- Bracketted inline Perl instructions -->
+ 		<SPAN TYPE="FUNCTION" DELEGATE="perl::MAIN">
+ 			<BEGIN>&lt;%</BEGIN>
+ 			<END>%&gt;</END>
+ 		</SPAN>
+ 		<SPAN TYPE="FUNCTION" DELEGATE="perl::MAIN">
+ 			<BEGIN>&lt;&amp;</BEGIN>
+ 			<END>&amp;&gt;</END>
+ 		</SPAN>
+ 		<!-- end of Mason tags -->
+ 
+ 		<!-- JavaScript -->
+ 		<SPAN TYPE="MARKUP" DELEGATE="javascript::MAIN">
+ 			<BEGIN>&lt;SCRIPT</BEGIN>
+ 			<END>&lt;/SCRIPT&gt;</END>
+ 		</SPAN>
+ 
+ 		<!-- stylesheet -->
+ 		<SPAN TYPE="MARKUP" DELEGATE="css::MAIN">
+ 			<BEGIN>&lt;STYLE</BEGIN>
+ 			<END>&lt;/STYLE&gt;</END>
+ 		</SPAN>
+ 
+ 		<!-- DTD instructions -->
+ 		<SPAN TYPE="KEYWORD2" DELEGATE="xml::DTD-TAGS">
+ 			<BEGIN>&lt;!</BEGIN>
+ 			<END>&gt;</END>
+ 		</SPAN>
+ 
+ 		<!-- markup tags -->
+ 		<SPAN TYPE="MARKUP" DELEGATE="TAGS">
+ 			<BEGIN>&lt;</BEGIN>
+ 			<END>&gt;</END>
+ 		</SPAN>
+ 
+ 		<!-- SGML entities -->
+ 		<SPAN TYPE="LITERAL2" NO_WORD_BREAK="TRUE">
+ 			<BEGIN>&amp;</BEGIN>
+ 			<END>;</END>
+ 		</SPAN>
+ 	</RULES>
+ 
+ 	<RULES SET="TAGS" DEFAULT="MARKUP">
+ 		<SPAN TYPE="LITERAL1" EXCLUDE_MATCH="FALSE">
+ 			<BEGIN>"</BEGIN>
+ 			<END>"</END>
+ 		</SPAN>
+ 
+ 		<SPAN TYPE="LITERAL1" EXCLUDE_MATCH="FALSE">
+ 			<BEGIN>'</BEGIN>
+ 			<END>'</END>
+ 		</SPAN>
+ 	</RULES>
+ 
+ </MODE>
+

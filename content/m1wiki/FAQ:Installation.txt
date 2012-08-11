@@ -1,0 +1,57 @@
+[&TOC FAQ:Installation]
+
+=== What else do I need to use Mason? ===
+If you are planning on using Mason in a web environment with the Apache webserver, you'll need a working copy of Apache and mod_perl installed. Make sure that your mod_perl installation works correctly before trying to get Mason working. Also, if you are running RedHat Linux, beware the mod_perl RPMs that ship with RedHat. They were unreliable for a very long time, and their current state is still murky.
+
+
+=== What platforms does Mason run on? ===
+Because Mason consists of only Perl code, it should work anywhere Perl runs (including most Unix and Win32 variants). If it doesn't work on your operating system, let us know.
+
+=== Can I run Mason outside a web server? ===
+Yes, in fact Mason can be useful for generating a set of web pages offline, as a general templating tool, or even as a code generator for another language. See the "Standalone Mode" section of the Interpreter manual at http://www.masonhq.com/docs/manual/Admin.html#running_outside_of_mod_perl
+
+=== Can I run Mason via CGI? ===
+Yes. See "Using Mason from a CGI script" in the Interpreter manual at http://www.masonhq.com/docs/manual/Admin.html#running_outside_of_mod_perl
+
+The examples in the docs requires that you have Mason 1.10+ installed.
+
+Note that running Mason under CGI (or other non-persistent environments) will entail a substantial performance hit, since the perl interpreter will have to load, load up Mason and its supporting modules for every CGI execution. Using mod_perl or similar persistent environments (SpeedyCGI, FastCGI, etc.) avoids this performance bottleneck.
+
+=== Can I use Mason with Apache/mod_perl 2.0? ===
+Yes, as of Mason 1.27 (released 10/28/2004), there is support for Apache/mod_perl 2.0 in the core Mason code. You may find other hints at ApacheModPerl2.
+
+=== Where can I find a web host supporting Mason? ===
+Please check the [Hosting] page for a list of hosting providers supporting HTML::Mason.  You may also be interested in the list of [http://perl.apache.org/help/isps.html ISPs supporting mod_perl], however, there are reports that this document has not been maintained in several years.
+
+=== What does the error "Can't locate object method 'TIEHASH' via package 'Apache::Table'" mean? ===
+It means that Mason is trying to use some of mod_perl's "table" interface methods, like $r->dir_config->get('key') or the like. It's failing because your mod_perl server wasn't compiled with support for Apache's Table API.
+
+To fix the problem, you'll have to recompile your server, adding the PERL_TABLE_API=1 flag (or EVERYTHING=1).
+
+If you can't recompile your server, you can edit the Mason source code. Find a line in ApacheHandler.pm that looks like this (it's line 365 in Mason 1.04):
+
+      my @val = $mod_perl::VERSION < 1.24 ? $c->dir_config($p) : 
+         $c->dir_config->get($p);
+
+and change it to:
+
+      my @val = Apache::perl_hook('TableApi') ? $c->dir_config->get($p) : 
+         $c->dir_config($p);
+
+Recent versions of Mason use that, or a variant of it.
+
+=== What does the error "Can't locate Apache/Request.pm in @INC" mean?
+You are using the default !ApacheHandler args_method ('mod_perl'), which requires that you have installed the Apache::Request package (libapreq). See http://www.masonhq.com/docs/manual/Params.html#args_method.
+
+You can either install libapreq, or change args_method to 'CGI'. The latter is a bit slower and uses more memory.
+
+=== Why am I getting segmentation faults (or silently failing on startup)? ===
+There are a few known mod_perl issues that cause segmentation faults or a silent failure on the part of Apache to start itself up. Though not specific to Mason, they are worth keeping in mind:
+
+* Are you using a dynamically-linked mod_perl? DSO mod_perl builds were unstable for a long time, although they might finally be getting better. Rebuild Apache with mod_perl linked statically and see if the problem goes away. Also see http://perl.apache.org/docs/1.0/guide/install.html#When_DSO_can_be_Used.
+
+* Earlier versions of XML::Parser and Apache could conflict, because both  would statically compile in expat for XML parsing. This was fixed as of Apache version 1.3.20 and XML::Parser 2.30, both of which can be compiled against the same shared libexpat. You can also build Apache with '--disable-rule=EXPAT'. Matthew Kennedy points out that 'If "strings `which httpd` | grep -i xml" returns anything, you have this problem.'
+
+* Are you using Perl 5.6.0? Though not widespread, Perl 5.6.0 can generate sporadic segmentation faults at runtime for some Perl code. Specifically, evals of moderate complexity appear problematic. And, since Mason uses lots of evals of moderate complexity, you can't avoid them. If the two suggestions above don't solve your segfault problem and you are running Perl 5.6.0, try upgrading to Perl 5.6.1.
+
+

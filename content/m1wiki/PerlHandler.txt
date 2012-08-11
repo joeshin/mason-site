@@ -1,0 +1,14 @@
+This httpd.conf directive allows you to set the subroutine (handler) to manage the response. Used in association with [SetHandler] and [ModPerl] [Apache http://www.apacheref.com/ref/mod_perl/PerlHandler.html Mod_Perl Reference]
+
+Example Usage:
+
+    <FilesMatch "(\.html|\.txt)$">
+      SetHandler perl-script
+      PerlHandler HTML::Mason::ApacheHandler
+    </FilesMatch>
+
+See also: [Basic http://www.masonhq.com/docs/manual/Admin.html#basic_configuration_via_httpd_co Configuration]
+
+
+You can also use this in conjunction with [PerlRequire] to write a wrapper. See: 
+[Writing A http://www.masonhq.com/docs/manual/Admin.html#writing_a_wrapper Wrapper]

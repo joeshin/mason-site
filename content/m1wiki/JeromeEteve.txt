@@ -1,0 +1,71 @@
+Mason fan
+
+About me: http://www.eteve.net/
+
+The mason site I'm working for:
+
+http://www.careerjet.co.uk/
+
+A simple browsing component:
+
+[Component:browse]
+
+A component to turn your output in javascript output (nice to make widgets):
+
+[Component:scriptify]
+
+A quick, dirty and extremely handful mason component checker:
+
+[Compile]
+
+How to call component with content from perl:
+
+ComponentWithContentFromPerl
+
+
+
+A simple Mason::ApacheHandler subclass (with custom error page):
+
+ package MY::MasonHandler ;
+
+ use strict ;
+ use HTML::Mason::ApacheHandler ;
+
+ use base qw/HTML::Mason::ApacheHandler/;
+
+ sub new{
+    my ($class) = shift ;
+    return $class->SUPER::new(@_);
+ }
+
+
+ sub handle_request{
+    my ($self,$r) = @_;
+    my $return = eval { $self->SUPER::handle_request($r) };
+
+    if ( my $err = $@ )
+    {
+        $r->pnotes( error => $err );
+        $r->filename( $r->document_root . '/error/500.html' );
+
+        return $self->SUPER::handle_request($r);
+    }
+
+    return $return;
+ }
+
+ 1;
+
+Then in apache:
+ PerlModule MY::MasonHandler
+
+And instead of
+
+ PerlHandler HTML::Mason::ApacheHandler
+
+use:
+ PerlHandler MY::MasonHandler
+
+In page 500.html, you can use pnote to find and display the error message.
+
+

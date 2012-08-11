@@ -1,0 +1,12 @@
+DB2Mason is a framework and generator to simplify your development of database-based webapplications. It is based on HTML::Mason , Perl and of cause the database of your choice. You implement your database (tables, indexes, constraints, ...) and DB2Mason does the rest for you. 
+
+Version 0.1.2 is released now.
+New features are
+* Support for Apache on Windows
+* During installation on Oracle 10g the "database recyclebin" is considered
+
+
+Have a look at it
+[http://uwe-und-birgit.privat.t-online.de/uwe/db2mason/index.html click here]
+
+Your comments are welcome

@@ -1,0 +1,32 @@
+Calling
+
+   <&| test &> Hi There </&> 
+
+works great, of course, but suppose I wanted to use test from within perl.  I can call the component as followed:
+
+   % $m->comp('/test')  
+
+But how do I specify the content?"
+
+Answer:
+
+Although it isn't supported, you may do the following:
+
+   % $m->comp( {content=>sub {
+
+   INSIDE
+
+   % }}, '/test', %ARGS);
+
+The area "inside" will then be executed by mason, as normal.. since this code is expecting a subroutine, if you want a little more control from the perl-side of things, you can use the following code:
+
+   % $m->comp( {content=>sub { $m->print ("INSIDE"); } },
+   '/test', %ARGS);
+
+From DaveRolsky, "It might break in the future.  This isn't documented as working,
+and it may not continue to work in the future, because we might come up
+with a better/different implementation of this feature."
+
+It is also a simple matter to write a wrapper function or component to do this which either uses the <&| &></&> method or uses the above method.. if it DOES break as Dave suggests, you can easily modify your wrapper for the new behavior.
+
+-- EricWindisch

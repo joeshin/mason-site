@@ -1,0 +1,110 @@
+The mason FAQ mentions using [http://search.cpan.org/author/TJMATHER/HTML-FillInForm-1.03/lib/HTML/FillInForm.pm HTML::FillInForm] from CPAN to assist in filling out forms automatically in the filter section: http://www.masonhq.com/?FAQ:HTTPAndHTML#h-how_can_i_populate_form_values_automatically_ 
+
+
+
+
+
+
+I'd like to expand on that a little here, as it is a huge time/headache saver for anyone who uses lots of forms which must be checked/corrected before the system will accept them.
+
+
+
+The simplest method to populate a form, is to merely re-fill it with the user submitted data.
+
+   <%filter>
+    use HTML::FillInForm;
+    my $fif = HTML::FillInForm->new();
+    $_ = $fif->fill(
+             scalarref => \$_,
+             fdat => \%ARGS
+    );
+   </%filter>
+
+If you are using Apache::Request under mod_perl you can use
+
+   <%filter>
+    use HTML::FillInForm;
+    my $fif = HTML::FillInForm->new();
+    $_ = $fif->fill(
+             scalarref => \$_,
+             fobject => $r
+    );
+   </%filter>
+
+One of the really nice features of [http://search.cpan.org/author/TJMATHER/HTML-FillInForm-1.03/lib/HTML/FillInForm.pm HTML::FillInForm] is the fact it accepts a list of objects for its fobject parameter.
+
+Most of the sites I work with use at least a few custom modules behind them that handle reading, storing, and validating various data structures.  By adding a $foo->param method to these modules, they can be used with HTML::!FillInForm easily.
+
+The param method should work in the same way CGI.pm's does.
+
+Calling /$foo->param()/ without arguments should return a list of param names.
+
+Calling /$foo->param('bar')/ should return the value of bar, or a list of values if there are multiple values. (such as a set of checkboxes)
+
+Now in our filters, we can do something like this:
+
+ <%shared>
+  our($foo);
+ </%shared>
+
+ <%filter>
+  use HTML::FillInForm;
+  my $fif = HTML::FillInForm->new();
+  $_ = $fif->fill(
+      scalarref => \$_,
+      fobject => [ $foo, $r ]
+  );
+ </%filter>
+
+Where $r is our Apache::Request object provided by mason, and $foo is our object that handles our already stored data.
+
+$foo in the above example is declared as our($foo) in the <%shared></%shared> section because the mason filter routine is implemented as a separate subroutine which runs after the rest of the component, so declaring it as my will cause errors due to perls scoping.
+
+The ordering /$foo, $r/ is done so that the parameters in $r that the user submitted override parameters we started with.  The last object in the list takes precedence over the earlier ones as to deciding which values appear in your form.
+
+-- JeremyBlain
+
+-------------
+
+This could also be done with the components with content feature, like this:
+
+  <&| /lib/fill_in_form.mas, data => \%data, object => $r &>
+   <form ...>
+    ...
+   </form>
+  </&>
+
+The /lib/fill_in_form.mas component would look something like this:
+
+  <%once>
+   my $fif = HTML::FillInForm->new;
+  </%once>
+
+  <%args>
+   $data   => undef
+   $object => undef
+   $fill_password => 0
+  </%args>
+
+  <%init>
+   my $form = $m->content;
+
+   if ( $data || $object )
+   {
+       my $filled = $fif->fill( scalarref => \$form,
+                                fdat      => $data,
+                                fobject   => $object,
+                                fill_password => $fill_password,
+                              );
+
+       $m->print($filled);
+   }
+   else
+   {
+       $m->print($form);
+   }
+
+   return;
+  </%init>
+
+--DaveRolsky

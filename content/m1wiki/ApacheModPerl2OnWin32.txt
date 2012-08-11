@@ -1,0 +1,64 @@
+See also ApacheModPerl2.
+
+=> *As of Mason 1.27 (released 10/28/2004), there is support for Apache/mod_perl 2.0 in the core Mason code.* <=
+
+The information below is still valid for pre-1.27 versions.
+
+-----
+-----
+-----
+
+Steps to install Apache/mod_perl 2 on win 32 servers:
+
+* Install the latest Apache 2.x series from MSI package (if you want SSL, you'll may have to compile Apache from source using Visual Studio)
+
+* Install [Active http://www.activestate.com State]'s 5.8.x Perl distribution (NOT the 5.6.x distribution)
+
+* Install mod_perl 2 from PPM using the instructions at http://perl.apache.org/docs/2.0/os/win32/install.html
+
+* Install Mason:
+  C:\> ppm
+  ppm> install HTML::Mason
+
+* Add the following lines to your httpd.conf:
+  PerlModule  Apache2
+  PerlModule  Apache::compat
+  PerlSetVar  MasonArgsMethod  CGI
+  PerlSetVar  MasonDataDir C:/Apache2/mason/data
+  PerlModule HTML::Mason::ApacheHandler
+  <Location />
+    SetHandler   perl-script
+    PerlHandler  HTML::Mason::ApacheHandler
+  </Location>
+
+* This may be fixed now, but I found this problem on the first try:
+
+  Can't locate object method "uid" via package "Apache::Server" at
+ C:/Perl/site/lib/HTML/Mason/ApacheHandler.pm line 636.
+
+Commenting out the offending lines worked for me.
+
+Another alternative is to place the chown inside an if block as follows:
+
+  if ($^O ne "MSWin32") {
+    chown ...
+  }
+
+
+----
+
+I can only hope the following hard-earned wisdom is useful to others:
+
+I installed Apache2 under a self-made "usr" dir (c:\usr\Apache2). This avoided a path to Apache2 that included a space (default path was "C:\Program Files\Apache Group\Apache2"). I don't know if it makes a difference, but the path is certainly easier to type.
+
+
+
+I learned that the default config does not allow Mason to show Apache's DirectoryIndex (frequently index.html. Apache2 default is DirectoryIndex index.html index.html.var). Therefore, if you want to see the DocumentRoot index.html, the URL http://localhost/ won't cut it - you need to specify http://localhost/index.html to see it.
+
+Something else I discovered while troubleshooting: if you try to view the Apache2 default webpage, index.html.en, without the image files being in the right place, you will also get the "404 File Not Found" error.
+
+
+Finally, the Apache2 direcitve "LogLevel" is very useful during troubleshooting. Set it to "info" to see why Mason, or other things, are misbehaving.
+-----
+
+=> *As of Mason 1.27 (released 10/28/2004), there is support for Apache/mod_perl 2.0 in the core Mason code.* <=

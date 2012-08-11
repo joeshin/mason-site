@@ -1,0 +1,7 @@
+URL: http://www.reb00t.com/
+
+This is a [http://www.perl.org/ Perl] centric [http://www.rpm.org/ RPM] packages repository designed to bring the leverage of better working/maintainance/performance to [http://fedora.redhat.com/ Fedora]/[http://www.redhat.com/ RedHat] Linux Perl programmers and conscious sysadmins.
+
+Unlike rpmpan, cpan2rpm, cpanflute and other tools/repositories like that, Reb00t packages stick to comply with all official [http://www.fedora.us/wiki/QAChecklist QA] policies and guidelines, shifting the /hassle/ from busy sysadmins to the packagers.
+
+Besides the obvious packages for various CPAN modules there are also lots of other worthy pieces of software maintained here, an important example being our heavily crafted edition of [http://www.apache.org/ The Apache Foundation] HTTP Server which bundles [http://httpd.apache.org/ Apache HTTPd] v1.3.x, [http://perl.apache.org/ mod_perl] v1.x, [http://www.modssl.org/ mod_ssl] and [http://httpd.apache.org/apreq/ libapreq] 1.x.

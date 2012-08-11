@@ -1,0 +1,6 @@
+Mason project page at SourceForge: http://sourceforge.net/projects/mason/
+
+
+
+
+We use SourceForge to host our CVS repository and MailingLists only.

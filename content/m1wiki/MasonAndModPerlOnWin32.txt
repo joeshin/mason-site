@@ -1,0 +1,160 @@
+Installing from All-in-one Binaries
+
+You can download a self extracting archive containing Apache / mod_perl / and perl 5 and HTML::Mason installed at this URL: http://www.apache.org/dyn/closer.cgi/perl/win32-bin/
+
+The perl-win32-bin.exe executable contains Perl-5.6.x and Apache 1.3.xx, while the Perl-5.8-win32-bin.exe executable consists of Perl-5.8.x and Apache 2.0.xx. Before downloading you are advised to read the corresponding readme file.
+
+After installation, to verify Mason is working, start Apache, and in your favourite browser open up: http://localhost/mason/printenv.html
+
+You can also verify that mod_perl is also enabled and working by checking that the environment variable GATEWAY_INTERFACE value is "CGI-Perl/1.1 ".
+
+Installing from ppm packages
+
+PPM packages, suitable for use with an existing Win32 ActivePerl and Apache installation, are available. To install, add the repository: http://theoryx5.uwinnipeg.ca/ppms/ for ActivePerl 8xx, based on perl-5.8, or http://theoryx5.uwinnipeg.ca/ppmpackages/ for ActivePerl 6xx, based on perl-5.6, to your list of repositories. You can then install the HTML-Mason package within the ppm shell.
+
+The theoryx5 repository also contains ppm packages for mod_perl and libapreq (for mod_perl-1, containing Apache::Request and friends) and libapreq2 (for mod_perl-2, containing Apache2::Request and friends).
+
+Building from source on Cygwin
+
+Installing from binaries is fast. Yet depending on your application you may need extra modules which may need compilation. The CPAN quick install tool "perl -MCPAN -e shell" won't always work if you installed perl from binaries.
+
+This guide will help you compile and make HTML::Mason work on Cygwin ("Cygnus + GNU for Windows") which is a UNIX environment for Windows.
+
+Cygwin consists of two parts:
+
+    * A DLL (cygwin1.dll) which acts as a UNIX emulation layer providing substantial UNIX API functionality.
+    * A collection of tools, ported from UNIX, which provide UNIX/Linux look and feel. 
+
+The Cygwin DLL works with all non-beta, non "release candidate", ix86 versions of Windows since Windows 95, with the exception of Windows CE.
+
+Go to professional resume and download and install the set-up tool.
+
+The setup-tool will prompt you for the tools you want to install. Choose the following items : ash, base-files, base-passwd, bash, binutils, bzip2, crypt, cygutils, cygwin, diff, diffutils, fileutils, findutils, gawk, gcc, gdbm, gettext, grep, groff, gzip, libiconv, login, make, ncurses, pcre, perl 5.8, readline, sed, sh-utils, tar, termcap, terminfo, texinfo, textutils, which, win32api, zlib
+
+Most of these tools are part of the default cygwin installtion except those in bold.
+
+You will also have to add the cygwin bin directory in the window path.
+
+This is done in the Autoexec.bat on Windows 95 and in the advanced tab of the "System" tool of the configuration pane on "Windows NT". Be careful the "C:\cygdrive\bin" must be put before any other windows directory. Otherwise there might be conflicts between cygwin tools and windows tools and application on Cygwin won't run properly.
+
+You may now install HTML::Mason with the CPAN shell command :
+
+    perl -MCPAN -e shell
+
+
+After checking dependencies other modules will be installed. Some modules won'test sucessfully. By default the perl CPAN shell installs the newest version of all modules and some aren't compatible at 100%.
+
+If this happens go to http://search.cpan.org and try to install manually an older version of the module that doesn't test 100% successfully;
+
+Now that HTML::Mason is successfully installed you will have to install Mod_perl.
+
+In HTML::Mason doc it says that mod_perl should be installed before HTML::Mason. I advise you to install HTML::Mason first.
+
+I never managed to install Apache::Request on Cygwin (I read that it is possible yet I do not know how. If you ever manage let me know!).
+
+Under cygwin I use the CGIHandler instead of the ApacheHandler because I never managed to install Apache::Request module (doesn't compile on Cygwin).
+
+Yet if you later configure your handler to run under mod_perl your mason enabled site will be very fast. The only difference is for the $r object which is different (Yet quite as good) if you use the CGIHandler instead of the Apache handler.
+
+Installing HTML::Mason before mod_perl avoids you to have the installation process query for the Apache::Request module.
+
+To install mod_perl you should then download source distribution of Apache and Mod_perl and compile mod_perl using APACI. For Mod_perl to compile and link sucessfully you have to:
+
+1. patch the "config.sh" file in the "apaci" directory of the mod_perl source distribution adding the following line at the top of the file:
+
+    #!/usr/bin/sh
+
+
+Unlike on linux system Cygwin won't know a .sh file is a shell file and it won't execute it unless you add #!/usr/bin/sh
+
+2. Run the makefile.pl as described in the install.apaci of the distribution but adding --PERL_EXTRA_CFLAGS=-DUSEIMPORTLIB when you execute perl Makefile.PL (and the other arguments as described in install.apaci).
+
+If you don't add these extra args the "make" won't link successfully.
+
+After reading mailing lists I discovered that very few cygwin users managed to "make test" successfully when building mod_perl. This is why i used a "make install" just afer the "make".
+
+If you used the right options (DO_BUILD_HTTP=1) when doing the "perl Makefile.PL" your apache web server will be built in the same time as perl.
+
+    * First you should comment out "Group" and "UserGroup" in the default httpd.conf (Groups do not work on cygwin)
+    * You might also change default port (8080) to 80 and change server name to localhost
+    * You may now configure mod_perl on apache adding in the httpd.conf the following lines, assuming your cgihandler will reside in the /home directory (alias C:\cygwin\home directory): 
+
+    PerlModule Apache::Registry
+
+    Alias /perl/ "/home/perl/"
+
+    <Location /perl>
+
+      Sethandler perl-script
+
+      PerlHandler Apache::Registry
+
+      Options +ExecCGI
+
+      PerlSendHeader On
+
+    </Location>
+
+I will also advise you to add apache path (C:\cygwin\usr\local\apache\bin) in the window path for more ease (on WIndows 95 you will have to reboot)
+
+Now your apache is configured for mod_perl. You might copy the "printenv" file which comes in the apache /usr/local/apache/cgi-bin directory in your /home/perl directory. Start apache using "apachectl start" (from cygwin prompt) or "/usr/local/apache/bin/apachectl start" and open internet Explorer and type the URL http://127.0.0.1/perl/printenv. You can check mod_perl is enabled and working it the GATEWAY_INTERFACE value is "CGI-Perl/1.1 ".
+
+Now you can configure httpd.conf for apache to work with mason.
+
+    * Add the following lines in httpd.conf: 
+
+    Action html-mason /perl/mason_handler.cgi
+
+    <FilesMatch "\.html">
+
+        SetHandler html-mason
+
+    </FilesMatch>
+
+    * Make a file named mason_handler.cgi and put this file in the C:\cygwin\home\perl directory 
+
+    #!/usr/bin/perl
+
+    use HTML::Mason::CGIHandler;
+
+    my $h = new HTML::Mason::CGIHandler
+
+    (
+
+          data_dir  => '/tmp',     
+
+    );
+
+    $h->handle_request;
+
+
+By default your "document root" is /var/www on your cygwin directory tree. Make a file "index.html" as this:
+
+    This is a <%"Mason"%> enabled Page ! 
+
+
+and put it in you document root at "C:\cygwin\var\www".
+
+    * Restart apache ('apachectl restart') and go to http://127.0.0.1. 
+
+You've got it!
+
+Well you think you've got it. Yet most sites use Mysql and Cygwin Perl has no DBD::mysql installed by default.
+
+Installing DBD::mysql on Cygwin perl is quite tricky because this module needs a working mysql client for compiling and you cannot use the mysql binaries for Windows. You must build your own mysql client from source.
+
+To install DBD::mysql you must :
+
+    * first install the DBI module which compiles without problems on cygwin,
+    * then download mysql sources and compile it. Because you only need a client you can use ./configure --without-server
+    * Testing mysql client : once mysql is compiled the tricky part is that there are no UNIX socket on Windows (nor CygWin) and your mysql uses by default UNIX socket for local connection and TCP-IP for remote connection. 
+
+This is why when you test the mysql clent "mysql" won't work; If you have a working mysql server running you must type "mysql -h 127.0.0.1".
+
+If you have access to a remote database then no problems ("mysql -h hostname --user=xxx --password=yyy").
+
+Once you have sucessfully tested mysql client, you won't be able to "make test" and install DBD::mysql from the CPAN shell. You have to download the module manually and change options for the "Perl Makefile.PL" (type "Perl Makefile.PL --help) in order to use either 127.0.0.1 (and not "localhost") or a remote database to be able to "make test" successfully.
+
+YUP. Now you have a successfull HTML::Mason install and thanks to CygWin you will be able to install and compile many additional modules which cannot be found at ActiveState.
+
+-- LionelSiffre

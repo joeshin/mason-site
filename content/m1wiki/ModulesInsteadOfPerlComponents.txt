@@ -1,0 +1,108 @@
+Note: You might want to just read [http://www.masonbook.com/book/chapter-10.mhtml Chapter 10 (Scalable Design)] in the MasonBook, since that covers this topic and more.
+
+
+Mason is a powerful tool for generating content. Its combination of easy templating syntax, powerful component structures, and such features as autohandlers, dhandler, component inheritance all combine to make it much like Perl itself. It makes easy things easy, and difficult things possible.
+
+However, exactly like Perl itself, the facilities it provides can make it all too tempting to do things the easy way. Also like Perl, Mason makes no attempt to enforce any sort of discipline in your design.  Instead, this is your responsibility as a programmer and application designer. This is where the responsibility always lies, no matter what language or tools you are using.
+
+Though Mason is at its core a text templating tool, it also provides much more functionality. One such piece of functionality is that individual components are almost exactly like subroutines. They can be called anywhere in your processing and they can, in turn, call other components, generate output, and/or return values to the caller.
+
+
+It is this latter facility which can lead to design trouble. In my use of Mason, I have come to believe that Mason components should be used exclusively for generating output, though I mean that in the most general sense. This is as opposed to using components for data processing as well. For this task, I believe that Perl modules are much better suited. In my experience, this division of labor concept leads to long term benefits in maintainability and clarity of design.
+
+Before I go on, allow me to clarify my terms. When I use the term 'generating output' I mean generating binary or text output of any sort (HTML, XML, plain text, images, etc.) to be sent to some sort of output (STDOUT, a web client, etc.). In a web environment, this includes things like sending headers such as redirects. When I say 'data processing', I mean the work of retrieving data from an external data source such as a database, processing it, and turning into useful objects or data structures.
+
+The rest of this discussion will assume a web environment, as that is Mason's primary (so far) and probably the most familiar to my readers.
+
+Obviously, the line between generating output and data processing is extremely blurry. Given that fact, perhaps what is best is to reduce the data processing in Mason components to the minimal amount necessary to properly generate output. All other application logic should be placed into Perl modules and called from your components.
+
+The line that probably needs to be drawn is one that makes the code flow in both your modules and your components as natural as possible.  Certainly, we don't want to go into impossible contortions in order to eliminate four lines of processing from a component. Nor do we want to put knowledge about Mason or our components into our modules. Like all design tasks, there is as much art as skill involved.
+
+For example, I consider it entirely appropriate for Mason components to handle incoming request argument processing. A component would use these to determine what library function to call or what class to instantiate. It might also use these arguments to directly change the way it generates output (for example, a parameter indicating that no images should be included). There is little reason to have this particular processing task handled by a module. Indeed, this would be creating exactly the kind of environmental dependence I believe is so problematic in using Mason for application logic.
+
+What exactly is the danger? Well, Mason is a fine system for generating HTML, for example. However, let's assume that you plan to also provide your data via an email interface. A user may write an email to you with a specific body such as 'fetch file 1' and your application will respond with the contents of file 1.
+
+In such a case as this, you just want to execute some application logic, (fetch a file), and then spit it out to your mailer. In this case, it is unlikely that any of Mason's powerful features would be necessary. In fact, it would probably get in the way.
+
+
+But this is probably best illustrated by an example. Let's assume we want to build an application to serve as the backend for a new website focused on news about Hong Kong movies. Let's assume you intelligently decide to make a single component to generate a story box. A story box has a headline, author, and the first 500 characters of the story. If there are more, it has a link to read the whole thing.
+
+Here's the HTML-making portion of the component:
+
+   <h1><% $story{headline} %></h1>
+
+   <p>
+   written by <b><% $story{author} %></b>
+   </p>
+
+   <p>
+   <% substr ($story{body}, 0, 500) %>
+   % if ( length $story{body} > 500 ) {
+   <p>
+   <a href="full_story.htlml?story_id=<% $story{story_id} %>">
+   Read the full story
+   </a>
+   </p>
+   % }
+
+Pretty simple, huh? It of course contains some application logic. It checks the length of the story's body and changes the output depending on it. But this is pretty simple. But the real question is where does the %story hash come from. Let's assume that we call another component to get it. So then we have this:
+
+   <%init>
+   my %story = $m->comp('get_newest_story');
+   </%init>
+
+Wow, simple! So what's the problem? Well, there is none as long as you only ever want to get the newest story when using Mason. But what if you wanted to send out the top story anytime someone sent an email to you at newest_story@hkmovienews.com?
+
+Hmm, let's write a quick program to do that:
+
+   #!/usr/bin/perl -w
+
+   use HTML::Mason::Interp;
+   use HTML::Mason::Parser;
+
+   my $outbuf;
+   my $parser = HTML::Mason::Parser->new;
+   my $interp = HTML::Mason::Interp->new( parser => $parser,
+   comp_root => '/my/comp/root',
+   data_dir => '/my/data/dir',
+   out_method => \$outbuf );
+
+   my %story = $interp->exec('get_newest_story');
+   send_newest_story_mail( %story );
+
+   # imagine the mail is sent
+
+Not so bad, I suppose. Here's some issues to consider:
+
+0 You just loaded a couple thousand lines of code in order to do a simple database fetch and then send an email. Congratulations!
+0 The return value of $interp->exec may not be what you'd expect. If the component you called did an $m->abort('something') internally then the return value will be 'something'. This works fine when using the Mason ApacheHandler code but isn't what you expected in this situation.
+0 The $interp->exec method may throw an exception. Better wrap it in an eval. This is actually a good design piece, but its worth mentioning so you know that it can happen.
+0 If any component you call (or that it calls) references $r (the Apache server object), it will fail spectacurly. I like feeling free to access this in my components, however.
+
+Now imagine that you multiply this by forty more data processing and application logic components. Then remember that if you try to do 'perldoc get_newest_story' from the command line it wont' do anything!  And remember that you have forty separate files, one per API call.  Now imagine that you take advantage of Mason's inheritance and other fancy features in your data processing code. Now imagine trying to debug this later.
+
+If, however, you put the 'get_newest_story' functionality into a module, then you could call this module both from your component and your email sending program.
+
+The advantages include:
+
+* You can easily preload your shared library code in the main Apache server at startup, resulting in a memory savings.
+
+* You can document your API separately from your display code. Other programmers working on the project can easily read this documentation.
+
+KenWilliams offered the following points:
+
+* Performance-wise, calling a subroutine in a module is much more lightweight than calling a Mason component. A Mason component call involves calling a subroutine, and also performing a bunch of overhead tasks like checking the age of the component file, checking required arguments and types, and so on.
+
+* Perl modules have well-known mechanisms for documentation and regression testing. Psychologically, I always feel like an API is more stable when I've got a documented module that instantiates it.  A tree of components feels more mutable to me, and I hate feeling like I've built a shaky house of logic that I don't necessarily understand in the end.
+
+He does go on to state that:
+
+There have been times when shoving data processing into a mason component was exactly what I've needed. The code sits there right next to the code that calls it, not off in site_perl (which should usually have some tight controls over what gets put in it). In seconds you can try things out without worrying about module naming, namespace collisions, server restarts, etc. Then when you've had a chance to think about what a good interface should be like, you can migrate the code to a module. It's all well and good to extol the virtues of good planning, but the creative process is seldom very plannable unless you've done a similar task before.
+
+To this latter point, I have no objection. I am certainly not an advocate of the "design everything and make sure its perfect before coding" school of design. My point are more about the end product than the development process itself. Ken also says, "In general, I think it's much better when designing development techniques to think of software as a process rather than an object." I couldn't agree more.
+
+My summary is simple. Writing your application logic and data processing as Mason components is a shortcut that will bite you later. Like all design tradeoffs, it speeds up initial time to release while guaranteeing maintenance pain in the future.
+
+
+
+-- DaveRolsky

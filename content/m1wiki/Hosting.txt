@@ -1,0 +1,94 @@
+What companies provide Mason hosting services? Please contribute.
+----
+Recent thread about this on the user's list: http://marc.theaimsgroup.com/?t=100500023400009&r=1&w=2
+----
+There is a large list of ISPs supporting mod_perl at http://perl.apache.org/help/isps.html. Some of these may support Mason as well. It's not clear whether this list is still being maintained though. --JonathanSwartz
+----
+[http://www.grokthis.net Grokthis.net] offers [http://www.uk2.net/web-hosting/ hosting] services with HTML::Mason at very [http://www.grokthis.net/Hosting competitive rates]. Advanced accounts offer an individual [http://www.vinfotech.com/web-development/asp.net-web-application-development.htm ASP.Net Development] [http://impact-resumes.net/index.html Professional Resume Writers] [http://impact-resumes.net/services.htm Resume Service] [http://impact-resumes.net/sample-resumes.htm Sample Resumes] [http://www.uiredesign.com Website Redesign Services] [http://www.professay.com/ custom essays], [http://www.vinfotech.com PHP Web Development] mod_perl enabled Apache instance, see it in action here at [http://www.selectgames.net/ Fun games]. Users can edit and maintain their own httpd.conf and PerlHandlers.  Mason running under FastCGI is supported for the lower-cost Traditional accounts.  To contact please visit our [http://www.easygoessay.com/ writing services] website or call, 1 800-630-0476 begin_of_the_skype_highlighting��������������1 800-630-0476������end_of_the_skype_highlighting
+
+We also support Zope (/w Plone) and Mono XSP for Advanced accounts.
+--EricWindisch with !GrokThis.net
+----
+IT assistance GmbH
+Lange Gasse 6
+CH-4052 Basel
+http://www.itassistance.biz/Technology/Mason.html
+--ChristianHauser
+----
+Sus4.net is a small, focused [http://www.gossimer.com/hosting.php Web hosting] company.  We mainly cater to clients for whom we've developed [http://www.need4paper.com/ research papers] and [http://www.usefulpapers.com/ term papers] their sites.  Our server environment is tailored to web developers.  We offer very flexible configuration and few monitors on resource usage.
+  Contact info@sus4.net for details or visit http://sus4.net/.
+--DougAlcorn
+----
+[http://edgreenberg.com] is my small hosting business. I offer several tiers of hosting, email, mailing list and similar services and a  [http://www.essaywriter.co.uk/services.aspx essay writing service UK]. I have several Mason sites and am open to installing most perl modules on request. I provide Mysql as well. I also do virtual private servers in [http://www.essaylib.com custom papers].
+--EdGreenberg 5/18/2004
+----
+[http://somebox.com somebox.com] is a hosting and company in New York City. Some box hosts custom mod_perl sites using Apache, MySQL, and advanced customizations such as Image::Magick, GPG, PDF output, and customer libraries
+
+SomeBox also provides [http://www.essaykey.com/ college essays] a development environment with CVS repository services, shell access, and system management by a professional sysadmin company.
+
+----
+
+[http://www.42inc.com 42, Inc], based in Berkeley, CA provides hosting for Mason, as well as Mysql, Postgres, and the more tranditional options.
+
+----
+MasonOnIPowerWeb - I managed to get HTML::Mason working in CGI mode on http://www.ipowerweb.com/ - hopefully the instructions will help others do the same if they have accounts there too. --PeterPayne 7/Sept/2005
+
+
+----
+[http://www.livingcitadel.com Living Citadel] - Mason setup upon request either upon account setup or at a later point.  Plesk 8.6 offered with every account for easy re-selling custom sites and applications.  Apache, MySQL, PostgreSQL, and many other technologies [http://www.equityreleaseuk.net equity release uk] available.
+
+----
+[http://hosting.t-online.de T-Home Webhosting] - Mason is supported by default (one-click installation) on [http://hosting.t-online.de/server-uebersicht.html servers] and [http://hosting.t-online.de/homepage-uebersicht.html] and also  every other hosting plan] (although not mentioned on their website). Hosting plans start at 4,99 EUR per month.
+
+----
+= Virtual Private Servers =
+
+One appealing Mason option for those who like the idea of administrating their own server is that of Virtual Private Servers:
+
+"[ http://www.webhostingsearch.com/virtual-private-server.php Virtual private servers ] are a means of splitting a single physical server into multiple virtual servers. Virtual private servers are sometimes called virtual dedicated servers. The practice of partitioning a single server so that it appeared as multiple servers was common practice in the days of mainframe computers, but has seen a resurgence lately with the development of software such as User-mode Linux and Xen." 
+
+Any VPS could be used for Mason hosting. Here are some that have listed themselves or been recommended on the mailing list:
+
+
+
+----
+[ http://www.budgetdedicated.com BudgetDedicated ] offers Xen based VPS'. Xen is characterized as a uniquely high performance VPS technology. They offer many extra services free of charge, offer very competitive European bandwidth from a top gigabit network (datacenter in Amsterdam). They have special access features such as a Console Service. It's virtually riskless... no long term commitments, just month-to-month. Moreover, they provide a [ http://www.budgetdedicated.com/calc completely free 7 day trial! ] 
+
+----
+[http://www.greatnet.de/cms/front_content.php?idcat=5 Greatnet VServer] Greatnet is a large Hosting Company who offer Xen high performance based VServer`s. Easy reinstall, reboot and rescue mode is included ] 
+
+----
+
+[ http://www.bytemark-hosting.co.uk/index.html Bytemark Hosting] doesn't really provide Mason accounts, but instead provides UML (User Mode Linux) virtual machines.  With these virtual machines you get root access to your virtual computer, so you could set up Mason, your choice of SQL,  
+etc. I realize that this is akin to me pointing you to a place that does co-location, but there are a couple differences... the biggest of which is that this approach is much cheaper.  I have not tried these guys, or even UML, but have done a lot of work in another virtual machine, VMWare, and can attest to the fact that if they can correctly virtualize the environment, you will be able to do whatever you want on your virtual system.  The only thing to consider is that you are sharing real hardware, so other people's VMs may affect your performance at times.  --GordonMcCreight 10-28-03
+----
+
+jai
+[http://rimuhosting.com/index.jsp?s=masonhq RimuHosting] offer [http://rimuhosting.com/vps/aboutvps.jsp vps hosting].  They'll get you setup with Mason for no extra charge if you ask for it on the order confirmation page.
+--Peter
+----
+[http://jvds.com/ JVDS] offers VPS accounts starting at $12.50/month, and provides numerous plans and many add-ons. 
+----
+Get an attractive essay about Mason Hosting from [http://essayacademia.com custom essay writing services]
+----
+[http://www.otimizacaodesites.org/ Otimiza��o de Sites] offers accounts starting at $20.50/month, and provides numerous services including SEO service.
+----
+[http://www.redwoodvirtual.com/ Redwood Virtual] offers VPS accounts starting at $10/month. Add-ons can not be purchased separately; you must upgrade your account to get more disk space or bandwidth.
+----
+
+----
+[http://www.egenius.com/ eGenius] is a open-source solution provider in New York city. It offers HTML::Mason [http://webspacehost.com website hosting] and solutions including mod_perl, and custom development. 
+--egenius 
+
+[http://www.rocketdogcreative.com/ Rocket Dog Creative] offer HTML::Mason hosting, and custom development, with prices designed to suit what you want. Call them up for more info!
+
+[http://vpslink.com/ VPSLink] is a virtual private server hosting provider with plans starting at less than $7 USD /mo. Available Linux operating systems include CentOS, Debian, Ubuntu, Fedora, Gentoo, and more. [http://vpslink.com/openvz-vps/ OpenVZ] and [http://vpslink.com/xen-vps/ Xen VPS] hosting platforms are [http://www.gossimer.com/hosting.php Web hosting] supported. 
+----
+[http://vpsblaze.com/ VpsBlaze] is a cheap [http://vpsblaze.com/ VPS host] with plans starting at $14.95 USD /mo. Most Linux operating systems are supported. All VPS' come with full root access, and easy upgrades/downgrades between plans. --Mir 
+
+----
+AnHosts.com (aka AnHost.com and Anhosting.com) just installed Mason on my account today.  They offer some really great and affordable packages: http://www.anhosts.com/webhosting/compare.htm
+Customer service, [http://www.essaybank.com/ free essays] and response times to any questions are great.
+[Edit] AnHosts.com will not install mod_perl for security reasons.  I tried using Mason with CGI but we were not successful.
+--Kevin Miller
+

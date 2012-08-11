@@ -1,0 +1,115 @@
+I recently started [http://www.vi.net/cloud-hosting/cloud-hosting.php cloud hosting] at dreamhost and I was unable to get it going using the standard CGIHandler scripts. So I had to bypass the CGIHandler and just use the Mason Interpreter.
+
+
+By the way, HTML::Mason is NOT supported by dreamhost. Since the CPAN modules are installed on the shared host, I am assuming that we can use them.
+
+I thought a basic setup might be useful to anyone else out there who was looking for cheap Mason Hosting.
+
+Setup your .htaccess
+[~/web]$ cat .htaccess
+ErrorDocument 400 /mason_handler.cgi
+ErrorDocument 403 /mason_handler.cgi
+ErrorDocument 404 /mason_handler.cgi
+
+DirectoryIndex index.html
+Options -Indexes
+
+<Files .htaccess>
+order allow,deny
+deny from all
+</Files>
+
+<FilesMatch "\.html$">
+  Action html-mason /mason_handler.cgi
+  SetHandler html-mason
+
+  Order allow,deny
+  Allow from all
+</FilesMatch>
+
+<FilesMatch "(autohandler|dhandler)$">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+Setup your mason handler
+
+#!/usr/bin/perl -w
+use strict;
+use Cwd;
+use File::Path;
+use File::Spec;
+use HTML::Mason;
+
+my $args = $ENV{'REQUEST_URI'} || '/index.html';
+my $comp_root = File::Spec->rel2abs(cwd);
+my $interp = HTML::Mason::Interp->new( comp_root => $comp_root );
+$interp->exec($args);
+
+exit 0;
+
+Now just drop an autohandler, and a dhandler in the document root and you are ready to go.
+
+Dreamhost also hosts FCGI, so you can set up your mason handler as a fcgi script. This also means you can set up a persistent database connection easily.
+
+[~/web]$ cat .htaccess
+ErrorDocument 400 /mason_handler.fcgi
+ErrorDocument 403 /mason_handler.fcgi
+ErrorDocument 404 /mason_handler.fcgi
+
+DirectoryIndex index.html
+Options -Indexes
+
+<Files .htaccess>
+order allow,deny
+deny from all
+</Files>
+
+<FilesMatch "\.html$">
+  Action html-mason /mason_handler.fcgi
+  SetHandler html-mason
+
+  Order allow,deny
+  Allow from all
+</FilesMatch>
+
+<FilesMatch "(autohandler|dhandler)$">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+[~/web]$ cat mason_handler.fcgi
+#!/usr/bin/perl -w
+
+use strict;
+
+use FCGI;
+use Cwd;
+use File::Path;
+use File::Spec;
+use HTML::Mason;
+
+# Grab the FastCGI request
+my $cgi = FCGI::Request();
+
+# my globals
+my $interp; # HTML::Mason::Interp
+my $Dbh;    # Global/persistent Database handle
+
+while ( $cgi->Accept() >= 0 ) {
+  unless ($interp) {
+    # create Mason Component Interpreter
+    my $comp_root = File::Spec->rel2abs(cwd);
+    $interp = HTML::Mason::Interp->new( comp_root => $comp_root );
+  }
+  unless ($Dbh) {
+    # create Global Database handle
+  }
+
+  my $env = $cgi->GetEnvironment();
+  my $request = $env->{REQUEST_URI} || '/index.html';
+  $interp->exec($request, Dbh => $Dbh);
+}
+
+exit 0;
+

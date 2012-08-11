@@ -1,0 +1,154 @@
+This problem is fixed in Mason-1.27.
+
+The real problem was that Mason was calling rflush at times when it didn't really output anything.  This was fixed, and a new harder-to-pass redirect test was added to the test suite.  
+
+For the curious, here is the change from SourceForge:
+http://cvs.sourceforge.net/viewcvs.py/mason/mason/dist/lib/HTML/Mason/ApacheHandler.pm?r1=1.294.2.8&r2=1.294.2.9
+
+----
+
+This explanation courtesy of JonathanKupferer, from his mail of 5/14/03 (http://marc.theaimsgroup.com/?l=mason-devel&m=105292294600392&w=2).
+
+The patch has not yet made it into Mason yet. Would like to get confirmation from several people that this works, as well as official explanation as to whether rflush has actually changed in mod_perl 2.
+----
+I was banging my head against a wall over this yesterday and found a solution this morning.  Not sure if its a good solution, so please, send feedback.
+
+System info: Mandrake 9.1, Apache 2.0.44, mod_perl 1.99_08, perl 5.8.0
+
+Problem: When I used $m->redirect() I got a 200 OK response instead of a 302.
+
+Diagnosis: After tracing the issue back through the mason modules I first narrowed it down to something in the flush_buffer method, which was weird since the buffer was empty.  Further investigation showed led me to:
+
+    $self->apache_req->rflush();
+
+where flush_buffer is overloaded in HTML/Mason/!ApacheHandler.pm
+
+Looks like this was setting the headers (perhaps new behavior with Apache2 or mod_perl2?).  Also important was that rflush was called whether or not the buffer had any content.
+
+Solution: The first approach was simply commenting out the rflush, probably not a good idea, but it worked.  It looked like what I needed to do was to only call rflush if there was something in the buffer...
+
+In HTML/Mason/!ApacheHandler.pm:
+
+   sub flush_buffer
+   {
+        print STDERR "||--::>> ApacheHandler::flush_buffer called\n";
+        my ($self) = @_;
+        # Only call rflush if flush_buffer returns a true value.
+        $self->SUPER::flush_buffer and $self->apache_req->rflush;
+   }
+
+In HTML/Mason/Request.pm:
+
+   sub flush_buffer
+   {
+        my $self = shift;
+        # A flag to indicate if something was flushed
+        my $something_flushed = undef;
+        for ($self->buffer_stack) {
+            last if $_->ignore_flush;
+            # Need to make flush indicate if it flushed anything
+            $something_flushed ||= $_->flush;
+        }
+        return $something_flushed;
+   }
+
+In HTML/Mason/Buffer.pm:
+
+   sub flush
+   {
+        my $self = shift;
+        return if $self->ignore_flush;
+
+        $self->_make_output;
+        my $output = $self->{output};
+        print STDERR "BUFFER (".(length $$output)." bytes)>>> $$output\n";
+        return unless defined($$output) and length($$output);
+        $self->{parent}->receive( $$output ) if $self->{parent};
+
+        $self->clear;
+
+        # Only change here... if buffer was empty we'd have returned already
+        return 1;
+   }
+
+
+-------
+
+Additional note by Shane McCarron:
+
+I attempted to implement this patch under RedHat9 with the standard versions of Apache and mod_perl that ship with RedHat9.  I was patching version 1.23 of Mason.  Unfortunately, it did not appear as if this was working correctly in instances where the Mason component had already output some content, had never itself called flush, and then the component decided it needed to redirect (where redirect is in this case implemented through a mason component in an autohandler).  What I ended up doing was commenting out the call to the apache flush (as Jonathan suggested).  This resolves the problem, but means there is no way to turn on autoflush under apache2/mod_perl2.
+
+Anyway, that's my $0.02.
+
+------
+
+Feedback from Graham Jenkins
+
+The full patch appears to work on Mason 1.23, Win2K, Apache2, mod_perl2.  I have
+the clear all buffers hack included as well: without this I get a redirect status code but can still get an erroneous page body when implementing redirect from a dhandler.
+
+    for ($m->buffer_stack) {${$_->{buffer}} = '';}
+    $m->redirect
+
+------
+
+Further info from DavidLindes:
+
+It seems that also cookies don't get set (with $r->header_out and CGI::Cookie)without this patch.  Applying just the first part of the above patch (putting an and between flush_buffer and rflush) seems to make both cookies and redirects work for me.
+
+Also of interest: the access_log showed status code 302 before the patch, but the actual HTTP transaction had response code 200.  After the patch, both are 302.
+
+Hmm, on further inspection, I find that:
+
+0 combining cookie setting and redirects into a single page does not work.  (Specifically, the redirect happens, but the Set-Cookie header gets lost.)
+0 making the other changes listed above not only doesn't finish things, but breaks it again so that even the redirect doesn't work.
+
+I guess I'll have to dig further...  I'll post if I find a solution.
+
+OK, well, I didn't find a fix, but I did find a workaround:  instead of using $r->header_out, I use $r->err_header_out for my cookie, and that, combined with the patch of not calling rflush, seems to make both the redirect and the cookie-setting work.
+
+------
+
+Further info from RusakovSA:
+
+My note about MasonX::Buffer2. Avoid flushing empty lines:
+
+ sub flush {
+  ...
+  return unless defined($$output) and length($$output);
+  # this line added
+  return unless $$output =~ /[^\s\r\n]/;
+  ...
+ }
+
+------
+
+With Mason 1.26 and mod_perl 1.99_14 $m->redirect doesn't still work (gives 200 instead of 302), but with this code I got redirecting work without changing Mason sources:
+
+ $r->headers_out->set(Location => $url);
+ $r->status(302);
+ $m->abort(302);
+
+(Cookies might work with $r->err_headers_out->add(Set-Cookie => ...) but I didn't need cookies in this case, just working external redirect.)
+
+------
+
+The following was not working for me:
+
+ $r->header_out->('Set-Cookie' => $cookie);
+ $m->redirect('/main.html');
+
+The above suggestion fixed it:
+
+ $r->err_headers_out->add('Set-Cookie' => $cookie);
+ $m->redirect('/main.html');
+
+Thanks!
+
+----
+
+=== Using internal_redirect under Apache2
+
+If you want to redirect from within your handler subroutine before you even get to your mason compenents then $r->internal_redirect is your friend. You should use Apache2::SubRequest instead of Apache2::Request at the top of your handler and then immediately return Apache2::Const::OK after calling $r->internal_redirct($uri). See [http://search.cpan.org/~gozer/mod_perl-2.0.1/docs/api/Apache2/SubRequest.pod CPAN] for more details
+
+* Can't locate object method "internal_redirect" via package "Apache2::RequestRec" at /data/sites/pwyt2/mason/handler.pl line 152.

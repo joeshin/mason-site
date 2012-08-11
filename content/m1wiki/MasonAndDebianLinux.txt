@@ -1,0 +1,85 @@
+This manual has been made for lazy people who want a Mason powered website running on Debian.
+
+
+I assume that you are installing Apache for the first time and your DocumentRoot is /var/www and will run the Mason scripts on /var/www/perl.
+
+*1. Packages:*
+
+   # apt-get install apache
+
+   # apt-get install libapache-mod-perl
+
+   # apt-get install libhtml-mason-perl
+
+It's also recommended to install the *apache-perl*, because it has mod_perl statically compiled and may solve some performance problems. 
+
+*2. Editing the httpd.conf*
+
+Add the following line:
+
+If you have installed the apache-perl package, you don't need the following line.
+
+   LoadModule perl_module /usr/lib/apache/1.3/mod_perl.so
+
+Create a /perl entry:
+
+   <IfModule mod_perl.c>
+
+     Alias /perl/ /var/www/perl/
+
+      <Directory /var/www/perl>
+
+         <Files "*.html">
+
+          SetHandler perl-script
+
+          PerlHandler HTML::Mason::ApacheHandler
+
+        </Files>
+
+     </Directory>
+
+     PerlSetVar  MasonCompRoot /var/www/perl
+
+     PerlSetVar  MasonDataDir   /var/state/mason
+
+     PerlModule  HTML::Mason::ApacheHandler
+
+   </IfModule>
+
+*3. Testing the installation:*
+
+First of all, do a stop-start on Apache.
+
+Create html file at /var/www/perl with the following content:
+
+   <% 2 + 2 %>
+
+Point your browser to that document.
+
+If you get the number 4, the Mason is working properly. If you have any problem, check Apache error.log. 
+
+-- ChristianoAnderson
+
+=== Discussion ===
+
+Does anyone know why Debian/unstable only has Mason 1.22? I've tried emailing the Debian maintainer, but no answer. Does anyone know him?
+
+-- AdamSjøgren
+
+Mason seems to have been upgraded to 1.25 in Testing/Unstable now, did a backport to Stable yesterday, and got 1.25 from testing.
+
+-- DenisBraekhus
+
+Yes, after a couple of emails he woke up (:-)) and started releasing current versions.
+
+-- AdamSjøgren
+
+The instructions on this page will install Mason 1.04, if you (like me) have Debian Woody (stable). If you want to install Mason 1.21 instead, you can get backports of Mason 1.21 together with its dependencies for easy installation on Debian Woody here: http://www.masonhq.com:8080/user/atoy/DebianWoody_Update/Index
+
+
+
+
+
+-- AlexKarjala
+

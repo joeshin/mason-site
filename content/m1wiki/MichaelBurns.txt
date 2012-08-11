@@ -1,0 +1,11 @@
+I use Mason on a daily basis, it is the core technology behind the sites we develop at [Cosbit Technologies http://cosbit.com] and [Connected Process http://connectedprocess.com].
+
+We also offer virtual Apache/mod_perl Mason sites at [Dragonfli Managed Hosting http://dragonfli.ca].
+
+=== !BorrowMe ===
+
+I am also part of a team working to create the world’s largest and most diverse product lending library, called [BorrowMe http://borrowme.com], where you will be able to find, borrow, lend, swap, and track almost anything with people you can trust. And it runs on Mason.
+
+Cheers!
+
+-Michael Burns

@@ -1,0 +1,28 @@
+Since mid-2002, Mason has been Amazon.com's official website templating system, powering the main Amazon.com site as well as partner sites. As one engineer at Amazon writes, "Mason elegantly solves the problem of large-scale web development, giving Amazon.com web developers the power of industry-standard Perl and the simplicity of re-usable components. This has made it easy to manage and evolve a very large mission-critical global codebase, and has halved the ramp-up time for new developers."
+
+The web tech team at Amazon is intent on contributing Mason changes back to the community where possible. For example, about half of the changes in 1.21 and 1.22 (mostly performance improvements) originated at Amazon. See also the MasonPlugins project.
+
+And now the recruiting plug: Amazon.com is seeking experienced Perl and Mason users for full-time web development positions. See http://www.amazon.com/jobs for details.
+
+CV writing service
+
+@All From: Davidslv - http://davidslv.com/home - Amazon still use Mason and you can see it at /jobs, look:
+
+    https://us-amazon.icims.com/jobs/87369/job?in_iframe=1
+    https://us-amazon.icims.com/jobs/86136/job?in_iframe=1
+
+Or just make a search about "mason" in jobs.
+
+@Gabriel - Software Development Engineer – 035441 - Rich hands-on experience in C++, Ruby, Perl/CGI, Mason, XML and Linux. (Posting Date Jun 11, 2009, 01:26 PM) -- aL
+
+@Colin - I can't find any mention of Mason on Amazon.com so far. I'm sure they use a number of technologies now but I'm also curious if they're running Mason some six years later (2009!) -- GabrielHarper
+
+I'm almost tempted to apply just for the amusement of submitting Mason as a source code sample ;) -- DaveRolsky
+
+This page has not been updated since 2003. The Wikipedia site for Mason says that amazon.com uses mason. Is this still true in 2007? -- Colin
+
+If you follow the link to Amazon's jobs page and do a search for Mason, you'll find tons of jobs recommending experience with Mason, which sounds like a yes to me. -- ClaireConnelly
+
+Yes - as of the summer of 2006, all web pages on Amazon.com, the international Amazon sites, and most Amazon-powered sites like Target.com are served through Mason. -- JonathanSwartz
+
+Yes - Mason has been powering the Amazon related websites for a while now.

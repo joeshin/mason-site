@@ -1,0 +1,36 @@
+The Perl and Mason code that operates this site is open source. You can obtain this code from SVN:
+
+    svn co https://svn.urth.org/svn/MasonHQ/trunk MasonHQ
+
+The site requires Mason 1.16 or above. Also, importing the "content" download (mentioned below) into mysql appears to have a dependency on mysql v4.1.xxx (or greater?).
+
+
+
+===== Uses
+
+If you're a first-time Mason developer, use this as an example
+site.
+  
+
+If you like a particular feature of Mason HQ, copy the code and adapt
+it to your use.
+
+
+If you want add a feature to Mason HQ, create and submit a patch.
+Write to the "mason-devel developer's list"
+first to get feedback on your idea. Send your completed patch to the developer's list.
+
+
+===== Running the site
+
+See the INSTALL file for instructions. To fully operate the site
+you'll need a set of content files and a sample database dump.
+
+
+Check MasonHQSourceInstallation on how Mason HQ code was installed for an infranet site.
+
+
+===== License
+
+This source may be used and distributed under the same conditions
+as Mason itself. See [License].

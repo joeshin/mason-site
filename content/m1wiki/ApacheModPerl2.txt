@@ -1,0 +1,67 @@
+In mod_perl version 1.999022 (2.0.0-RC5), there was a big renaming of the namespace of the mod_perl2 API.  This was not backward compatible, and many modules, such as libapreq2, CGI, and HTML::Mason had to be updated to support the new API.  If you upgrade to mod_perl-2.0.0 and are using any of the modules below, you will also have to upgrade the modules to the versions indicated.
+
+
+    CGI           3.08
+    libapreq2     2.05
+    HTML::Mason   1.30
+
+Support for mod_perl-2.0.0 has been released as Mason-1.29_02 (or newer).  
+
+If you get errors about the Apache2::Request object, you have two choices: 1) install libapreq2, or 2) change MasonArgsMethod to "CGI".   Apache2::Request is part of the libapreq2 package.  It is still in the development stage. To find it on CPAN, you can search for "libapreq2" or "Apache2::Request".
+
+Mason 1.27 (released 10/28/2004), contains support for Apache/mod_perl-1.99.
+
+See OldApacheModPerl2 for information on using Apache2 with earlier versions of Mason.
+
+----
+
+== Common Problems:
+
+=== Errors installing on SuSE 9.x and later
+
+see InstallationRecipes
+
+=== Errors involving Apache2::Request
+
+* As of Mason-1.30, the default args_method is 'CGI' when running under mod_perl2, since Apache2::Request is still in development stage.  If you have sucessfully installed Apache2::Request, just add "MasonArgsMethod 'mod_perl'" to your setup to use it.
+
+
+* Can't locate object method "new" via package "Apache2::Request" at HTML/Mason/ApacheHandler.pm line 904.
+
+1. The easiest solution to any problem with Apache2::Request is 
+
+   MasonArgsMethod CGI
+
+Apache2::Request is the module used by the "mod_perl" option for MasonArgsMethod.
+
+2. Install libapreq2.
+
+If you still want to use "MasonArgsMethod mod_perl", be advised that it is still in development.  However, you can search for "libapreq2" or the "Apache2::Request" module on CPAN....
+
+3. Do *not* install libapreq2 with "configure".
+
+As noted in libapreq2's INSTALL file, there are two ways to configure libapreq2.  If you use the "configure" command, it will *not* install the perl modules.  Use this command instead:
+
+   perl Makefile.PL --with-apache2-apxs=/path/to/apache2/bin/apxs
+
+4. Just in case you missed the message as it flew by in the "make install" output, remember to add this line you your httpd.conf file:
+
+   LoadModule apreq_module modules/mod_apreq2.so
+
+Actually the symptom of forgetting that is an error about "undefined symbol: apreq_handle_apache2".
+
+=== Errors involving Apache::Status 
+
+* Apache::Const object version 1.99 does not match bootstrap parameter 2.00 ... included from Apache/Status.pm line ...
+
+1. Mason-1.29_02 has a bug where it does not use Apache2::Status under mod_perl2.  This can affect you if you have an old version of mod_perl installed (1.x or 1.99).   You can either delete Apache::Status from your perl modules directory, or install the latest CVS version of Mason.
+
+
+=== Errors involving Apache::Cookie
+
+Firstly use Apache2::Cookie, full of buttery goodness and useful extras.
+
+* Can't call method "err_headers_out" on an undefined value at /usr/lib/perl5/Apache2/Cookie.pm line 83.
+
+
+You now have to add $r (which really should be an Apache2::Request object if you're using Apache2::Cookie) to the bake command, so $cookie->bake($r) not just $cookie->bake();

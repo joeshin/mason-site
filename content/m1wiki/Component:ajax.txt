@@ -1,0 +1,241 @@
+ 
+<%doc>
+ This component simplifies using AJAX with Mason components.
+ It inserts the javascript to use the prototype.js library, and
+ allows you to call mason methods as well as components.
+ 
+ It relies on prototype.js, so you must include that script in any page
+ of any page which uses this (or an autohandler thereof).
+ 
+ (Most of the ideas herein are plagurized from Myghty and RubyOnRails.)
+ 
+Neither Jon nor I are rushing off to write Mason 2.0 any time real soon. It may never happen. It may happen differently. I'm just recording some thoughts, don't get too excited.  
+
+ Brief Example:
+   
+    <div id="me">Full</div>
+    <input type=button value="Drink Me!" 
+           onClick="<& /ajax, comp=>'SELF:drink', update=>'me' &>">
+    <%method drink>empty</%method>
+ 
+ Parameters:
+ 
+   comp :  (required) This is the component or method which will be called
+         by the ajax library.
+ 
+   update : DOM id to update.  If given the output of the above comp will
+         be placed in the given element.
+ 
+   throbber : The URL of a throbber image to show while the request is 
+         begin processed by the server.  A value of 'auto' or '1' will
+         use '/images/throbber.gif' as the default.
+         (Does not currently work with the 'position' parameter.)
+ 
+   position : Where in the above element to put the content.
+         default is to replace the element content.
+         "before" will add the content before the element.
+         "top" will add the content at the top/beginning of the element.
+         "bottom" will add the content at the bottom/end of the element.
+         "after" will add the content after the element.
+ 
+   javascript : if true value, <script></script> code given by the called
+                method will be evaluated in browser.
+                Its a prototype.js feature.
+
+   form : the name of a form to serialize and pass to the above comp.
+ 
+   parameters : query string or hash of values to pass to the above comp.
+         parameters starting with _ are passed verbatim, so you can put
+         executable javascript there
+          e.g.  parameters=>{ a => 'string' }  -->  'url?a=string'
+                parameters=>{ _a => '1+2' }    -->  'url?a=' + escape( 1+2 )
+ 
+ BTW, do not pass anything in parameters named "comp".  It confuses us.
+ 
+ Except for the 'comp' parameter, you can define attributes in the
+ component's <%attr> section instead of passing them explicitly to ajax.
+ This allows some better encapsulation and more automagic usage.
+ 
+ For example, if you know the component is always going to update a
+ certain div, you can define that in an attribute, so you do not have
+ to pass the update parameter.  Explicit parameters will override attributes.
+ Inherited attributes are not considered for parameters.
+ 
+ Security:
+ 
+ This component has the potential to bypass any access controls you have
+ setup in your httpd.conf or anywhere else, and allow the user to access
+ any component or method on your site.  If that is what you want, just
+ set the 'security' flag below to 0.
+ 
+ Otherwise you must explicitly enable each component for ajax access
+ by setting its 'ajax' attribute.  This can of course also be done in
+ any component it inherits from to give access to a group of components.
+ 
+ Here is a more-or-less complete example.  Please supply your own copy of
+ prototype.js and throbber.gif.
+ 
+    <script language=javascript src="prototype.js"></script>
+    <form name=xxx>
+    Test Text: <input type=text name=test><br>
+    <input type=button value="Click Me!"
+           onclick="<& /ajax, comp=>'SELF:my_ajax_test' &>">
+    </form>
+    <p>
+    <div id=target style="border: thin black solid;">
+    nothing yet
+    </div>
+ 
+    <%method my_ajax_test>
+    <%attr>
+    ajax => 1
+    update => 'target'
+    throbber => 1
+    form => 'xxx'
+    </%attr>
+    % sleep 2; # let the throbber throb
+    Hi there!  It works. <br>
+    test param = <% $ARGS{test} %>
+    </%method>
+ 
+ TODO:
+ 
+   Make auto-throbber work with 'position'.
+ 
+ </%doc>
+ <%flags>
+ inherit=>undef
+ security=>1
+ </%flags>
+ <%args>
+ $comp => undef                # what to call: name of mason comp/method, or component object
+ $update => undef        # dom id to update
+ $position => undef        # where to put the content [before,top,bottom,after] 
+ $form => undef                # form to serialize into parameters
+ $parameters => ''        # query string or hash of values to pass to $comp
+ $javascript => ''        # Specify to evaluate javascript in the response or not
+ </%args>
+ <%init>
+ if ( $ARGS{_comp} && !$comp ) {
+         my $ajax_comp = delete $ARGS{_comp};
+ 
+         # Security check
+         if (eval {$m->current_comp->flag('security')}) {
+                 my $compref = $m->fetch_comp($ajax_comp);
+                 if ($compref && !$compref->attr_if_exists('ajax')) {
+                         $m->print('Security Violation! Component non ajax-accessible.');
+                         $m->abort;
+                 }
+         }
+ 
+         return $m->comp($ajax_comp,%ARGS)
+ }
+ 
+ die("'comp' is a required parameter!") unless $comp;
+ 
+ # escape a string for safe usage inside javascript
+ my $escape_js = sub {
+         local $_  = shift;
+         return undef unless defined;
+         s/&/&amp;/g;
+         s/\\/\\\\/g;
+         s/</&lt;/g;
+         s/>/&gt;/g;
+         s/"/\\"/g;
+         s/'/\\'/g;
+         s/\r?\n/\\n/g;
+         return $_;
+ };
+ 
+ my $ref = ref $comp;
+ my $compref;
+ # need fully qualified name for comp/method
+ if ($ref =~ m'^HTML::Mason::') {  # Mason component object
+         $compref = $comp;
+         $comp = $compref->path;
+ } else {
+         # this may not be considering the previous base_comp properly
+         $comp =~ s/^SELF(?=:)/$m->caller->path/e;
+         $comp =~ s/^PARENT(?=:)/$m->caller->parent->path/e;
+         $compref = $m->fetch_comp($comp);
+         $comp = $compref->path;
+ }
+ 
+ # we can pull arguments from the comp's %attr section.
+ # we do *not* want to look at inherited attributes
+ my $compattrs = $compref->attributes || {};
+ while( my($k,$v) = each(%$compattrs) ) {
+         next if $k eq 'ajax';  # reserved for security
+         next if $ARGS{$k};     # explicit args take precedence
+         $ARGS{$k} = $v;
+         # fixup args section
+         $update = $v      if $k eq 'update';
+         $position = $v    if $k eq 'position';
+         $form = $v        if $k eq 'form';
+         $parameters = $v  if $k eq 'parameters';
+         $javascript = $v  if $k eq 'javascript' ;
+ }
+ 
+ my $url = $m->current_comp->path;
+ my $args = '';
+ my $tp = $parameters;
+ $parameters = '_comp='.$m->interp->apply_escapes($comp,'u');
+ if (ref $tp eq 'HASH') {
+         for (keys %$tp) {
+                 my $value = $tp->{$_};
+                 my $safevalue = &$escape_js($value);
+ 
+                 $parameters .= '&' if $parameters;
+                 if (s/^_//) {
+                         $parameters .= $m->interp->apply_escapes($_,'u')."=' + escape( $value ) + '";
+                 } else {
+                         $parameters .= $m->interp->apply_escapes($_,'u').'='.$m->interp->apply_escapes($value,'u')
+                 }
+         }
+ }
+ if ($form) {
+         $parameters = '&'.$parameters if $parameters;
+         $parameters = qq{' + Form.serialize( $form ) + '}.$parameters;
+ }
+ 
+ if ($position) {
+         $args .= ' , ' if $args;
+         $args .= 'insertion: Insertion.'.ucfirst($position);
+ }
+ 
+ if ($javascript){
+        $args .= ' , ' if $args ;
+        $args .= 'evalScripts: true' ;
+ }
+  
+ for (keys %ARGS) {
+         next unless defined $ARGS{$_};
+         my $value = $ARGS{$_};
+         my $safevalue = &$escape_js($value);
+ 
+         if (m/^(method|postBody|requestHeaders)$/) {
+                 # string values
+                 $args .= ' , ' if $args;
+                 $args .= qq{ $_: '$value' };
+         } elsif (m/^(asynchronous|evalScripts|onSuccess|onFailure|onException|onComplete|onLoading|onLoaded|onInteractive|on\d\d\d)$/) {
+                 # verbatim values
+                 $args .= ' , ' if $args;
+                 $args .= qq{ $_: $value };
+         }
+ }
+ $args .= ' , ' if $args;
+ 
+ if ($update) {
+         my $throbber = &$escape_js($ARGS{throbber});
+         if (!$position && $throbber) {
+                 $throbber = '/images/throbber.gif' if $throbber eq '1' || $throbber eq 'auto';
+                 $m->print(qq{ Element.update( '$update', '<img src=\\'$throbber\\'>' ); });
+         }
+         $m->print(qq{ new Ajax.Updater('$update', '$url', { $args  parameters: '$parameters' } )});
+ } else {
+         $m->print(qq{ new Ajax.Request( '$url', { $args  parameters: '$parameters' } )});
+ }
+ return;
+ </%init>
+
+[Dofollow Social Bookmarking Free List | http://www.usa-bookmarks.co.cc]

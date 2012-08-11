@@ -1,0 +1,3 @@
+Merlin, the Mage is a Linux System Admin and Perl devel.
+
+For more information visit [theMage's Homepage http://themage.bliker.com] (Portuguese Only yet).

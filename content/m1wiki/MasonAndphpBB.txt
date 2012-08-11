@@ -1,0 +1,323 @@
+See MasonAndPHP. Does anyone have the guts to get phpBB output wrapped in Mason?
+
+-- BrianBober
+----
+You can always use [=HTML::BB][=Code] module from CPAN.  
+
+-- JakubNarebski
+----
+GregBoyington writes:
+
+I don't know about guts, but I got plenty of crazy. :)
+
+== The Goal ==
+My goal was to find a way to wrap arbitrary web content not normally parsable by HTML::Mason with mason-generated templates.  This was slightly different from BrainBober's work outlined in MasonAndPHP, whose idea for generating components on the fly is great, but overkill for my purposes.  Ergo I don't worry about making the content mason-parsable, inserting method blocks and so forth.
+
+
+
+
+
+
+== How I Did It ==
+
+I created a [=dhandler] in my mason site that proxies all requests to phpBB via an [=LWP::][=!UserAgent], disallowed direct access to the phpBB installation, and made a few tweaks to my Apache config to let it all hang together.  Here are the steps:
+
+=== 1. Setup The Mason Site ===
+Pretty obvious, right?  Make sure your mason site is up and running, and make sure that you've correctly configured your handlers to allow PHP files within your mason component root to execute normally.
+
+=== 2. Install phpBB ===
+Deploy a standard installation of phpBB into a directory inside your mason component root; I used [=/phpBB].  Make sure everything works as expected. /Note: this directory will not be publically-accessable when you're done, so the name doesn't much matter.
+
+
+
+=== 3. Prepare The Proxy Dir ===
+Create a directory inside your mason component root to hold the [=dhandler]   This directory will comprise the publically-accessable URL for phpBB; I used [=/forums].
+
+Next, move the [=templates], [=files], and [=images] directories out of [=/phpBB] and into [=/forums], then symlink them in [=phpBB].  This will keep inline images, embedded objects, etc. from being proxied.
+
+Finally, since the PHP scripts will appear to run in the [=/forums] directory, you must update your phpBB config, setting the [=script_path] variable to [=/forums].  This will cause the php scripts to link back to the proxy's directory, rather than the installation directory.
+
+=== 4. Create the [=dhandler] Proxy ===
+Here's the code for [=/forums/dhandler].  Note that you'll need to modify the value of the [=$phpBB_url] variable to match your site.
+
+| <<END  |
+%#
+%# /forums/dhandler -- proxy phpBB requests
+%# Author: Greg Boyington <greg@regex.ca>
+%# License: Free (As In Beer)
+%#
+%# WARNING!  The following is seriously kludgy, and may or 
+%#           may not function in any way.  YMMV(a lot).
+%#
+<% $content %>
+<%init>
+
+	# Construct the absolute URL of the current request.
+	# We check $__ISMODPERL2 (a global defined elsewhere) to
+	# maintain some backwards-compatibility with mod_perl 1.x.
+	# 
+	my $url;
+	if ( $__ISMODPERL2 ) {
+		my $parsed = $r->parsed_uri;
+		$parsed->hostname($r->get_server_name);
+		$parsed->port($r->get_server_port);
+		$parsed->scheme( $ENV{'HTTPS'} eq 'on' ? 'https' : 'http');
+		$url = $parsed->unparse;
+	} else {
+		$url = $r->parsed_uri->unparse;
+	}
+
+	# Replace the current dir ('forums') with the true 
+	# location of the phpBB installation.
+	#
+	$url =~ s,/forums/,$phpBB_url/,;
+
+	# Create a new HTTP::Request object, using the current 
+	# request method, the absolute url to the phpBB installation,
+	# and the current request's headers. 
+	#
+	my $headers_in = $r->headers_in;
+	my @headers;
+	while( my ( $key,$val ) = each %$headers_in ) {
+		push @headers, $key, $val;
+	}
+	my $request = HTTP::Request->new($r->method, $url, \@headers);
+
+ 	# Copy the user's cookies into our LWP::UserAgent, but calling 
+	# $UA->cookie_jar->set_cookie() for each cookie in the current 
+	# requests's cookie jar.
+	#	
+	$UA->cookie_jar( {} );
+	my %cookiejar = $__ISMODPERL2 ? Apache2::Cookie->fetch : CGI::Cookie->fetch;
+	foreach my $cookie_name ( keys %cookiejar ) {
+		my $c = $cookiejar{$cookie_name};
+
+		$UA->cookie_jar->set_cookie(
+			$c->version(),
+			$c->name(),
+			$c->value(),
+			$c->path(),
+			$c->domain(),
+			$c->port(),
+			0,		# path_spec
+			$c->secure(),
+			0,		# expires
+			0		# other (see perldoc HTTP::Cookies)
+		);
+	}
+
+	# add the cookies to our HTTP::Request object.
+	#
+	$UA->cookie_jar->add_cookie_header($request);
+
+	# Handling POST data:
+	#
+	# We must copy any POSTed from data in the current request 
+	# to our new HTTP::Request object.  Unfortunately, $r->content
+	# is the only way (??) to access the raw form data, so the 
+	# array it returns must be munged back into a scalar, with all 
+	# appropriate field separators and so forth.
+	#
+	# BEWARE!  Make sure you enforce sensible upload limits for 
+	# multipart/form-data submssions.  The following code operates   
+	# on the entire form submission in memory.  Caveat...uh...coder.
+	#
+	# So firstly, we grab the content and store it in @pairs:
+	#
+	my @pairs = $r->content;  # XXX Woo! dangerous!
+
+	# We'll need some place to put the data as it is reformatted
+	# for our HTTP::Request object.
+	#
+	my @post_data;
+
+	# The incoming request's Content-Type header will reveal 
+	# what kind of data we're dealing with.
+	#
+	my $h = join(": ",@headers);
+	if ( $h =~ qr(Content-Type: multipart/form-data)i ) {
+
+		# the $r->content array splits the form data in the middle of 
+		# Content-Disposition lines, and further splits the key/value 
+		# pairs from those lines into separate array elements, removing 
+		# the semi-colons between the pairs and the equal sign between 
+		# the key and the value.  
+		#
+		# We start by munging it all into a scalar:
+		#
+		my $c = join('',@pairs);
+
+		# We now fix up the missing semi-colons between the key/value 
+		# pairs on the Content-Disposition lines. 
+		#	
+		# XXX KLUDGE!  We repeat the process four times, so that 
+		# uploaded files with up to four key/value pairs on the 
+		# Content-Disposition line are reformatted properly.  But 
+		# we should be able to do this with just the regex, no?
+		#
+		for ( 0..3 ) {
+			$c =~ s[ 
+
+				# Capture the start of the Content-Disposition line,
+				# up to and including any key/value pairs where we've 
+				# already inserted the semi-colons. ie:
+				#   Content-Disposition: form-data; name="upload"
+				#
+				( 
+				  Content-Disposition:\sform-data
+				  (?:;?\s\w+="[^\"]+";?)* 
+				)
+
+				# Do not capture whitespace between the fixed-up
+				# key-value pairs and the next unfixed one.
+				\s*	
+
+				
+				# Capture the key and the value.
+				(\w+)"([^\"]+)"
+			][
+
+				# Insert a semi-colon and a space between the beginning 
+				# of the line and the key/value pair, and an equal-sign 
+				# between the key and the value.
+				$1; $2="$3" 
+
+			]sigx;
+		}
+
+		# Now that we have the form submission properly formatted as a 
+		# scalar, add it to the HTTP::Request object.
+		#
+		$request->content( $c );
+
+		# parse out the multipart boundary, and use it to construct 
+		# the proper Content-Type for our HTTP::Request object.
+		#
+		my ($boundary) = ( $c =~ m/--(.*)--[\r\n]*$/ );
+		$request->content_type('multipart/form-data; boundary="'.$boundary.'"');
+
+		# clean up; form submissions could be big
+		$c=undef;
+
+	# Non-multipart form-data is much easier to handle:
+	} else {
+
+		# join the key/value pairs into scalars with an equal sign, 
+		# and push each pair into the @post_data array.
+		#
+		push @post_data, shift(@pairs).'='.shift(@pairs) while @pairs;
+
+		# Add the form data to our HTTP::Request object as scalar 
+		# with key/value pairs joined by an ampersand.
+		#	
+		$request->content( join('&',@post_data) );
+
+		# Set the content-type
+		#
+		$request->content_type('application/x-www-form-urlencoded');
+	}
+
+	# clean up after our form-data processing.
+	@post_data=undef;
+	@pairs=undef;
+
+	# Execute the request and get the response.  We must use the 
+	# simply_request() method, because redirects that end up back 
+	# at this dhandler will be subject to mason processing, creating 
+	# an end-response with extra mason-spawned templating.
+	#
+	my $response = $UA->simple_request($request);
+	my $content  = $response->content;
+
+	# Copy the response's headers into the current request, 
+	# minus the Content-Length header.
+	#
+	$response->scan( sub { 
+		$r->header_out(@_) 
+			unless lc $_[0] eq 'content-length';
+	} );
+
+	# Redirects and errors must be handled outside of the 
+	# current templates, so clear the buffer, send the 
+	# output headers and abort appropriately.
+	#
+	if ( ! $response->is_success || $response->code == 302 ) {
+		$m->clear_buffer();
+		$r->status($response->code);
+		$r->status_line(join " ", $response->code, $response->message);
+		$r->send_http_header();
+		$m->abort($response->code);
+	}
+
+	# Any content that isn't text gets sent as-is, 
+	# without the mason templating, so clear the buffer, 
+	# set the headers, print the repsonse, then abort.
+	#
+	if ( $response->header('Content-type') !~ /^text/i ) {
+		$m->clear_buffer();
+		$r->content_type( $response->header('Content-type') );
+		$r->send_http_header();
+		$r->print($content);
+		$m->abort($response->code);
+	}
+
+	# From here on out, you can decide what to do with the response 
+	# content.  Since my goal is just to wrap the php-generated content 
+	# in my mason-generated markup, I remove the content's <head></head> 
+	# block and the <body> tags, and then add it to the output buffer.
+	#
+	# You may instead wish to generate a sub-component on the fly, using 
+	# the technique described at http://www.masonhq.com/?MasonAndPHP .
+	#
+	
+	# XXX: Instead of removing the body tag entirely, maybe we should 
+	# convert it to a <div> and preserve any inline style/script.
+	#
+	$content =~ s,.*<body[^>]*>,,si;
+	$content =~ s,<\/body[^>].*$,,si;
+
+</%init>
+<%once>
+	use LWP::UserAgent();
+	my $UA = LWP::UserAgent->new;
+	$UA->agent("Chili's HTML::Mason Proxy v1.0");
+	
+	my $phpBB_url = '/phpBB';
+</%once>
+END
+
+=== 5. Modify Your Apache Config ===
+Lastly, you'll need to modify your Apache configuration to allow the [=dhandler] proxy to handle all requests to the [=/forums] directory, minus the [=templates], [=images] and [=files] directories.  
+
+
+
+| <<END |
+<Directory "/vhosts/mason/www/forums">
+    SetHandler perl-script
+    PerlResponseHandler Handler
+</Directory>
+<DirectoryMatch "/vhosts/mason/www/forums/(templates|images|files)">
+    SetHandler default
+    PerlResponseHandler None 
+</DirectoryMatch>
+END
+
+You'll also want to allow the proxy, but not the public, to access the [=/phpBB] directory:
+
+| <<END |
+<Directory "/vhosts/mason/www/phpBB">
+Order deny,allow
+deny from all
+allow from 127.0.0.1
+</Directory>
+END
+
+You may need to alter the [=allow from] address to suit your particular setup.
+
+== All Done! Time For Jell-O(tm) ==
+
+With all that in place, you should now be able to point a browser at *!http://yourhost.com/forums* and see your phpBB installation neatly wrapped inside your mason template.
+
+That should work by pointing it directly to that.
+
+

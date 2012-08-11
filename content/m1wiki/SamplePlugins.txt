@@ -1,0 +1,81 @@
+See MasonPlugins.
+
+A plugin to record component timings:
+
+   package HTML::Mason::Plugin::Timer;
+   use base qw(HTML::Mason::Plugin);
+   use Time::HiRes;
+
+   sub start_component_hook {
+      my $self = shift;
+      push @{$self->{ timers }}, Time::HiRes::time;
+   }
+
+   sub end_component_hook {
+      my $self = shift;
+      my $context = shift;
+      my $comp = $context->request->{comp};
+      my $elapsed = Time::HiRes::time - pop @{$self->{ timers }};
+      open(TIMING, ">>timing.log") or die("Failed open :$!"); 
+      print TIMING "Component $comp took $elapsed seconds\n";
+      close TIMING;
+   }
+
+   1;
+
+A plugin to replace "preamble/postamble" - prints something before and after each component.
+
+  package HTML::Mason::Plugin::BeforeAndAfterComponent;
+  use base qw(HTML::Mason::Plugin);
+
+  sub start_component_hook {
+    my $self = shift;
+    my $context = shift;
+    print "Before Component " . $context->request->{comp}->title . "\n";
+  }
+
+  sub end_component_hook {
+    my $self = shift;
+    my $context = shift;
+    print "After Component " . $context->request->{comp}->title . "\n";
+  }
+  1;
+
+A plugin to check form fields for html and javascript (to protect yourself from cross-site-scripting attacks (see http://www.cert.org/tech_tips/malicious_code_mitigation.html for more info))
+
+  package HTML::Mason::Plugin::PreventCrossSiteScripting;
+  use base qw(HTML::Mason::Plugin);
+
+  sub start_request_hook {
+     my $self = shift;
+     my $context = shift;
+     my @clean_args;
+     foreach my $arg (@{ $context->args } ) {
+         $arg =~ s/[\<\>\"\'\%\;\)\(\&\+]//g;
+         push @clean_args, $arg;
+     }
+     @{$context->args} = @clean_args;
+   }
+   1;
+
+
+A plugin to trap component errors and let execution continue.  Acts like an eval {} around every component.
+
+   package HTML::Mason::Plugin::ComponentEval;
+   use base qw(HTML::Mason::Plugin);
+
+   sub end_component_hook {
+       my $self = shift;
+       my $context = shift;
+       my $error = $context->request->{error};
+       if (ref($error) && $$error) {
+           my $comp = $context->request->{comp}->title;
+           print STDERR "Component error: $comp: " . $$error ."\n";
+           $$error = undef;
+        }
+    }
+    1;
+
+
+               
+ 

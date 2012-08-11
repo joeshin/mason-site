@@ -1,0 +1,17 @@
+These are web-based editors, recommended by Mason users, that improve upon the simple <textarea> editor provided by browsers.
+
+For a much larger list see http://www.bris.ac.uk/is/projects/cms/ttw/ttw.html.
+
+* htmlArea - Javascript-based, works with a subset of browsers (e.g. Mozilla and IE), degrades nicely. http://sourceforge.net/projects/itools-htmlarea/
+
+* Mozilla Rich-text editing - should work with IE and Mozilla. http://devedge.netscape.com/viewsource/2003/midas/01/
+
+* !XStandard - Produces standard compliant XHTML, but only works on Windows IE. http://xstandard.com/
+
+* !TinyMCE - Javascript-based, works with Mozilla, MSIE and FireFox. http://tinymce.moxiecode.com/
+
+
+
+
+
+

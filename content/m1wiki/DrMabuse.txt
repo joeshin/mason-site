@@ -1,0 +1,5 @@
+This is Manfred Berndtgen from Germany.
+
+I'm using Perl for 5 years. I'm hosting some web sites and try to convince every site owner to get masonized. It's always fun to use a technique nobody else knows or understands. Just look at [http://www.mabuse.de/ my] and [http://www.ieee.de/ the IEEE Germany homepage]. Though it's not recommended, I'm using Mason as a DSO with Apache, which runs stable on my system (thanks God!).
+
+I hope to get migrated my little CMS to Mason, soon. If you're interested, just drop a line: mb[at]mabuse.de

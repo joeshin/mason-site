@@ -1,0 +1,13 @@
+http://www.oiml.org/pics/pics_biml/jc.jpg
+
+Ingénieur Système au Bureau International de Métrologie Légale, Organisation Internationale de Métrologie Légale ([http://www.biml.net BIML], [http://www.oiml.org OIML]) :
+* Responsable des questions informatiques (architecture réseau, support technique, sécurité, télécom),
+* Mise en place de solutions intranet, extranet et internet,
+* Mise en place de forums interactifs pour les groupes internationaux de l'OIML,
+* Administration de serveurs (http, smtp, pop, [http://www.openssh.org ssh], [http://www.zope.org zope], dns, smb, etc...) sous linux dont un serveur dédié hébergé par [http://www.magic.fr Magic_OnLine],
+* Administrateur de serveurs de bases de données MySQL,
+* Administrateur de sites [http://www.plone.org Plone] pour les groupes internationaux de l'OIML.
+
+
+Le site web principal de l'OIML est développé sous Perl/Mason. Au début en 2001 ce fut avec Apache 1.x / ModPerl 1.x, puis en 2005 suite au changement de serveur je suis passé a Apache 2.x / ModPerl 2.x.
+

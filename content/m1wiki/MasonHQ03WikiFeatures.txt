@@ -1,0 +1,11 @@
+Here are the wiki features I want in MasonHQ03.
+
+Must have:
+
+* MasonHQ03WikiComponentCalls
+* Really good search that integrates results from wiki, Mason docs, FAQ, and known bugs.
+
+Nice to have:
+
+* MasonHQ03WikiCategorySupport
+* Support for HTML tables. Neither CGI::Wiki nor c2.com has tables AFAICT; kwiki does.

@@ -1,0 +1,63 @@
+How to create a javascript tree menu from a mason comp
+(see http://www.dnolan.com/code/js/listmenu/)
+
+----
+
+== Recursive component
+
+ <%def .menu_list>
+ <%args>
+ $list
+ $classLI => 'next'
+ </%args>
+ % while(@$list) {
+ % my $titre = shift(@$list);
+ % my $lien = shift(@$list);
+ % if(ref $lien eq 'ARRAY') {
+ <li class="<% $classLI %>">
+ <a href="#"><% $titre %></a>\
+ <ul><& .menu_list, list => $lien &></ul></li>
+ % } else {
+ <li><a href="<% $lien %>"><% $titre %></a></li>
+ % }
+ % } # foreach
+ </%def>
+
+== Component call
+
+You have to pass one parameter : a arrayref containing your menu structure.
+Example:
+
+ my @menu = ( 'Item1' , 'link1',
+              'Item2' ,	'Sub1' , [ 'Sitem1' , 'link', 'Sitem2', 'link']
+ );
+
+ <ul><& .menu_list, list => \@menu, classLI => 'treenode' &></ul>
+
+Or...(which i use) from a YAML file:
+
+ <%once>
+ use YAML qw/DumpFile LoadFile/;
+ </%once>
+
+ <%init>
+ my $menu;
+ eval {
+ $menu = LoadFile($m->base_comp->source_dir . '/menu.yml');
+ };
+
+ <ul><& .menu_list, list => $menu, classLI => 'treenode' &></ul>
+
+== Notes
+
+You can (and must!) modify this little comp to suite your needs. It can be used for a variety of menus based on <ul><li><ul>...</ul>.
+
+classLI is not mandatory, and must be used if you need to specify a css class for <LI> tags.
+
+== Why not a hash?
+
+Because you can't determine the order from which hashkeys will be displayed.
+You can sort the keys, but it's not always needed! Arrays will be displayed in the order you push elements in.
+
+Hope it can be useful. Suggestions appreciated!
+

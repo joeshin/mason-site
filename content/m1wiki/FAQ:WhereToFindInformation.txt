@@ -1,0 +1,14 @@
+[&TOC FAQ:WhereToFindInformation]
+
+=== Does HTML::Mason have an official web site? ===
+Yes, at http://www.masonhq.com.
+
+=== Where do I obtain HTML::Mason? ===
+HTML::Mason is available from CPAN (the Comprehensive Perl Archive Network). Details about CPAN are available at http://www.perl.com/. See the [FAQ:Installation] section of this document for tips on obtaining and installing Mason.
+
+=== Where can I ask questions about HTML::Mason? ===
+See ContactUs and MailingLists.
+
+=== I think I've found a bug in Mason, what should I do? ===
+Check the known bugs page at http://masonhq.com/resources/bugs.html to see if it's already been reported; simplify the example as much as possible to make sure it's really Mason (i.e. try doing the same thing with just mod_perl and see if it still happens); finally, send a report to the user's list.
+

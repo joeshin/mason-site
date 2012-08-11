@@ -1,0 +1,9 @@
+Hello!
+ 
+I am a newbie to Mason, came in contact with it when installing the musicbrainz.org server and database.
+
+I've been using mostly python and zope the last years but am frustrated of a memory problem of my private zope so I'm looking for a new CMS related web technology. Could it be Mason...?
+
+Florian
+
+----

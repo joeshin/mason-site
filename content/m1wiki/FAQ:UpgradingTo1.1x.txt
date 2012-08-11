@@ -1,0 +1,34 @@
+[&TOC FAQ:UpgradingTo1.1x]
+
+=== After upgrading, I see this error whenever I load a page: "The following parameter was passed in the call to HTML::Mason::Component::FileBased->new() but was not listed in the validation options: create_time" ===
+Delete all of your object files.
+
+=== When I try to start my server I see an error like: "The resolver class your Interp object uses does not implement the apache_request_to_comp_path' method. ===
+This means that ApacheHandler cannot resolve requests.
+
+Are you using a handler.pl file created before version 1.10?  Please see the handler.pl sample that comes with the latest version of Mason.
+
+You are explicitly creating an Interp object in your handler.pl and then passing that to ApacheHandler->new. 
+
+Instead, simply pass all of your Interp parameters to ApacheHandler->new directly. The parameters will end up going where they belong. See the upgrade guide - http://masonhq.com/docs/upgrading.html - for more details.
+
+=== When I start Apache (or try to use Mason) I get an error like this: "The Parser module is no longer a part of HTML::Mason.  Please see the Lexer and Compiler modules, its replacements." ===
+The Parser module is no longer used. See the upgrade guide -- http://masonhq.com/docs/upgrading.html -- for more details.
+
+=== I get an error like: "The following parameters were passed in the call to HTML::Mason::Container::new but were not listed in the validation options: error_format error_mode request_class resolver_class" when using ApacheHandler ===
+Do you have PerlFreshRestart turned on? Turn it off.
+
+See http://perl.apache.org/docs/1.0/guide/troubleshooting.html - "Evil things might happen when using PerlFreshRestart".
+
+=== I get an error like this: 'Can't locate object method "make_ah" via
+package "Apache"' ===
+We're not kidding. PerlFreshRestart is evil. Turn it off. See question above.
+
+=== I get: "Unknown config item 'comp_root'" or "Unknown config item 'comp_root'" or something similar with ApacheHandler. ===
+Turn PerlFreshRestart off. Really.
+
+=== I get this with a custom handler.pl: 'Can't call method "handle_request" on an undefined value at ...' ===
+Just in case you weren't convinced that PerlFreshRestart is a bad idea, this should help convince you.
+
+=== After upgrading, I get this error for all my components: '<%' without matching '%>' ... ===
+The "perl_' prefix for Mason tags, like <%perl_args>, is no longer supported. Remove this prefix.

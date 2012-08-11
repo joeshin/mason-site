@@ -1,0 +1,149 @@
+ <%doc>-------------------------------------------------------------------       
+ popWindow will open a new window in the center of the screen, based on parameters
+ either defaulted to or specified.  Centering is done from actual screen size, so 
+ the window will always be centered properly, regardless of individual screen
+ resolution.
+ 
+ Mandatory Arguments
+ NAME       FORMAT        DESCRIPTION                      DEFAULT VALUE
+ -------------------------------------------------------------------------
+ url      - valid URL   - the page to open               - undef
+ 
+ Optional Arguments
+ NAME       FORMAT        DESCRIPTION                      DEFAULT VALUE
+ -------------------------------------------------------------------------
+ name     - any string  - name of new window             - time()
+ w        - 1-2000      - width of new window            - 300
+ h        - 1-2000      - height of new window           - 485 
+ dir      - yes/no      - are directory buttons visible? - no
+ location - yes/no      - is the location bar visible?   - no
+ menubar  - yes/no      - is the menu bar visible?       - no
+ scroll   - yes/no      - are scrollbars allowed?        - yes
+ resize   - yes/no      - can window be resized?         - yes
+ status   - yes/no      - is the status bar visible?     - no
+ toolbar  - yes/no      - is the toolbar visible?        - no
+ type     - standard,   - prefab argument lists          - undef
+             simple,      (settings can be found
+             plain         inside code)
+ 
+ EXAMPLES
+ These examples are of what you would type into your HTML component to call this _popWindow compoent.
+ 
+ Example 1 (mandatory arguments):
+   <a <& /cmp/_popWindow.cmp, url=>'/tws/index.html' &>>link text</a>
+ 
+ Example 2 (using types):
+   <a <& /cmp/_popWindow.cmp, url=>'/tws/index.html', type=>'standard' &>>link text</a>
+ 
+ Example 3 (optional arguments):
+   <a <& /cmp/_popWindow.cmp, url=>'/tws/index.html', name=>'Help', w=>500, h=>500 &>>link text</a>
+ -----------------------------------------------------------------------</%doc>      
+ %#
+ HREF='<% $url %>' 
+ onclick="win = window.open('<% $url %>','<% $name %>','<% $features %>');win.focus();return false"; 
+ TARGET='<% $name %>'
+ %# 
+ <%args>
+   $url      => undef
+   $name     => undef
+ 
+   $w        => 485
+   $h        => 300
+ 
+   $dir      => 'no'
+   $location => 'no'
+   $menubar  => 'no'
+   $resize   => 'yes'
+   $scroll   => 'yes'
+   $status   => 'no'
+   $toolbar  => 'no'
+ 
+   $type     => undef
+ </%args>
+ 
+ <%init>
+ # Here we set up the feature values for standard window types.
+ my %types = (
+     standard => 
+     {   dir=>'yes', location => 'yes', menubar => 'yes',resize =>'yes',
+         scroll=>'yes', status => 'yes', toolbar => 'yes'
+     },
+     simple =>
+     {   dir=>'no', location => 'yes', menubar => 'no',resize =>'yes',
+         scroll=>'yes', status => 'no', toolbar => 'yes'
+     },
+     plain =>
+     {   dir=>'no', location => 'no', menubar => 'no',resize =>'yes',
+         scroll=>'yes', status => 'no', toolbar => 'no'
+     },
+ );
+ 
+ # Set features based on types hash. 
+ if (exists $types{$type})
+ {   my $values = $types{$type};
+     $dir      = $values->{dir};
+     $location = $values->{location};
+     $menubar  = $values->{menubar};
+     $resize   = $values->{resize};
+     $scroll   = $values->{scroll};
+     $status   = $values->{status};
+     $toolbar  = $values->{toolbar};
+ }
+ 
+ # Validate input here
+ #validate yes/no vars
+ foreach ($dir, $location, $menubar, $resize, $scroll, $status, $toolbar)
+ {   unless (m:^(yes|no)$:i)
+        {$_ = 'no';}
+ }
+ #validate integer vars
+ foreach ($h, $w)
+ {   unless (reverse($_-1) =~ /^\d{1,3}1?$/)
+        {$_ = 300;}
+ }
+ #validate $types
+ unless ($type =~ m:^(standard|simple|plain)$:)
+    {$type = undef;}
+ # validate $url  
+ unless ($url)
+ {
+   $m->comp('.error', error=>'You need to supply a URL.  Check your arguments.  Sample format is <& _popWindow.cmp, url=>"/tws/index.html" &>');
+ }
+ else
+   {$url =~ s:\"|\'::g};
+ #validate $name
+ $name ||= time();
+ $name =~ s:\"|\'::g;
+ 
+ # Begin assembling features string.
+ my $features = "height=$h,width=$w,top=(screen.height-$h)/2,left=(screen.width-$w)/2";
+ 
+ $features .= ",directories=yes" if lc($dir) eq 'yes';
+ $features .= ",location=yes"    if lc($location) eq 'yes';
+ $features .= ",menubar=yes"     if lc($menubar) eq 'yes';
+ $features .= ",resizable=yes"    if lc($resize) eq 'yes';
+ $features .= ",scrollbars=yes"   if lc($scroll) eq 'yes';
+ $features .= ",status=yes"      if lc($status) eq 'yes';
+ $features .= ",toolbar=yes"     if lc($toolbar) eq 'yes';
+ </%init>
+ 
+ <%def .error>
+ <HTML>
+ <HEAD>
+ <TITLE>Error</TITLE>
+ </HEAD>
+ <BODY>
+ <H1>Error in _popWindow:</H1>
+ <H2><% $error %></H2>
+ <p><b>The place where the error occurred is:</b></p>
+ %#$m->abort(200);
+ 
+ <%args>
+   $error => undef
+ </%args>
+ 
+ <%init>
+ $m->clear_buffer();
+ </%init>
+ </%def>
+

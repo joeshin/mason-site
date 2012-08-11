@@ -1,0 +1,3 @@
+I've been doing web app development for a while.  I've studied more than a few other languages, but love Perl.  I'm fairly new to Mason (as of Jan '04), but really like it's design.  After working with several other CMS/templating systems, HTML::Mason is very enjoyable.
+
+http://lathi.net and http://sus4.net

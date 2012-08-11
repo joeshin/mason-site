@@ -1,0 +1,12 @@
+Add feedback about this site here.
+
+Official todo list and bug list will be kept at SiteTodo and SiteBugs respectively.
+
+Perhaps we should add new feedback on *top*? That would make it easier to spot new items.
+
+----
+Marvelous work, Jonathan! Thanks!
+
+I guess there's no "watch this page" function, but I'll use another app to do that for the pages I want to monitor for changes: Website-Watcher ( http://www.aignes.com/ ). Plus the "Recent Changes" menu item looks good. -- DaveBaker
+
+* I was thinking about a "watch this page" function. Do you have an example of a wiki that does this? How does it work - does it email on every change (that seems excessive), or limit emails to a certain time period? aignes.com looks cool though! -- JonathanSwartz

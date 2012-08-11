@@ -1,0 +1,2 @@
+I use Mason all over to make my life easier.
+For example I wrote a simple content update mechanism with Wiki-like text to html converter.

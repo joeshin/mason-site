@@ -1,0 +1,33 @@
+Add yourself here (in alphabetical order by _last_ name) once you've made yourself a node:
+
+* TimAdamec
+* JeremyBlain
+* AndrewCates
+* CJCollier
+* ClaireConnelly
+* JeromeEteve
+* JoeFrisbie
+* MichaelGray
+* EricHammond
+* JanetHanseth
+* AvrilHayes
+* MikeHeffelfinger
+* PeterHickman
+* MarkHughes
+* FenLabalme
+* HenryLaxen
+* GordonMcCreight
+* JerkerMontelius
+* ThomasKalvePedersen
+* StevenPritchard
+* AlbertoQuario
+* MarcusRamberg
+* DaveRolsky
+* EgorShipovalov
+* UweSimon
+* JonathanSwartz
+* LGTaube
+* DavidWheeler
+* JohnWilliams
+* KenWilliams
+* ZaphodBeeblebrox

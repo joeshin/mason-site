@@ -1,0 +1,10 @@
+Presentations slides from presentations about Mason:
+
+* [Introduction to Mason http://www.houseabsolute.com/presentations/mason-intro-oscon-2004/] - given by Dave Rolsky at the O'Reilly Open Source Conference in 2004 
+
+
+* [Discovering Bricolage http://www.bricolage.cc/news/conference/2004/07/29/oscon2004_slides/] - given by David Wheeler at the O'Reilly Open Source Conference in 2004 
+
+* [Building a real web application with HTML::Mason http://www.perl.it/documenti/talks/ipw/2005/bepi/mason-eng/img0.html] - given by Enrico Sorcinelli at the 2nd Italian Perl Workshop in June 2005
+
+* /Whirlwind web development  [ papers http://perltraining.com.au/talks/whirlwind.html] and [slides http://perltraining.com.au/talks/whirlwind/] available) - given by Paul Fenwick at the Victorian System Administration Symposium in March 2005

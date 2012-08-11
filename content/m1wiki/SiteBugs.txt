@@ -1,0 +1,3 @@
+Don't report broken links or mistakes on wiki pages here.  Instead, login and fix the page.
+
+* In "recent changes" some of the pages occasionally multiply so it looks like you're seeing double or triple.  1-23-2004 4:36 P.S.T -GordonMcCreight

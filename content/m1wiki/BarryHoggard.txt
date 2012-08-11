@@ -1,0 +1,2 @@
+* Perl/mod_perl developer
+* Consulting site: http://www.tristanmedia.com/

@@ -1,0 +1,71 @@
+Mason 1.0x has a fancy error display, with contextual source listing and readable stacktrace.
+
+However, fancy errors are only available when using 'html' error mode in !ApacheHandler. If you use CGI, or if you want to log the error as well as display it, you're out of luck. Below are some recipes -- strictly off the record -- that can help. Mason 1.1, incidentally, makes all these things easy.
+
+==== Displaying and logging the error under mod_perl ====
+
+'html' mode displays the error and 'fatal' mode logs it, but there's no built-in way to do both. This solution requires a handler.pl.
+
+1. Put at the top of handler.pl:
+
+    use HTML::Mason::Error qw(error_process error_display_html);
+
+2. Set your !ApacheHandler error mode to raw_fatal:
+
+    error_mode=>'raw_fatal'
+
+3. Put this subroutine in your handler.pl:
+
+    sub log_and_display_error
+    {
+        my ($r, $raw_error) = @_;
+    
+        $raw_error =~ s/^System error:\n//g;
+        my $processed_error = error_process($raw_error);
+    
+        my $log_error = $processed_error;
+        $log_error =~ s/\n/\t/g;
+        $log_error =~ s/\t$//g;
+        $log_error .= "\n" if $log_error !~ /\n$/;
+        $r->log_error($log_error);
+    
+        my $html_error = error_display_html($processed_error, $raw_error);
+        $r->content_type('text/html');
+        $r->send_http_header();
+        $r->print($html_error);
+    }
+
+4. Put this code around your handle_request call:
+
+    $status = eval { $ah->handle_request };
+    if (my $raw_error = $@) {
+        log_and_display_error($raw_error);
+        return 0;
+    } else {
+        return $status;
+    }
+
+==== Displaying fancy errors in CGI ====
+
+This solution assumes you are using a CGI script resembling the one in the Interp documentation, "Using Mason from a CGI script".
+
+1. Put at the top of handler.pl:
+
+    use HTML::Mason::Error qw(error_process error_display_html);
+
+2. Change the line
+
+     $interp->exec($comp, %args);
+
+to
+
+    eval { $interp->exec($comp, %args) };
+    if (my $raw_error = $@) {
+        my $processed_error = error_process($raw_error);
+        my $html_error = error_display_html($processed_error, $raw_error);
+        print $html_error;
+    }
+
+-- JonathanSwartz
+
+

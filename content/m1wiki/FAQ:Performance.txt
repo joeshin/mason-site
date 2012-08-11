@@ -1,0 +1,25 @@
+[&TOC FAQ:Performance]
+
+=== Is Mason fast? ===
+It is typically more than fast enough. 50-100 requests per second for a simple component is typical for a reasonably modern Linux system. Some simple benchmarking indicates that a Mason component is typically about two to three times slower than an equivalent, hand-coded mod_perl module.
+
+Although benchmarks on [http://chamas.com/bench/ Apache Hello World! benchmarks] site shows that Mason code is five (simple Hello World page, [=hello.mas]) to ten (heavyweight template, [=h2000.mas]) times slower than mod_perl solution.
+
+Beware of "Hello World!" and other simple benchmarks. While these benchmarks do a good job of measuring the setup and initialization time for a package, they are typically not good measures of how a package will perform in a complex, real-world application. As with any program, the only way to know if it meets your requirements is to test it yourself.
+
+In general, however, if your application is fast enough in pure mod_perl, it will most likely be fast enough under HTML::Mason as well.
+
+=== How can I make my Mason application run faster? ===
+The first thing you can do to optimize Mason performance is to optimize your mod_perl installation. Consider implementing some of the tuning tips recommended in mod_perl_tuning, which ships with every copy of mod_perl.
+
+If your application still needs to run faster, consider using Mason's caching methods ($m->cache and $m->cache_self) to avoid regenerating dynamic content unnecessarily.
+
+=== Does Mason leak memory? ===
+Mason 1.10 and 1.11 do have a memory leak. This is fixed with 1.12. Earlier versions of Mason may leak some memory when using the "mod_perl" args_method, due to what is arguably a bug in Apache::Request.
+
+If you do find other memory leaks that are traceable to Mason, please check the known bugs list to make sure it hasn't already been reported. If it hasn't, simplify your handler.pl (if you have one) and the offending component as much as possible, and post your findings to the mason-users mailing list.
+
+Of course it is always possible for your own component code to leak, e.g. by creating and not cleaning up global variables. And mod_perl processes do tend to grow as they run because of "copy-on-write" shared-memory management. The mod_perl documentation and performance faq make good bedtime reading.
+
+If you are using RedHat's mod_perl RPM, or another DSO mod_perl installation, you will leak memory and should switch to a statically compiled mod_perl.
+

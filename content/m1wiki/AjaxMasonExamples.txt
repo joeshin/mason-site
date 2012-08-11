@@ -1,0 +1,14 @@
+Welcome, gentle reader.
+
+The files you find here are an exercise in learning Ajax, in an
+HTML::Mason environment. I thought I would try to make it a
+little easier for others who find themselves in my situation,
+namely staring at the HTML::Prototype POD documentation, and
+wondering: Now what do I do? 
+ 
+
+You can run the examples from my [www site http://maztravel.com/ajax/] or you can [download them http://maztravel.com/perl/Mason/Ajax-Mason-Examples.tgz]
+and install them on your own server. This is probably the preferred method, especially if you want to tinker with them.
+
+
+by HenryLaxen Dec 30, 2005

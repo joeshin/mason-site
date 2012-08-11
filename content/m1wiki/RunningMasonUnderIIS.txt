@@ -1,0 +1,119 @@
+We recently ran into a situation where we wanted to develop an application that would work portability on Unix and Windows web server platforms.  We wanted to work in Perl because we have a substantial body of work already in Perl, and we wanted to use Mason because it is cool. Unfortunately, Mason did not have a ready way to work under IIS - or at least it was not really obvious. After reading a lot and playing a lot, we came up with the following solution.
+
+/Caveat: We are not Windows web gurus, and we are not Mason gurus.  We *are* Perl gurus, so that helped.  However, your mileage may vary./
+
+== Install Perl on the Windows box ==
+
+First, you need a perl implementation.  We recommend ActivePerl from ActiveState - it is well supported, has a nice Windows installer, and is a very solid implementation.  Further, it supports direct embedding of Perl scripts in an IIS-hosted web site, supports ISAPI to Perl linkages, and seems to be pretty fast.  See [ActiveState's web site http://www.activestate.com] for more information.
+
+
+== Install Mason on the Windows box ==
+
+Next, you need to install Mason.  You have various options here.  ActiveState maintains a repository of pre-built tools for their platform using a package manager called "PPM". The version of Mason that they have built today is 0.89.  To install that version, execute the PPM tool from ActivePerl and type "install HTML-Mason".  PPM does the rest, and quite well too.
+
+Sadly, we wanted the latest version, so we downloaded and built that by hand.  If you are not familiar with building and installing Perl modules, then don't try this.  If you are, then you don't need my help.
+
+== Configure IIS to use Mason ==
+
+Now you are ready to configure IIS.  This is tricky bit.  It requires a little patience.  Create a directory in which your Mason component tree will live.  On my system, this was called "atm".  You can copy any Mason component tree into this directory and it should just work. However, note that anything that wants to be available as a URI needs to end in a well defined suffix - this is because we are hooked into the web server by suffix.  If you don't want to do it this way, your handler will need to be considerably more complex so it can handle requests for non-Mason files that share your tree (like images).  Alternately, you can put your images into a sub-directory that does not have special handling.  For purposes of this document, let's just pretend all Mason components that have URIs end in .html.
+
+Now you need a request handler. This acts as a CGI script or an ISAPI module, taking the requests from IIS and handing them to Mason.  An example handler is here:
+
+   #!/usr/bin/perl
+   #
+   # This is a basic, fairly functional Mason handler.pl.
+   #
+   # For something a little more involved, check out session_handler.pl
+
+   package HTML::Mason;
+
+   # Bring in main Mason package.
+   use HTML::Mason;
+
+   # Bring in ApacheHandler, necessary for mod_perl integration.
+   # Uncomment the second line (and comment the first) to use
+   # Apache::Request instead of CGI.pm to parse arguments.
+   # use HTML::Mason::ApacheHandler;
+   # use HTML::Mason::ApacheHandler (args_method=>'mod_perl');
+
+   # Uncomment the next line if you plan to use the Mason previewer.
+   #use HTML::Mason::Preview;
+
+   use strict;
+
+   # List of modules that you want to use from components (see Admin
+   # manual for details)
+   #{  package HTML::Mason::Commands;
+   #   use CGI;
+   #}
+
+   # Create Mason objects
+   #
+   my $parser = new HTML::Mason::Parser;
+   my $interp = new HTML::Mason::Interp (parser=>$parser,
+                                         comp_root=>'c:/atm',
+                                         data_dir=>'c:/atm-data');
+
+   use CGI;
+   my $q = new CGI;
+
+   my (%args);
+
+   foreach my $key ( $q->param ) {
+           foreach my $value ( $q->param($key) ) {
+                   if (exists($args{$key})) {
+                           if (ref($args{$key})) {
+                                   $args{ $key} = [@{$args{$key}}, $value];
+                           } else {
+                                   $args{$key} = [$args{$key}, $value];
+                           }
+                   } else {
+                           $args{$key} = $value;
+                   }
+           }
+   }
+
+   my $comp = $ENV{'PATH_TRANSLATED'};
+   $comp =~ s/\\/\//g; # Replace '\' with '/'
+   my $root = $interp->comp_root;
+   $comp =~ s/^$root// or die "Component outside comp_root $root"; # Remove root path from $comp
+
+   #Workaround for Windows Server 2003 and Mason 1.25 (3/1/06)
+   # The previous four lines of code above didn't work for me because of backslash forward slash handling differences with my software versions.  I did the following workaround
+   #my $comp = $ENV{'PATH_TRANSLATED'};
+   #my $root = $interp->comp_root;
+   #$comp =~ s/^\Q$root//; # $comp has backslashes even though it was set with forward slashes in the new Interp object.  Root has backslashes also, and they need to be escaped with the \Q function.
+   #$comp =~ s|\\|/|g; # Change backslashes to forward slashes for the upcoming exec call.
+   #End of workaround
+
+   print("Content-type: text/html\n\n");
+   $interp->exec($comp, %args);
+
+This handler is pretty simple minded, but is an okay example.
+
+To configure IIS, you need to open the Internet Information Services control panel, find the entry for your web site, and add a new Virtual Directory definition:
+
+http://www.masonhq.com/i/contrib/halindrome-iis/MasonIIS-01.jpg
+
+
+Note that in this definition, there are two important things.  First, the Execute Permissions are set to "scripts only" - we do not need to run any executables directly here - our components are all interpreted by the cgi_handler.pl program. Second, the "script source access" box is *not* checked - we don't want people looking at our components.
+
+Now that the directory is defined, you need to tell it what to do with components.  Open up the Configuration panel to make this definition:
+
+http://www.masonhq.com/i/contrib/halindrome-iis/MasonIIS-02.jpg
+
+You can see that in the App Mappings tab there is an entry for ".html" files.  I added this, and its configuration is as shown here:
+
+http://www.masonhq.com/i/contrib/halindrome-iis/MasonIIS-03.jpg
+
+Note that the "Executable" is "C:\Perl\bin\Perl.exe c:\atm\cgi_handler.pl" - we are telling IIS to execute the Perl interpreter, interpreting the cgi_handler.pl script.  That script, in turn, parses the actual component reference and invokes it.
+
+== Summary ==
+
+That's it.  You should now be able to reference a component in your virtual directory and have it generated.  I am sure that many of the Mason niceties won't work (like preview mode), and I have not yet addressed the issue of sessions and databases, but "one crisis at a time".
+
+If you have questions or comments, send them to the mason-users mailing list.  You are more likely to get answers there than by asking me ;-)
+
+
+
+-- ShaneMcCarron, Applied Testing and Technology, Inc.

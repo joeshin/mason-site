@@ -1,0 +1,47 @@
+Here goes a simple Pie graph component, it's kinda nice, used to make a gui for df (disk free):
+
+ <%doc>
+   Pie Chart Component
+ </%doc>
+ 
+ <%once>
+   use GD;
+   use GD::Graph::pie;
+ </%once>
+ 
+ <%args>
+   $title     => undef
+   $label     => undef
+   $height   => 180
+   $width    => 200
+   $pie_labels  => "Yin Yan"
+   $pie_data  => "50 50"
+   $pie_colors  => "lred lgreen"
+ </%args>
+ 
+ <%perl>
+ 
+   my @p_labels   = split(/\s+/, $pie_labels);
+ 
+   my @p_data     = split(/\s+/, $pie_data);
+ 
+   my @p_colors  = split(/\s+/, $pie_colors);
+ 
+   $r->content_type("image/png");
+ 
+   my $pie = new GD::Graph::pie($width, $height);
+   
+   $pie->set(
+     '3d'    => 1,
+     title    => $title,
+     label    => $label,
+     transparent  => 1,
+     dclrs    => \@p_colors
+    ) or die "Oops";
+ 
+   my $gd = $pie->plot([\@p_labels, \@p_data]) or die "Oops!";
+   $r->content_type("image/png");
+   $m->clear_buffer;
+   $m->print($gd->png() or die "Oops");
+   $m->abort;
+ </%perl>

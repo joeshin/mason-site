@@ -1,0 +1,9 @@
+Mason doesn't like it when you write variable declarations like this:
+
+my $foo = 'bar' if $baz;
+
+Using this policy will emit violations when it detects this type of variable declaration.
+
+----
+
+This isn't a Mason problem, it's a Perl problem, and you shouldn't do this in your non-Mason code either. That's what the Variables::ProhibitConditionalDeclarations Perl Critic policy is for.

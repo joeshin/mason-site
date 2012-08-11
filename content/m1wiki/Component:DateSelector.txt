@@ -1,0 +1,332 @@
+ <%doc> Version=1.1 </%doc>
+ 
+ <%args>
+ # What to call the 'year' field
+ $year   => 'f_year'
+ 
+ # What to call the 'month' field
+ $month  => 'f_month'
+ 
+ # What to call the 'day' field
+ $day    => 'f_day'
+ 
+ # What should be displayed in the selector
+ $default => ''
+ 
+ # How should the values be displayed
+ $format  => 'year-month-day'
+ 
+ # Default range of values for the year field
+ $year_range => [2000..((localtime)[5])+1900]
+ 
+ </%args>
+ 
+ 
+ <%once>
+ 
+ ## The format units each section of the date can be referred to as.
+ my @year_specifiers  = qw(year yyyy yy);
+ my @month_specifiers = qw(mm m mon);
+ my @day_specifiers   = qw(dd day do ord);
+ 
+ 
+ my @long_months = qw(
+ 	January February March April May June July
+ 	August September October November December
+ );
+ 
+ 
+ # Haha! for short months we'll just use the first three letters of the long!
+ # This may need changing for other languages of course ;)
+ 
+ 
+ # Ordinal number suffices -- 1-based array to match day number nicely.
+ my @ords;
+ $ords[1] = $ords[21] = $ords[31] = 'st';
+ $ords[2] = $ords[22] = 'nd';
+ $ords[3] = $ords[23] = 'rd';
+ ## Everything else is 'th'
+ 
+ </%once>
+ 
+ 
+ <%perl>
+ 
+ ## Internal mapping between variables and form elements.
+ my $varmap = {
+ 	'_y' => $year,
+ 	'_m' => $month,
+ 	'_d' => $day,
+ };
+ 
+ ## Get the actual units used in the format string..
+ my @units = ();
+ @units[0..2] = split /[^a-zA-Z0-9]/, $format;
+ 
+ 
+ ## Convert these units to the date parts to which they refer..
+ my @selectors = ();
+ 
+ ##  Not doing it this way..yet.
+ ##	my $selectmap = {
+ ##		'_y' => \@year_specifiers,
+ ##		'_m' => \@month_specifiers,
+ ##		'_d' => \@day_specifiers,
+ ##	};
+ 
+ 
+ ## Use the 'selectors' array to avoid having multiple tests later when we
+ ## build the selection string.
+ YEAR:
+ for my $i (0..2) {
+ 	for (@year_specifiers) {
+ 		if (lc($units[$i]) eq $_) { $selectors[$i] = '_y'; next YEAR; }
+ 	}
+ }
+ 
+ MONTH:
+ for my $i (0..2) {
+ 	for (@month_specifiers) {
+ 		if (lc($units[$i]) eq $_) { $selectors[$i] = '_m'; next MONTH; }
+ 	}
+ }
+ 
+ DAY:
+ for my $i (0..2) {
+ 	for (@day_specifiers) {
+ 		if (lc($units[$i]) eq $_) { $selectors[$i] = '_d'; next DAY; }
+ 	}
+ }
+ 
+ 
+ 
+ ## Figure out what the default date is..
+ my ($dyear, $dmonth, $dday) = (-1,-1,-1);
+ if (lc $default eq 'today') {
+ 	($dday, $dmonth, $dyear) = (localtime)[3..5];
+ 	$dyear += 1900;
+ } elsif (lc $default eq 'yesterday') {
+ 	my $time = time - 24*3600;
+ 	($dday, $dmonth, $dyear) = (localtime $time)[3..5];
+ 	$dyear += 1900;
+ } elsif (lc $default eq 'tomorrow') {
+ 	my $time = time + 24*3600;
+ 	($dday, $dmonth, $dyear) = (localtime $time)[3..5];
+ 	$dyear += 1900;
+ } elsif ($default) {
+ 	($dyear, $dmonth, $dday) = split /[^a-zA-Z0-9]/, $default;
+ 	--$dmonth;
+ }
+ 
+ 
+ ## Build up the string to return..
+ my $str = '';
+ 
+ 
+ for my $i (0..$#selectors) {
+ 	next unless my $var = $selectors[$i];
+ 
+ 	$str .= qq{<select name="$varmap->{$var}">};
+ 
+ 	if ($var eq '_y') {
+ 		for (@$year_range) {
+ 			my $yy = '';
+ 			my $sel = $_ == $dyear ? 'selected' : '';
+ 			if (length($units[$i]) == 2) {
+ 				$yy = sprintf "%02d", substr($_, -2, 2);
+ 			} else {
+ 				$yy = sprintf "%04d", $_;
+ 			}
+ 			$str .= qq{<option value="$_" $sel>$yy</option>};
+ 		}
+ 	}
+ 
+ 	if ($var eq '_m') {
+ 		## Handle 'm' vs 'M' and 'mon' vs 'MON' specially..
+ 		for (0..11) {
+ 			my $sel = $_ == $dmonth ? 'selected' : '';
+ 			if ($units[$i] eq 'M' || $units[$i] eq 'MON') {
+ 				$str .= qq{<option value="$_" $sel>$long_months[$_]</option>};
+ 			} elsif ($units[$i] eq 'm' || $units[$i] eq 'mon') {
+ 				my $sm = substr($long_months[$_], 0, 3);
+ 				$str .= qq{<option value="$_" $sel>$sm</option>};
+ 			} else {
+ 				my $mv = sprintf "%02d", $_ + 1;
+ 				$str .= qq{<option value="$_" $sel>$mv</option>};
+ 			}
+ 		}
+ 	}
+ 
+ 
+ 	if ($var eq '_d') {
+ 		## Handle ord days specially
+ 		for (1..31) {
+ 			my $sel = $_ == $dday ? 'selected' : '';
+ 			if (lc($units[$i]) eq 'do' || lc($units[$i]) eq 'ord') {
+ 				my $ord = $_ . ($ords[$_] || 'th');
+ 				$str .= qq{<option value="$_" $sel>$ord</option>};
+ 			} else {
+ 				my $dn = sprintf "%02d", $_;
+ 				$str .= qq{<option value="$_" $sel>$dn</option>};
+ 			}
+ 		}
+ 	}
+ 
+ 	$str .= "</select>";
+ }
+ 
+ $m->out($str);
+ return $str;
+ 
+ </%perl>
+ 
+ 
+ 
+ <%perl>
+ 
+ =head1 NAME
+ 
+ date_selector  - Display formatted date selectors.
+ 
+ =head1 SYNOPSIS
+ 
+   <& /path/to/date_selector,
+     year => 'y', month => 'm', day => 'd',
+     default => 'today', format => 'mm-dd-yyyy' &>
+ 
+ =head1 DESCRIPTION
+ 
+ date_selector builds and displays a set of HTML select elements, from which a
+ user can select a date. 
+ 
+ The format of the displayed date elements is highly configurable.
+ 
+ =head1 USAGE
+ 
+ date_selector accepts a number of parameters, and provides defaults for any
+ that are missing. It should be called as a component (e.g. via $m->comp() or
+ inside <& .. &>), and for convenience it returns the constructed selectors as
+ well as displaying them. 
+ 
+ =head2 PARAMETERS
+ 
+ Parameters accepted by date_selector. Defaults are in []s, notes in ()s. 
+ 
+   year     What to call the 'year' field                  [f_year]
+   month    What to call the 'month' field                 [f_month]
+   day      What to call the 'day' field                   [f_day]
+   default  What date to display before selection          [none]    (1, 2)
+   format   How to display the selectors. See FORMATS      [yyyy-mm-dd]
+   year_range  Years to display in the year selector  [2000..this year] (2)
+ 
+ Notes:
+ 
+ (1) The default date must be specified in yyyy-mm-dd format. Alternatively,
+ one of the values 'yesterday', 'today', or 'tomorrow'may be specified, with
+ the expected results.
+ 
+ (2) If a default value is specified which falls outside the year range, the
+ first value in the year list will be displayed. This applies if the default is
+ 'today' or one of the other special strings, also.
+ 
+ =head2 EXAMPLES
+ 
+   <& /path/to/date_selector,
+     year => 'y', month => 'm', day => 'd',
+     default => 'today', format => 'mm-dd-yyyy' &>
+ 
+   <& /path/to/date_selector,
+     default => '2001-03-01', format => 'mm-dd-yyyy' &>
+ 
+ 
+ =head1 FORMATS
+ 
+ Valid formats are made up from the following units, which may appear in any
+ order, although they should probably all appear at most once ;). Synonyms
+ are shown comma-separated on the same line. Items marked 'padded' will be
+ padded with leading zeros to bring the character length up to that specified.
+ 
+  yyyy, year     Display the year as 4 digits, padded.
+  yy             Display the year as 2 digits, padded.
+ 
+  mm, month      Display the month as 2 digits, padded.
+ 
+  M,MON          Display the long English form of the month (January, etc)
+  m,mon          Display the short English form of the month (Jan, etc)
+  
+  dd, day        Display the day of the month as 2 digits, padded.
+  do, ord        Display the ordinal day of the month (1st, 2nd etc)
+ 
+ All numeric units are case-insensitive.
+ 
+ These units must be combined with any non-alphanumeric separator (/:- etc). 
+ 
+ If any specifier is missing from the format, it will not be displayed on the
+ page. 
+ 
+ Notes:
+ 
+ 1. Month values are passed in the selectors as numeric, even if the displayed
+ value is English (e.g. 5 instead of May).
+ 
+ 2. Day values are passed in the selectors as numeric, even if the displayed
+ value is ordinal (e.g. 2 instead of 2nd).
+ 
+ 3. Month values are 0-based but displayed 1-based. That is, January is given
+ the value of 0 but will be displayed as 01 if a numeric format specifier is
+ used. This allows month values to be used verbatim in localtime() comparisons
+ and friends.
+ 
+ 4. Year values are passed verbatim: if a 2-digit year is displayed, it will
+ be passed as 4 digits, not 2. If you pass in a year range of 99..102, the
+ passed values will be 99,100,101,102 but displayed as 99,00,01,02.
+ 
+ 5. Variances from the format units listed will be silently ignored. This may
+ result in a blank display!
+ 
+ 6. If you really wish to do something like 'yyyy-yyyy-yy' it will be displayed
+ correctly, but probably won't work terribly well.
+ 
+ 
+ Examples:
+ 
+ To display the date '28th August 2002'
+ 
+   Format..        ..displays as      
+   yyyy-mm-dd      2002 08 28
+   year-M-dd       2002 August 28
+   year-m-dd       2002 Aug 28
+   dd:mm:yy        28 08 02
+   dd/mm           28 08
+   dd#MON          28 August
+ 
+ These will all result in passed values of year=2002 (where appropriate),
+ month=7, day=28.
+ 
+ 
+ =head1 TODO:
+ 
+  [x] Display default dates.
+  [ ] Padding between selectors.
+  [ ] Allow such plop as '28th Day of the Eighth Month in the Year 2002'
+ 
+ 
+ =head1 CHANGES:
+ 
+  2002-10-22 v1.1  Added 'tomorrow' and 'yesterday' special strings.
+                   Changed default upper bound of year range to current year.
+ 									Amended documentation.
+ 
+ =head1 AUTHOR
+ 
+ 	Simon Drabble    <masondev@thebigmachine.org>
+ 
+ This component is (C) 2002 Simon Drabble, and is distributed under the terms
+ of the Gnu General Public Licence (GPL). It may be freely copied and modified
+ provided this copyright notice remains intact.
+ 
+ =cut
+ 
+ </%perl>
+ 
+

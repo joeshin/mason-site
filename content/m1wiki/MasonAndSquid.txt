@@ -1,0 +1,45 @@
+Mason and Squid can play very nicely together, if you use the httpd
+accellerator feature of squid.  The basic idea is to put squid in
+front of apache.  The easy way (at least for simple systems) is to
+configure squid to listen to your ethernet interface on port 80, and
+configure apache to listen only on your localhost (127.0.0.1)
+interface, also on port 80.  The path for a http request is thus:
+
+ your.ip.address:80 -> squid -> 127.0.0.1:80 -> apache
+
+Here is how I configured things.
+
+
+ In squid.conf:
+ http_port			your.ip.address.here:80
+ httpd_accel_host		127.0.0.1
+ httpd_accel_port 		80
+ httpd_accel_uses_host_header	on
+ httpd_accel_single_host 	on
+ 
+ In httpd.conf
+ BindAddress 127.0.0.1
+ Port	    80
+ 
+ 
+Now the only remaining problem is letting squid know when a page has
+changed.  You need to write a subroutine that decides whether or not a
+given request is for a static page, and hence can be cached.  Just
+plug that subroutine into your handler routine as follows:
+
+
+ sub handler {
+   ...
+   if (is_a_static_page( $r->uri )) {
+     $r->set_last_modified((stat $r->finfo)[9]) unless $r->uri =~ /index\.s?html/;
+     # I want my index.html pages to run through Mason, not Squid, ymmv.
+   }
+   ...
+ }
+
+And voila, squid will be serving your static pages (and all of your
+images, I might add) without having to fire up an instance of
+httpd/mod_perl.  The load on my server was drastically reduced, and
+there was more joy in userland.
+
+-- HenryLaxen

@@ -1,0 +1,148 @@
+Note: this document is old. Read [the FAQ question 
+http://www.masonhq.com/?FAQ:ServerConfiguration#h-how_do_i_use_mason_in_conjunction_with_userdir_to_support_mason_in_user_s_home_directories_] first.
+
+One really nice feature of many Web servers (for development if no other reason) is the ability to have each user have his own automatic Web directory with HTML and CGI. This way you can do things like go to http://home.earthlink.net/~johnkeiser and have "johnkeiser" map directly to a home directory.
+
+
+It is possible to get Mason working with users' directories, too; it just takes a little bit of work to set up the component roots so that a user can have his mason root the same as the component root (i.e. so that <& /navbar &> maps to the user's top level instead of the main)[. http://gurudor.com/]
+
+ I have set up a Mason configuration where each user has his own Mason directory Here is what you have to do to do the same.
+
+The way we do this is using [handler.pl http://www.masonhq.com/docs/manual/Admin.html#writing_a_wrapper] 
+
+to create a separate Mason object for each user's root, as well as the main root.  This Mason object will be used for the appropriate 
+
+=== 1. Make sure Mason and mod_perl are installed. ===
+
+If you have Mason running with the default configuration (with one main component root) that is a sufficient test.  If you haven't tested it but want to proceed, OK, but don't come running :)  The Admin Guide has a [simple configuration http://www.masonhq.com/docs/manual/Admin.html#basic_configuration_via_httpd_co] - you can just add that text to httpd.conf. 
+
+=== 2. Edit /httpd.conf/. ===
+
+This is //etc/httpd/conf/httpd.conf// in many default Apache installations ... //etc/httpd/conf/commonhttpd.conf// in Mandrake.
+
+You need to add the directives to use handler.pl, and delete the ones that talk about the default handler.
+
+Remove the PerlSetVar Mason stuff and replace PerlHandler HTML::Mason::ApacheHandler with PerlHandler HTML::Mason.  Add "PerlRequire <location of your handler.pl>/handler.pl" before the PerlHandler line.
+
+/Quick version:/ This is what my entire Mason configuration in httpd.conf looks like:
+
+   <IfModule mod_perl.c>
+       PerlRequire /var/www/mason/handler.pl
+       <FilesMatch "*.html">
+           SetHandler perl-script
+           PerlHandler HTML::Mason
+       </FilesMatch>
+   </IfModule>
+
+=== 3. Create your /handler.pl/. ===
+
+The text of my /handler.pl/ follows.  Just put this into the directory you chose for handler.pl in step 2 and change the /main/ component root and you're good to go.  (Note that this configuration makes it so that images are not interpreted in Mason; if you're outputting images from Mason, search for "image" and remove that line.
+
+You will want to change the component root and data directory (search on "CONFIGURATION" in the file).
+
+/handler.pl/:
+
+   #!/usr/bin/perl
+   #
+   # This is a basic, fairly fuctional Mason handler.pl.
+   #
+   # For something a little more involved, check out session_handler.pl
+
+   package HTML::Mason;
+
+   # Bring in main Mason package.
+   use HTML::Mason;
+
+   # Bring in ApacheHandler, necessary for mod_perl integration.
+   # Uncomment the second line (and comment the first) to use
+   # Apache::Request instead of CGI.pm to parse arguments.
+   use HTML::Mason::ApacheHandler;
+   # use HTML::Mason::ApacheHandler (args_method=>'mod_perl');
+
+   # Uncomment the next line if you plan to use the Mason previewer.
+   #use HTML::Mason::Preview;
+
+   use strict;
+
+   #
+   # CONFIGURATION
+   #
+   # $comp_root: the main component root (where your Mason code goes).
+   my $comp_root = '/var/www/html';
+   # $data_dir: a directory (hopefully not under $comp_root) where
+   #            Mason will put cache files and such
+   my $data_dir = '/var/www/mason';
+   # $user_regexp: a regexp that matches the root directory of Mason.
+   #               Make sure there is one arg in parens that represents
+   #               the actual username--the handler uses this.
+   my $user_regexp = '/home/([^/]*)/public_html';
+
+   # List of modules that you want to use from components (see Admin
+   # manual for details)
+   {  package HTML::Mason::Commands;
+   #   use CGI;
+   }
+
+   # Create Mason objects
+   #
+   my $base_parser = new HTML::Mason::Parser;
+   my $base_interp = new HTML::Mason::Interp (parser=>$base_parser,
+                                         comp_root=>$comp_root,
+                                         data_dir=>$data_dir);
+   my $base_ah = new HTML::Mason::ApacheHandler (interp=>$base_interp);
+   my %user_handlers;
+
+   # Activate the following if running httpd as root (the normal case).
+   # Resets ownership of all files created by Mason at startup.
+   #
+   #chown (Apache->server->uid, Apache->server->gid, $interp->files_written);
+
+   sub handler
+   {
+       my ($r) = @_;
+
+       # If you plan to intermix images in the same directory as
+       # components, activate the following to prevent Mason from
+       # evaluating image files as components.
+       #
+       return -1 if $r->content_type & $r->content_type !~ m|^text/|i;
+
+       #
+       # Have a different handler for each home directory
+       #
+       my $curr_ah;
+       my $filename = $r->filename();
+       if($filename =~ m!$user_regexp!) {
+           my $user_name = $1;
+           $curr_ah = $user_handlers{$user_name};
+           if(!$curr_ah) {
+               $filename =~ m!($user_regexp)!;
+               my $user_dir = $1;
+               my $parser = new HTML::Mason::Parser;
+               my $interp = new HTML::Mason::Interp(parser=>$parser,
+                                                    comp_root=>[[$user_name => $user_dir]],
+                                                    data_dir=>$data_dir);
+               $curr_ah = new HTML::Mason::ApacheHandler(interp=>$interp);
+               $user_handlers{$1} = $curr_ah;
+           }
+       } else {
+           $curr_ah = $base_ah;
+       }
+       my $status = $curr_ah->handle_request($r);
+
+       return $status;
+   }
+
+   1;
+
+=== 4. If you have your own handler.pl. ===
+
+If you like playing with /handler.pl/ or have one of your own, what I did was pretty simple.  All the script does is store a hash of user Mason handlers.  It checks the URL coming in, and if it was a home directory, it checks the hash to see if the ApacheHandler is there.  If it is, it uses it.  If not, it creates it with the appropriate component root, stores it in the hash, and uses that.  If it is not a home directory, it uses a default component handler.
+
+Basically, each Mason interpreter (Interp) is an object knows its own component root.  Each ApacheHandler can have its own interpreter.  You just have to choose the right one for the component root you're using.
+
+
+
+Copyright (C) 2001 John Keiser (johnkeiser@home.com).  Reproduce freely, give credit where it's due, don't run with scissors.
+
+-- JohnKeiser

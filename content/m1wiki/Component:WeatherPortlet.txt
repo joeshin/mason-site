@@ -1,0 +1,90 @@
+ <& template:top, qq|<a href="http://www.weather.com/weather/local/$zip">Weather for $current->{city}, $current->{state}</a>| &>
+ 
+ <table cellspacing="1" cellpading="3" border="0">
+ <tr valign="center" align="center">
+ <td><img src="<%$current->{pic}%>" alt="<%$current->{cond}%>" /> </td>
+ <td><h1><%$current->{cond}%></h1></td>
+ </tr>
+ <tr valign="center" align="center">
+ <td><h1><%$current->{temp}%>&deg;F</h1></td> 
+ <td>Wind Chill: <%$current->{heat}%>&deg;F</td>
+ </tr>
+ <tr valign="center" align="center">
+ <th>Wind:</th><td><%$current->{wind}%> MPH</td>
+ </tr>
+ <tr valign="center" align="center">
+ <th>Dew Point:</th><td><%$current->{dewp}%>&deg;F</td>
+ </tr>
+ <tr valign="center" align="center">
+ <th>Humidity:</th><td><%$current->{humi}%> %</td>
+ </tr>
+ <tr valign="center" align="center">
+ <th>Visibility:</th><td><%$current->{visb}%></td>
+ </tr>
+ <tr valign="center" align="center">
+ <th>Barometer:</th><td><%$current->{baro}%> Inches Hg</td>
+ </tr>
+ </table>
+ 
+ <& template:bottom &>
+ 
+ <%args>
+ $zip
+ </%args>
+ 
+ <%once>
+ use Geo::Weather;
+ </%once>
+ 
+ <%init>
+ my $weather = new Geo::Weather;
+ $weather->{timeout} = 5; # set timeout to 5 seconds instead of the default of 10
+ 
+ my $current = $m->cache(action=>'retrieve', key=>$zip);
+ if (! defined $current) {
+     my $current = $weather->get_weather($zip);
+     die "Unable to get weather information" unless ref $current;
+     $m->cache(action=>'store', key=>$zip, expire_in=>'8 hour', value=>$current);
+ }
+ </%init>
+ <%doc>
+ 
+ * WHAT
+ 
+ A 'portlet' like component for fetching and displaying weather from weather.com
+ 
+ * VERSION
+ 
+ .01 - First release.
+ 
+ * FEATURES
+ 
+  - Easy to incorporate into any Mason server.
+  - Low dependancies.  Only needs Geo::Weather (which only needs LWP::UserAgent, IO::FileHandle, and POSIX)
+  - Uses Mason caching to avoid overloading weather.com servers.
+  - See http://www.dwatsonconsulting.com/images/weather_portlet.jpg for a screenshot. 
+ 
+ * HOW
+ 
+  - Drop component into a subdirectory of the Mason component root.
+ 
+  - Define a 'template' to wrap the portlet.  A template is a Mason component with 'top' and 'bottom' methods.
+    These methods should describe a nice table for the content. 'top' method should take a title as first arg.
+    Alternatively, you can put the wrapper HTML in the component. 
+ 
+  - Call weather component in your autohandler or HTML page like so <& '/portlets/weather', zip=>'94102' &>
+    Assumes weather component is in "portlets" directory.
+ 
+ * CREDITS
+ 
+ "Jonathan Swartz" <swartz@pobox.com> made HTML::Mason.
+ "Mike Machado" <mike@innercite.com> made the Geo::Weather package.
+ "Dennis Watson" <dwatson@dwatsonconsulting.com> combined the two into this package.
+ 
+ * COPYRIGHT
+ 
+ The weather component is free software.  
+ It is distributable under the same terms as HTML::Mason itself.
+ 
+ </%doc>
+

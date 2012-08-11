@@ -1,0 +1,57 @@
+= Dynamic Email Templates Using Mason =
+
+As has been said, once you have a hammer, everything looks like a nail.  Since Mason is so good at generating dynamic HTML, why not also use it to generate dynamic email?  Seriously, using Mason to generate email, either from a web app or a script, is quite simple.
+
+This page demonstrates how to use Mason in a standalone script to generate email.
+
+
+Let's assume that we have a set of email templates located at _/usr/local/share/email-components/_.  Here is a simple module you could use to send email using those components.  This module assumes that you will be passing in a user object that has [=name()] and [=email_address()] methods.
+
+ package MyApp::MasonEmail;
+
+ use HTML::Mason::Interp;
+ use MIME::Lite;
+ use Params::Validate qw( validate_with SCALAR );
+
+ use constant COMP_ROOT => '/usr/local/share/email-components';
+
+ # Add a data_dir to improve performance
+ my $Interp = HTML::Mason::Interp->new( comp_root => COMP_ROOT );
+
+ sub send_email
+ {
+     my %p =
+         validate_with( params => \@_,
+                        spec   => { comp    => { type => SCALAR },
+                                    subject => { type => SCALAR },
+                                    user    => { isa => 'MyApp::User' },
+                                  },
+                        # extra arguments will be passed to the component
+                        allow_extra => 1,
+                      );
+
+     # The name of the component to be called
+     my $comp = delete $p{comp};
+
+     my $subject = delete $p{subject};
+
+     my $body;
+     $Interp->out_method(\$body);
+
+     # component paths must be absolute
+     $Interp->exec( '/' . $comp, %p );
+
+     # replace this with your favorite email sending module/method
+     MIME::Lite->new( From    => 'myapp@example.com',
+                      To      => $p{user}->name . ' <' . $p{user}->email_address . '>',
+                      Subject => $subject,
+                      Data    => $body,
+                    )->send;
+ }
+
+An email component would look just like any other component, of course.
+
+If you wanted to have Mason generate both the subject and body, you could alter that the [=send_email()] function to simple call two components, maybe prepending "subject-" and "body-" to the component name given.
+
+
+This module will work for standalone scripts and mod_perl.

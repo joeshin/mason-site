@@ -1,0 +1,27 @@
+$m->scomp and $m->abort don't work together, even when you attempt to use eval {} to trap aborts.
+
+Consider a top-level autohandler that wants to postprocess the page content manually before outputting it. 
+
+    # WRONG
+    my $content = $m->scomp($m->fetch_next, %ARGS);
+    # Postprocess $content somehow
+
+This doesn't work well because if any component decides to abort, the abort exception will fly right past the autohandler and its postprocessing.
+
+You might then try
+
+    # WRONG
+    my $content;
+    eval { $content = $m->scomp($m->fetch_next, %ARGS) };
+    # Postprocess $content somehow
+
+But that doesn't work either, because the exception will skip past the $content assignment until the point just after the eval {}.
+
+What you want is
+
+    # RIGHT
+    my $content;
+    eval { $m->scomp({store=>\$content}, $m->fetch_next, %ARGS) };
+    # Postprocess $content somehow
+
+The store modifier has the same effect as scomp, but it will work regardless of whether an exception occurs or not.

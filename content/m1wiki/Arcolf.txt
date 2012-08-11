@@ -1,0 +1,6 @@
+* is also known as Wolfgang Gruber
+* works with Mason since 2000
+* is the author of [Component:DateDhandler]
+* thinks that Mason is better than [http://www.php.net PHP], [http://struts.apache.org Struts] and all the other [http://java.sun.com/j2ee/ J2EE] [http://www.frameworks-boulder.org/Application_Frameworks.html Web Frameworks]
+* has a [http://www.arcolf.net personal website] (although the stuff is not really interesting ;-)
+* hates that he can't use Mason for his personal website

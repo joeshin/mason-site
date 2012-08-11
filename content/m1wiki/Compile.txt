@@ -1,0 +1,14 @@
+Here is a small script I'm using for syntax checking.
+Just call it with "./compile.pl filename"
+
+ #! /usr/bin/perl  -w
+ use strict;
+ use HTML::Mason;
+ my $interp = HTML::Mason::Interp->new(allow_globals => [ qw($r $m) ]);
+
+ my $file = shift;
+ eval {
+  $interp->make_component(comp_file=>$file);
+ };
+ die $@ if $@;
+

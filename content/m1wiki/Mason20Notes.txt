@@ -1,0 +1,103 @@
+JonathanSwartz and DaveRolsky were recently talking about the future of Mason, and these are some of Dave's notes and thoughts on what Mason 2.0 might look like.
+
+== A Caveat ==
+
+Neither Jon nor I are rushing off to write Mason 2.0 any time real soon. It may never happen. It may happen differently. I'm just recording some thoughts, don't get too excited.
+
+== Is This a Rewrite? ==
+
+I'm not sure. It would be somewhere between a rewrite and an incremental change. Rewriting all the code from scratch seems foolish, but there's lots of legacy cruft in the current codebase that could be gotten rid of.
+
+== Problems with Mason 1.x ==
+
+There are a couple problems with the current codebase that would make a 2.0 version worthwhile.
+
+One of the biggest problems with the current codebase is that while there are many tests, they are almost entirely functional tests which are done by creating a Mason component, executing it, and examining the results. This makes testing specific bugs or features more difficult than it needs to be, and to a certain degree inhibits ongoing development.
+
+
+From a design standpoint, the Mason codebase as a whole is very much showing its age. Specifically, it was created at a time when MVC frameworks like Catalyst or Jifty just did not exist. As a result, it's basically a combination of controller and view, and the lines between the two are quite blurred in the codebase.
+
+Nowadays, it makes more sense for the core developers to focus on the view part of Mason, since this is what it does really well. There is basically no piece of functionality in Mason's controller aspects that is not replicated, usually cleaner and better, in Catalyst or Jifty (and probably Maypole, CGI::Application, and others too numerous too mention).
+
+== What Would 2.0 Look Like? ==
+
+I imagine that the result of work on 2.0 would be two new distributions. One would be a standalone templating system, which I'll call Mason::Template. The other would be a framework, which I'll call Mason::Framework.
+
+When combined, the two packages would basically do everything that the current HTML::Mason distribution does. But because they'd be separate, they would have a cleaner separation of concerns. It's likely that I would not want to actively develop the Framework part. I'm more interested in using Catalyst for that sort of thing in future work.
+
+== Big Changes ==
+
+There are a few things I'd like change, add or remove in a major release of Mason.
+
+=== <%filter> blocks, [=<&| /filter/comp.mas &>...</&>] (comp calls with content) and [=<% $var | filter %>] (pipe filters in substitution) ===
+
+Anything that can be done with a filter block can be done with a component call with content. The primary difference between them is that filter blocks execute in the same scope as the content they are filtering, and so see variables declared in init blocks. But this is easily worked around by simply passing the appropriate variables to the component call with content.
+
+Similarly, the pipe syntax is yet another variation on filtering.
+
+Given this, I'd like to remove filter blocks entirely. They cause a lot of complication in the codebase, particularly in relation to things like flushing and clearing buffers.
+
+I'd also like to be able to do filtering by calling a subroutine, as opposed to a component or named filter (pipes). The pipe syntax is definitely worth keeping, but if it shared some underlying implementation with the comp calls with content, that would be ideal.
+
+=== Interp parameter: ignore_warnings_expr ===
+
+The primary motivation for this feature is based on its default, which is [=qr/Subroutine .* redefined/]. This default exists solely to allow people to do things like define subroutines in once blocks. Defining subroutines in a component is a horrible practice, and doing it with named subroutines is double horrible.
+
+Generally speaking, compilation warnings should probably be passed through as warnings. Offering a new parameter of "die_on_compilation_warning" which defaults to false, is probably more useful.
+
+=== Interp parameter: object_file_extension ===
+
+Does this serve any useful purpose?
+
+=== Request->call_self ===
+
+I'm not sure what this is used for these days. The cache_self() method is implemented on top of it, but I'm not sure why you'd want to call it explicitly.
+
+=== Make components use named subs in unique per-component namespace ===
+
+Rather than having all components share a single namespace, I'd like to give each component its own namespace. Then the component's body, methods, subcomponents, etc could all be named subroutines in that namespace.
+
+The advantage here is that it makes profiling and testing coverage much more straightforward. There are a couple downsides though. One is that you can no longer export a function to all components by loading it in one namespace. The other problem is that creating many namespaces may eat up memory.
+
+Another approach could be to simply use named subroutines in a shared namespace, where the sub names are a mangled version of the component's path. This is what the "use_named_subs" option currently does. This would actually be a backwards-compatible change, except for the most obscure code expecting Mason component subroutines to always be named "ANON" in a stack trace.
+
+=== Unify method and subcomponents ===
+
+Methods and subcomps are pretty much the same thing. In theory subcomps are private, but in practice they can be called directly. It would probably make sense to just have one block, [=<%method>]. Then we could implement truly private methods with attribute syntax, [=<%method private>] or something like that.
+
+=== <%args> block validation ===
+
+We've long talked about using Params::Validate to provide stricter [=<%args>] block validation. I think we could support multiple styles of validation with a attribute for the block: [=<%args validation=PV>].
+
+=== Block attributes (flags) ===
+
+This might be something we want the parser to support as a general case, though we'd still validate the attributes to make sure they were valid for the block. This provides a nice way to extend the capabilities of a block without introducing lots of new syntax.
+
+== How to Chop Things Up ==
+
+Here's a first pass at taking the current API and deciding which things go in Framework and which in Template. The guiding principle here is "if it can be done by Catalyst, it goes in Framework." Catalyst should be seen as shorthand for "a reasonably featureful web app framework", on the assumption that other frameworks will have a roughly analogous feature set, and [http://communityservicenetwork.wordpress.com communities] can choose a framework that provides what they need.
+
+=== Framework
+
+* ApacheHandler, CGIHandler
+* Resolver->apache_request_to_comp_path()
+* dhandlers
+* The caching related api/parameters in Request
+* HTML page for errors and error parameters in Request
+** Catalyst w/ Catalyst::Plugin::StackTrace already does a good job of this
+** We might be able to make it better with a Catalyst::Plugin::StackTrace::Mason module that includes the component source, like Mason's current error page
+* Request->clear_buffer() and Request->flush_buffer()
+** This feels like something that goes in a framework, but Catalyst has nothing like it. It's mostly useful in the context of aborting without generating output, but under Catalyst this would normally be done before invoking a view.
+* Request->decline() and Request->declined()
+* Subrequests (?)
+* Request->notes
+
+=== Template
+
+* Lexer (to be renamed Parser, I think)
+* Compiler
+* Everything in Request and Interp not already mentioned
+* Plugin system
+
+
+

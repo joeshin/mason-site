@@ -1,0 +1,20 @@
+If you want to make your pages slightly more cache-friendly, you need to send a Content-Length header.  Mason's filter sections make this easy
+ 
+ <%filter>
+  $r->set_content_length( length $_ );
+  </%filter>
+
+If you stick that in an autohandler, all your mason pages will now have a Content-Length header.  Note that you need Apache::File loaded in to get the set_content_length() method on $r.
+
+Unfortunately, this technique doesn't apply if you've turned off mason's buffering.
+
+One other thing to be careful of is UTF-8.  If you've got UTF-8 output in your code somewhere, you'll need to do this:
+
+  <%once>
+  use Encode qw( encode_utf8 is_utf8 );
+  </%once>
+  <%filter>
+  # Convert from characters to bytes if necessary.
+  $_ = encode_utf8( $_ ) if is_utf8( $_ );
+  $r->set_content_length( length $_ );
+  </%filter>

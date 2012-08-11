@@ -1,0 +1,288 @@
+== Apache 1.X details
+
+==== See bottom of page for details with Apache 2
+
+Normally, Apache directory requests are handled by [=mod_dir]. One of the primary functions of this core Apache module is to check the requested URI, and if it is for a directory and there is no slash after the directory name, [=mod_dir] appends the slash and redirects the browser to the new URL. This ensures that relative !URLs always work correctly.
+
+
+However, [=mod_perl], when it is compiled into Apache, sets itself up to get the first stab at handling the response phase of requests. This is normally what you want, but the upshot is that, unless [=mod_perl] declines the request, neither [=mod_dir] nor any other response phase module ever gets a chance to run. So Mason handles the request, but unfortunately it does not decline requests for a directory when the final slash is missing. This will be fixed in Mason 1.3, but not before then, as doing so breaks compatibility with the existing behavior.
+
+But there are a few approaches to changing this behavior without too much trouble:
+
+1. You can add these lines to the top of your dhandler to handle the redirect yourself:
+
+  <%init>;
+  use Apache::Constants qw(DIR_MAGIC_TYPE DECLINED);
+  $m->abort(DECLINED)
+    if $r->content_type eq DIR_MAGIC_TYPE && $r->uri !~ m{/$};
+  </%init>
+
+Here Mason declines the request, and therefore so does [=mod_perl]. This allows [=mod_dir] to handle the request, and [=mod_dir] will trigger the appropriate redirection.
+
+2. You can use David Wheeler's [ http://search.cpan.org/dist/Apache-Dir/ Apache::Dir ] module from CPAN to replicate the directory redirection behavior of [=mod_dir] in [=mod_perl]. Using it is simple; just add it as a fixup handler wherever you're using HTML::Mason::!ApacheHandler to handle directory requests:
+
+  <Location /foo>
+    PerlSetVar       MasonDeclineDirs 0
+    PerlModule       Apache::Dir
+    PerlModule       HTML::Mason::ApacheHandler
+    SetHandler       perl-script
+    PerlFixupHandler Apache::Dir
+    PerlHandler      HTML::Mason::ApacheHandler
+  </Location>
+
+3. Recompile Apache to allow [=mod_dir] to handle requests before [=mod_perl] does. This is simple to do thanks to Apache's [=--permute-module] configure option. You can either give it the names of two modules to swap, e.g.:
+
+   --permute-module=dir:perl
+
+or you can use special names "BEGIN" and "END" to move a module to the beginning or end of the list, which might be what you want for [=mod_dir], e.g.:
+
+   --permute-module=dir:END
+
+In this case, you might also need to change the value of the [=!DirectoryIndex] directive to [=dhandler] to prevent Apache from internally redirecting to an existing [=index.html] file.
+
+4. If you're running Apache 1.3, you can use the [=!ClearModuleList] and [=!AddModule] directives to reorder the response phase handlers at server startup time. The [=!AddModule] directive can load either static or dynamic modules; [=!ClearModuleList] removes all loaded modules, so you'll need to load them all again in the appropriate order; see the output of [=httpd -l] for the complete list of loaded modules. The highest priority module loads last, so you could do something like this:
+
+  ClearModuleList
+  AddModule mod_so.c
+  AddModule mod_perl.c
+  AddModule mod_dir.c
+
+Here again, you might also need to change the value of the [=!DirectoryIndex] directive to [=dhandler] to prevent Apache from internally redirecting to an existing [=index.html] file.
+
+=== Apache 2
+
+==== Handle all directories with Mason and Mason only
+You can get Apache to always handle directory requests with a dhandler by adding the slashed locations to be handled by Mason and by setting MasonDeclineDirs to 0. Sample configuration:
+
+        <LocationMatch ".*(\.mhtml|\.html|\.css|\/)$">
+                SetHandler      perl-script
+                PerlHandler     HTML::Mason::ApacheHandler
+                PerlSetVar      MasonDeclineDirs 0
+        </LocationMatch>
+
+This will work for both real and virtual (non-existant) directories matching the path. A bad side effect of this is that requests to directories without a dhandler will return a 404 Not Found response. Apache will not try to handle these requests with mod_dir's DirectoryIndex nor mod_autoindex. For reasons see 
+the thread at http://marc.info/?t=111335099400001&r=1&w=2 and the message at http://marc.info/?l=apache-modperl&m=111445150218566&w=2 - and for Mason solutions see below.
+
+Okko Nov 19 2007
+
+==== Handle virtual directories with Mason's dhandlers, handle real directories with mod_dir's DirectoryIndex's suggested index files or mod_autoindex
+
+To fix Apache2 so that it continues the processing of real (Mason-declined) directories to mod_dir's DirectoryIndex files and/or mod_autoindex you need a fixup handler. The handler is presented below.
+
+To get Apache to serve .mhtml, .html, .css files AND virtual directories use this configuration:
+
+        PerlRequire /etc/http/conf/fixup_handler.pl
+        <LocationMatch ".*(\.mhtml|\.html|\.css|\/)$">
+                SetHandler           perl-script
+                PerlFixupHandler     Apache2::DirectoryFixup
+                PerlHandler          HTML::Mason::ApacheHandler
+        </LocationMatch>
+
+Since the virtual directories do not exist there is no need to set MasonDeclineDirs to 0, you can keep it as the default 1.
+
+Create the file /etc/httpd/conf/fixup_handler.pl with this content:
+
+        package Apache2::DirectoryFixup;
+        
+        use strict;
+        use warnings FATAL => qw(all);
+        
+        use Apache2::Const -compile => qw(DIR_MAGIC_TYPE OK DECLINED);
+        use Apache2::RequestRec;
+        
+        sub handler {
+            
+            my $r = shift;
+            
+            if ($r->handler eq 'perl-script' &&
+                -d $r->filename              &&
+                $r->is_initial_req) {
+                $r->handler(Apache2::Const::DIR_MAGIC_TYPE);
+                return Apache2::Const::OK;
+            }
+            
+            return Apache2::Const::DECLINED;
+        }
+
+        1;
+
+( The fixup handler code by Geoffrey Young, found here: http://marc.info/?l=apache-modperl&m=111445150218566&w=2 )
+
+Finally, to get the slash to be added to virtual directories add this:
+
+        RewriteEngine  on
+        # No slash at the end
+        RewriteCond %{REQUEST_URI}  !^.*/$
+        # and no dot in the filename after the last /
+        RewriteCond %{REQUEST_URI}  !^.*/[^/]+\.[^/]+$
+        # -> it must be directory and have a slash
+        RewriteRule    ^(.*)$  $1/  [R]
+
+
+and you're all set.
+
+This configuration:
+0 Adds slash to both real (by mod_dir) and virtual (by mod_rewrite) directory paths.
+0  Handles non-existant directories and files with dhandler
+0  Handles existant files as configured (.html etc with Mason, images as usual)
+0  Handles existant directories as configured with mod_dir's DirectoryIndex, if none are found and Options +Indexes is set, with mod_autoindex.
+
+Okko Nov 19 2007
+
+==== FixupHandler could be installed by Mason but is currently not
+
+Unlike in mod_perl 1, mod_perl 2 is not configured to handle [=DIR_MAGIC_TYPE] requests. But since Mason likes to handle directory requests when [=decline_dirs] is disabled, it seems likely that Mason will need to install a fixup handler to set itself up to handle such requests. To do so, HTML::Mason::!ApacheHandler will need to call [=$s->add_config] to add a !PerlFixupHandler, which would likely look something like this:
+
+  sub fixup_handler {
+     my $r = shift;
+     $r->handler('perl_script') # or $r->handler('modperl')
+       if $r->content_type eq DIR_MAGIC_TYPE && $r->uri =~ m{/$};
+     return HTTP_OK;
+ }
+
+So none of the above Apache1/mod_perl1 solutions should be necessary in mod_perl 2.
+
+==== Alternatives to the above FixupHandler.
+
+JohnWilliams suggestion : I was able to get Mason to handle directories under mod_perl2 by adding an empty pattern ([=^$]) to my !FilesMatch directive.  e.g.
+
+  <FilesMatch "\.html$|^$">
+    PerlSetVar MasonDeclineDirs 0
+    SetHandler perl-script
+    PerlHandler HTML::Mason::ApacheHandler
+  </FilesMatch>
+
+Actually MasonDeclineDirs doesn't seem to work under 2 in any way that I (PaulOrrock) could get to work. It does not (for example) redirect / to /index.html and instead returns a 404 for /. Of course you could put a dhandler in there but, that's not really the point.
+
+
+GregBoyington suggested the way round this was to use mod_rewrite to force a redirect to index.html when a directory is requested:
+
+  ReWriteEngine on
+  ReWriteRule ^(.*)/$ $1/index.html 
+
+So that's that problem fixed, but mason/mod_perl2 doesn't do the other key part (working dhandlers) either. What's needed is a simple way for mason to be told to try and handle everything that is either html or txt or cgi or in fact anything but some kind of media file or css or js. The downside to this is a  huge FilesMatch regex in your config.
+
+The easy work around is that if none of your directories contain a . (which they probably shouldn't anyway under some RFC somewhere) then the below will work fine without needing MasonDeclineDirs to be set
+
+        <FilesMatch "(\.html|\.txt|^[^\.]+)$>
+                    SetHandler perl-script
+                    PerlHandler MYApp::Handler;
+        </FilesMatch>
+
+Anything thats html or txt goes straight through and then also anything else that doesn't have a . in the uri, this means all other files (image.jpg etc) go to the next handler.
+
+This worked for me using Apache/2.0.55 (Debian) mod_apreq2-20050712/2.1.3-dev mod_perl/2.0.2 Perl/v5.8.7
+
+
+=== A much simpler way, I think
+
+Using
+Server Version: Apache/2.2.0 (Unix) mod_apreq2-20051231/2.5.7 mod_perl/2.0.2 Perl/v5.8.8
+
+I did the following:
+
+ DirectoryIndex index.html /path-to-anywhere-that-exists.html
+
+Note: dhandlers are not involved in this, you either get
+index.html if it exists, or the path-to-anywhere-that-exists.html
+is served.
+
+Thus if index.html is present in the directory, it will be served.  Otherwise the existing file, (which could be a mason served file) will be served, and you can do anything you want.
+
+I tried all of the ideas suggested above under Apache2, and had no joy.
+
+HenryLaxen March 31, 2006
+
+=== A more complicated way, but it works
+
+Having struggled with this for several days now, I thought I
+would share my findings in the hope that others may avoid a
+similar struggle.  First let me describe what I wanted to do.
+
+0 Serve *everything* under / with Mason
+0  If someone asks for a directory, ie a uri ending in a /, serve index.html if it exists.
+0  If someone asks for a non-existant file, make sure the appropriate dhandler is called.
+
+To achieve 1. all you need is something like:
+ <Location "/">
+   Options All MultiViews 
+   AcceptPathInfo On
+   PerlSetVar MasonDeclineDirs 0
+   DefaultType text/html
+   SetHandler perl-script
+   PerlHandler Mason::Handler
+ </Location>
+
+Now 2 and 3 require that you get your handler just right.  Here
+is the relevant part of my handler:
+
+
+ package Mason::Handler;
+ .. 
+ use Apache::Constants qw(DIR_MAGIC_TYPE OK DECLINED);
+ use Apache2::SubRequest ();
+ ..
+
+ sub handler {
+   my $r = shift;
+
+   # A directory request has content-type = httpd/unix-directory
+   # we check that the uri ends in a slash, since only in that case
+   # do we want to redirect, and finally to avoid redirect loops
+   # we only do this on the initial request.
+   # You must load Apache2::SubRequest in order to run internal_redirect
+     if ($r->content_type eq 'httpd/unix-directory' 
+         && $r->uri =~ '/$' && $r->is_initial_req ) {
+       # print STDERR "Accepting Directory Request\n";
+       $r->internal_redirect($r->uri . 'index.html');
+       return OK;
+     }
+
+   # We only want to serve text, xml, or directory content
+   # So we decline everything else
+    if ($r->content_type && 
+        $r->content_type !~ m{^text|xml|httpd/unix-directory}io) {
+      # print STDERR "Declining Request\n";
+      return DECLINED;
+    }
+
+   # Let Mason handle the content if here
+   my $status = $mason_handler_you_created_previously->handle_request($apr);
+   # print STDERR "Handled request with status: $status\n";
+   return $status;
+ }
+
+Just a quick comment on why dhandlers are so wonderful.  If you
+are stupid like me, you have to cover up your past mistakes and
+inconsistancies.  So in my dumber days, I created files, some of
+which were singular, and some were plural.  For example I have a
+comment.html file along side of a resources.html file.  In
+addition, long ago I had some files that had upper case
+characters in the filename, like Restaurant.html.  Mistakes of
+the past which I have to pay for in the present.  The result is
+a top level dhandler, that tries to correct for these errors.
+It has code like:
+
+0 Convert uri to lower case
+0 Try uri with and 's' appended to the file name minus extension
+0 Try uri with the 's' removed from the file name minus extension
+0 Lookup file name in a special translation hash
+0 Finally, give up and redirect to '/missing.html'
+
+It has drastically reduced the number of 404 errors in my system
+log.
+
+HenryLaxen April 1, 2006
+
+
+=== Another simple solution
+
+  RewriteEngine On
+  RewriteRule /$ / [L]
+  RewriteRule /(.*)/$ /$1/ [L]
+
+That looks like it does nothing, but it solved all my problems. Put within your VirtualHost declaration. YMMV, and I haven't thought too hard about why it works. I'm using RedHat Apache2, mod_perl 1.99, Mason 1.28.
+
+
+
+PaoloCampanella June 22, 2006

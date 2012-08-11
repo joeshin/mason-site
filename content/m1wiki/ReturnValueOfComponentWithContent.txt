@@ -1,0 +1,58 @@
+How do you get a return value of a component call with content? The obvious answer for those familiar with Mason would be to save the return value of $m->comp(). However, a component with content can only be safely called in the format:
+
+   <|& "/path", %ARGS &>content</&>
+
+However, there are hacks. They aren't pretty and you won't like them. One solution is to simply use perl's try/catch using eval.
+
+   % eval {
+
+   <|& "/path", %ARGS &>
+
+   content
+
+   </&>
+
+   % }; ($@) && do { print $@; };
+
+where /path is:
+
+   <%cleanup>
+
+    die "Hello World";
+
+   </%cleanup>
+
+This will cause many problems. Firstly, to be 'type safe' you should serialize the return value being thrown by 'die'. The other problem is that most likely your 'die' output will contain other information, especially with Carp. Write a simple parser to snatch your serialized data from the returned 'die' information.
+
+Yes, this is evil. Yes, there is another way.  The other way is to do:
+
+   % my $return = $m->comp ({content=>sub{
+
+   content
+
+   % }}, '/path', %ARGS);
+
+This is evil and ugly, but it does work. It is evil because it is undocumented and is likely to change in a future release of Mason. If you use this, don't expect it to work in the future.  For more on this method, see ComponentWithContentFromPerl.
+
+Finally, you can use a global variable which you edit within the Component with Content..  This is the only fully supported method you can use and the cleanest.. yet ugly.
+
+Good luck :)
+
+-- EricWindisch
+
+= Alternative solution =
+
+It is possible to use another hack:
+
+   % my $return =
+   <&| /comp, %args>
+   content
+   </&>
+
+which relies on how components are compiled. In particular such construct will
+be compiled to something like:
+
+   my $return =
+   $m->comp({ content => sub { $m->print("content") }}, '/comp', %args);
+
+wich is what we want.

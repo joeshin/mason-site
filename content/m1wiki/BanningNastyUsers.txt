@@ -1,0 +1,144 @@
+The other day I decided to check out my access logs to see what pages were being asked for that didn't exist, so I casually ran:
+
+   grep ' 404 ' /var/log/apache/access.log
+
+To my surprise and dismay, I discovered a bunch of entries like:
+
+   66.13.9.146 - - [01/Apr/2003:22:10:10 -0800] "GET /default.ida?
+   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX%u9090%u6858%ucbd3%u7801%u90
+   90%u6858%ucbd3%u7801%u9090%u6858%ucbd3%u7801%u9090%u9090%u8190
+   %u00c3%u0003%u8b00%u531b%u53ff%u0078%u0000%u00=a  HTTP/1.0" 404 1141
+ 
+and 
+ 
+   204.210.215.70 - - [01/Apr/2003:02:38:35 -0800] "POST /cgi-bin/formmail/formmail.cgi HTTP/1.1" 404 -
+   204.210.215.70 - - [01/Apr/2003:02:38:35 -0800] "POST /cgi-bin/FormMail.pl HTTP/1.1" 404 -
+   204.210.215.70 - - [01/Apr/2003:02:38:35 -0800] "POST /cgi-bin/formmail/formmail.pl HTTP/1.1" 404 -
+   204.210.215.70 - - [01/Apr/2003:02:38:35 -0800] "POST /cgi-bin/FormMail.cgi HTTP/1.1" 404 -
+ 
+That's not very nice, I thought to myself, and decided to do something about it.  Fortunately Mason made this very easy for me.  I started with a little module, appropriately called Ban.pm
+
+----
+
+   package Ban;
+   use IPC::Shareable;
+   use strict;
+
+   # Put whatever urls you want to trigger banning in this re
+   my $uri_re =
+   qr{
+   default\.ida |
+   scripts |
+   _vti_bin
+   }iox;
+
+   my %banned;
+   tie %banned, 'IPC::Shareable', 'data', {
+                                         create => 1,
+                                         exclusive => 0,
+                                         destroy => 1
+                                        }
+    or die $! ;
+
+   my $ban_time = 10*60;  # Set to 10 minutes, should be punishment enough
+
+   sub banned {
+    my ($ip) = @_;
+    my $now = time;
+    my $result = 0;
+
+    $banned{$ip} = $now + $ban_time if @_ == 2;
+    if (exists $banned{$ip}) {
+      if ($now < $banned{$ip}) {
+        $banned{$ip} = $now + $ban_time;
+        $result = 1;
+      } else {
+        delete $banned{$ip};
+      }
+    }
+    return $result;
+   }
+
+
+   sub check {
+    my $r = shift;
+    my $ip = $r->connection->remote_ip();
+    my $uri = $r->uri;
+    if ($uri =~ m/$uri_re/) {
+      banned($ip, 1);
+      open BAN, ">path to your log file" or die $!;
+      printf BAN "%s banned at %s for %s\n",$ip,scalar localtime(time),$uri;
+      close BAN;
+    }
+    return banned($ip);
+   }
+   1;
+
+----
+
+Next a tiny Mason component, which I called security:
+
+   <%perl>
+   my $uri = $ENV{REQUEST_URI};
+   if (Ban::check($r) && $uri ne '/nasty.html') {
+       $m->redirect('/nasty.html');
+   }
+   $m->call_next();
+   </%perl>
+   <%flags>
+   inherit => undef
+   </%flags>
+
+----
+
+And finally a little www page to send them to:
+
+   <%flags>
+   inherit => undef
+   </%flags>
+   <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+   <HTML>
+   <HEAD>
+   <TITLE>Shame on You</TITLE>
+   </HEAD>
+   <BODY BGCOLOR="#FFFFFF"> 
+   <table>
+   <tr>
+   <td>
+   <IMG SRC="path to a nasty image" >
+   </td>
+   <td>
+   <H1>Shame on You</H1>
+   Hello <b>IP: <% $ip %></b> you are trying to do something that you shouldn't
+   be doing, and have been banned from this site for 10 minutes.  If you
+   persist in this activity, I will send a message to your ISP.  Don't
+   you have better things to do with your time?
+   </td>
+   </tr>
+   </table>
+   </BODY></HTML>
+   <%init>
+   my $ip = $r->connection->remote_ip();
+   </%init>
+ 
+----
+
+And that is really all there is to it.  Just make sure all your pages inherit from security, and you're all set.
+
+If you also want to cover the guys trying to execute formmail, add this to your httpd.conf file:
+
+   ScriptAliasMatch [fF][oO][rR][mM]?[mM][aA][iI][lL]   path to your/cgi-bin/nasty.cgi
+
+where nasty.cgi is simply:
+
+   #!/usr/bin/perl
+   print "Location: /nasty.html\n\n";
+
+It just shouldn't be this easy, should it?
+
+-- HenryLaxen
+----
+Did it work? I guess in general the problem is people who can just flip their IP address and I also think the only way to stop it really is vigilance. The sites which delete spam quickly have little problems IMHO AndrewCates

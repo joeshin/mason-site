@@ -1,0 +1,63 @@
+From http://fastcgi.com: "FastCGI is a language independent, scalable, open extension to CGI that provides high performance without the limitations of server specific APIs."
+
+
+
+
+So, FastCGI is an alternative to mod_perl for developing (web) applications.  The relative merits of FastCGI vs. mod_perl will not be discussed here.  If you or your organization have decided to use FastCGI, here are the basic bits you need to hook it up to mason. 
+ The details are omitted for clarity.
+
+*Apache Configuration:*
+
+ AddHandler fastcgi-script fcgi                                                  
+ Action mason-handler /home/httpd/online/mason.fcgi                              
+                                                                                
+ SetEnv MASON_COMP_ROOT /home/httpd/webroot                                      
+ SetEnv MASON_DATA_ROOT /home/httpd/state/mason                                  
+
+ # pass the "documents" through the mason fcgi handler                           
+ <Directory /home/httpd/webroot>                                                 
+     SetHandler mason-handler                                                   
+ </Directory>                                                                    
+
+*mason.fcgi:*
+
+ #!/usr/bin/perl                                                                
+                                                                                
+ use strict;                                                                    
+ use CGI::Fast;                                                                 
+ use HTML::Mason::CGIHandler;                                                   
+                                                                                
+ {                                                                              
+     package HTML::Mason::Commands;                                             
+                                                                                
+     # anything you want available to components                                
+     use Storable qw(freeze thaw);                                              
+     use HTTP::BrowserDetect;                                                   
+ }                                                                              
+                                                                                
+ # lazily-instantiated variables                                                
+ my $cgi;                                                                       
+ my $h;                                                                         
+                                                                                
+ while ($cgi = new CGI::Fast())                                                 
+ {                                                                              
+     # this is lazily instantiated because %ENV is not set at startup time      
+     if (! $h) {                                                                
+         $h = HTML::Mason::CGIHandler->new(comp_root => $ENV{MASON_COMP_ROOT},  
+                                           data_dir => $ENV{MASON_DATA_ROOT},   
+                                           error_mode => 'fatal',               
+                                           error_format => 'line');             
+     }                                                                          
+                                                                                
+     # hand off to mason                                                        
+     eval { $h->handle_cgi_object($cgi) };                                      
+     if (my $raw_error = $@) {                                                  
+         # print out a pretty system error page and log $raw_error                          
+     }                                                                          
+ }                                                                              
+                                                                                
+ exit 0;                                                                        
+
+*Alternatives*
+
+SpeedyCGI

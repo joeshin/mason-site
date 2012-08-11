@@ -1,0 +1,92 @@
+Hi everyone,
+
+I decided to give some tips about HMTL::Mason installation.
+
+So let's start!
+
+What you need?
+
+Ubuntu (9.04/9.10) - Actually it could run on every old version
+
+We will need Gcc (C compiler) so run the command:
+sudo apt-get install build-essential
+
+Apache2 - I used apache2-threaded-dev
+Mod_perl2 - libapache2-mod-perl2
+
+sudo apt-get install apache2-threaded-dev libapache2-mod-perl2
+
+Do you need a SQL server ? I use MySQL
+
+sudo apt-get install mysql-server mysql-query-browser
+
+Now we use cpan to install the files
+
+at cpan do :
+
+install HMTL::Mason 
+- do the default installation, and be sure it not fails
+
+i use DBix::Class (an ORM ... if you want it, this will map your database, so you can avoid writting SQL)
+
+install DBIx::Class (yes the 'x' is smallcase)
+
+Now we gonna config our Apache2
+
+do sudo gedit /etc/apache2/httpd.conf
+
+and write this :
+
+<VirtualHost *:80>
+ServerAdmin [your@mail.com]
+ServerAlias [alias ex: mason]
+DocumentRoot /var/www/[your_website]/docs
+PerlSetVar  MasonCompRoot  /var/www/[your_website]/
+PerlSetVar  MasonDataDir   /var/www/[your_website]/
+
+ <LocationMatch "\.html|mc$">
+	SetHandler   perl-script
+	PerlHandler  HTML::Mason::ApacheHandler
+ </LocationMatch>
+</VirtualHost>
+
+---
+save and close it!
+
+now sudo gedit /etc/hosts
+
+in the same line of 127.0.0.1 write your alias, close and save it
+
+restart apache2: sudo service apache2 restart
+
+--
+So.. now your are ready to use HTML::Mason!
+
+I usually create my website at /var/www/[appname]/
+
+and i divide it with folders : docs, comps, bin and lib
+
+docs to .html
+comps to .mc (mason component)
+bin to .pl (perl scripts)
+lib to .pm (DBIx::Class modules for example)
+
+and if you want to transport all data with sql i create another folder called db, this is where i put my sql script file.
+
+
+When you finished write a small script in the docs folder, call it index.html or autohandler
+
+write in it : <% 2+2 %>
+
+close and save!
+
+go to the browser and write : http://[your_alias] and you should see the number 4 (four)
+
+Hope you enjoyed!
+
+Davidslv
+
+
+
+
+http://www.web-promotion-services.info

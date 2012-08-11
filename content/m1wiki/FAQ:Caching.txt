@@ -1,0 +1,56 @@
+[&TOC FAQ:Caching]
+
+
+=== When I change a component I don't always see the results in the output. How do I invalidate Mason code caches? ===
+Mason employs two kinds of code caching. First, Mason caches loaded components in memory. Second, Mason keeps an object file (a compiled version of the component) for every loaded component under data_root/obj.
+
+Before executing a memory-cached component, Mason compares the stored timestamp with the timestamp of the source file. If the source file has a later timestamp, Mason will load the component from the filesystem.
+
+Similarly, before using an object file, Mason compares the modified timestamp of the source and object files. If the source file has a later timestamp, then it is reparsed and the object file is overwritten.
+
+The system is designed so that you will immediately see the effects of source file changes. There are several ways for this system to breakdown; most are easy to avoid once you know about them.
+
+* If you copy or move in a component source file from elsewhere, it will retain the original file's timestamp, which may be earlier than the object file.
+
+* If you use tar, rsync, rdist or similar programs to transfer components, the timestamps of the created files may not be updated to the current time. Check the program's documentation for timestamp-related options.
+
+* If you use a shared file system like NFS, the timestamps of locally created files may not jibe with timestamps of NFS files due to differences in machine clocks.
+
+* If you ftp files onto a running server, Mason may read the file while it is incomplete. If the ftp then completes within the same second, Mason will not notice the change, and won't ever read the complete file.
+
+When in doubt, touching the source files (with the Unix touch command, or by re-saving in an editor) should force Mason to reload the component. If that does not work, try removing the object files and/or restarting the server to clear the memory cache. However, these remedies should be necessary only to diagnose the caching problem, not for normal Mason operation. On a normal Mason system cache expiration should just work "as expected".
+
+=== Mason code caching breaks down often in my situation. Couldn't you do something smarter than just comparing the timestamps? ===
+When coming up with invalidation schemes, we must consider efficiency as well as failure predictability. The current scheme does fail in certain situations, but those situations are very predictable. If you incorrectly use tar or copy or another technique mentioned above, you'll see the cache invalidation failure very quickly.
+
+Some alternatives that have been suggested:
+
+* Compare the sizes of the files as well as timestamps, or use the more liberal "source timestamp != object timestamp". This would indeed increase the chance of catching a change. But it would still fail occasionally (e.g. when changing a single character, or when copying an old-timestamp file that just happens to match the current timestamp), resulting in intermittent, head-scratching errors. In our opinion, it is better to fail miserably up front and be forced to fix your system than to have a mostly-working system that fails once a week. This is especially true when you are relying on Mason's cache invalidation on a production system.
+
+* Comparing MD5 or other signatures of the content. This would be very accurate, but would require reading and processing the source file instead of just performing a stat. This extra expense reduces the effectiveness of the cache.
+
+The bottom line: If you are relying on Mason's cache invalidation on a production system, you should take the time and build in the appropriate infrastructure to ensure that source file timestamps are always up-to-date after they are copied/untarred into place.
+
+=== When I change code in a library file I don't see the results. How can I get Mason to reread the library files? ===
+mod_perl processes, in general, do not automatically reread your library files. You either have to stop and start the server whenever you change a library file, or install something like Apache::Reload which will automate their reloading. However, see ApacheReload for important usage information.
+
+=== Once I've made an error in a component, the error keeps appearing in the logs, no matter how many times I fix it and reload! ===
+Are you using Apache::Reload in its default (!ReloadAll) mode? If so, see ApacheReload for details.
+
+=== Do data cache files expire automatically when a component or its dependencies change? ===
+Unfortunately they do not. This is on the to-do list.
+
+With Mason 1.1x and beyond, you can use the following idiom to say ``expire when my component source file changes'':
+
+      $m->cache(...,
+        expire_if=>sub {
+              (stat($m->current_comp->source_file))[9] > $_[0]->get_created_at
+        } )
+
+With Mason <= 1.05, the idiom looks like:
+
+      $m->cache(...,
+         expire_if=>sub { 
+              (stat($m->current_comp->source_file))[9] > $_[0]
+         } )
+

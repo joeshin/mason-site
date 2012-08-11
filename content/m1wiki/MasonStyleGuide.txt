@@ -1,0 +1,27 @@
+== Style Guide for Using Mason ==
+
+This guide is intended as a list of /suggestions/, not as a bible.  These are things that are worth thinking about as you create a Mason-based app.
+
+* Components with lots of Perl in them are harder to understand.  The more you use Mason solely for presentation (the view in MVC), the easier your components will be to follow.  Consider using [MasonX::WebApp http://search.cpan.org/dist/MasonX-WebApp] or [MasonX::Interp::WithCallbacks http://search.cpan.org/dist/MasonX-Interp-WithCallbacks] to help reduce business logic code inside components.
+
+* Perl code that is inlined in a component is harder to follow than Perl code in a separate block.  Try to move as much code as you can to <%init>, <%shared>, and other blocks.
+
+* If you declare your arguments in <%args>, your component has an easier to understand API.  Simply using %ARGS may make it harder to follow your code.
+
+* By default, all Mason components share a single namespace.  Declaring a named subroutine ("sub foo") inside a component means that all components now have access to that subroutine.  If you must use a subroutine inside a component, consider using an anonymous subroutine instead.
+
+* Before creating a subroutine in a component, think about whether you could put  it into a module.
+
+* If you have components which generate no output, consider making them functions/methods in a module.
+
+* This kind of code may be confusing:
+
+ <%perl>
+ my $out = '<b>';
+ $out .= $some_value;
+ $out .= '</b>;
+ <%perl>
+ <% $out %>
+Generating output by embedding HTML in Perl is confusing, especially since you are already inside a templating system.
+
+* If your components have many subcomponents and methods, this may be hard to follow.  Consider using separate files for some of these.

@@ -1,0 +1,1 @@
+I'm no longer a Mason user. I use Catalyst (http://www.catalystframework.org/) with Template Toolkit and DBIx::Class.

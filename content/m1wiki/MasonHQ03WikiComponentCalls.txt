@@ -1,0 +1,9 @@
+Never mind - we don't need this at all - I just discovered kwiki user functions.
+----
+MasonHQ03 must support component-call tags (e.g. <& &>), for calls to components placed in a certain directory of the backend component tree. Must be able to pass arguments as well, but for obvious security reasons we will need to restrict argument values to an easily parseable set, e.g. strings and numbers, rather than allowing arbitrary Perl expressions. Perhaps take a look at what TemplateToolkit allows when one template calls another.
+
+This feature will be used for pages that contain a combination of wiki and dynamic content, e.g.
+
+* The download page (needs a tag for getting current release information)
+* Category pages (need a tag for doing an inline reverse search) - see MasonHQ03WikiCategorySupport
+* The sites powered page

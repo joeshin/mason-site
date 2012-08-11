@@ -1,0 +1,9 @@
+ 
+|        |  Mod Perl 1 | Mod Perl 2 |
+| user agent | my $ua = [=$r-header_in('User-Agent');]   | my $ua = [=$r-headers_in-{'User-Agent'};]   |
+
+
+Well I couldn't quickly figure out howto accomplish the greater than sign in wikiml...so I omitted them.
+
+Cheers,
+~Rudy

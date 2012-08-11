@@ -1,0 +1,28 @@
+Most wikis don't require logins to contribute. With good reason - it's just one more barrier to contribution. However, Mason HQ currently has an account/login system with a large database of users.
+
+To compromise, I'd like MasonHQ03 to retain the login system but simplify it as much as possible. Creating an account will require just four pieces of information:
+
+* an account name (e.g. swartz)
+* a wiki display name (e.g. JonathanSwartz)
+* an email address
+* a password
+
+Logging in will set a permanent login cookie, so that many users will be able to forget all about their account after logging in for the first time.
+
+Advantages of having users log in:
+* RecentChanges and other history logs always annotated with author of changes.
+* Users can see lists of what they've created/edited and what other users have created/edited.
+* If we make email addresses public to logged in users, then users can easily follow up with authors on something they've written. Probably won't do this for privacy reasons, but we could have an "email author" form.
+* User preferences, e.g. size of edit windows, history on bottom of pages
+
+It's true that this system will preclude anonymous contributions, except where people intentionally disguise their identity. IMO, anonymous contributions aren't that valuable in our particular discussion space and won't be missed.
+
+Other notes:
+* All links requiring logins will still be displayed to all users. When a user clicks on "edit" (say), a screen comes up asking them to log in or to create an account (ideally on the same page). After they've created the account, they are logged in and redirected to the page they were going to.
+* The email address won't be confirmed as it is now. We want people editing as soon as possible.
+* We could use the email address for sending out daily/weekly wiki change emails, or we could just use a mailman mailing address. Probably the latter is better, even though it means even more mailman admin and spam filtering.
+* Should there be a separate account and wiki name, or just use the wiki name as login? I vote for separate names because
+** they already exist in database
+** it'll be easier for someone to just change their displayed wiki name while keeping their account
+** a lowercase, or at least case-freeform, account name is more likely to feel familiar when logging in (they can use the same thing they use on other sites)
+* A user's page will automatically be appended with a list of pages they've created and edited. Could do this with categories, or just by noticing that page name appears as a wiki name in the user table. Prefer the former since it avoids an extra lookup for each page view, but we'll have to see how far we get with categories.

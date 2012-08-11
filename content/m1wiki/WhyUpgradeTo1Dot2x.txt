@@ -1,0 +1,33 @@
+Why should you upgrade from 1.05 to 1.2x? Besides the warm fuzzy feeling of being on a release that's actually supported, here's a list of the important features and bug fixes.
+
+* Source-file line numbers in error messages
+
+* [http://www.masonhq.com/docs/manual/Devel.html#component_calls_with_content Component calls with content] (<&| &> syntax)
+
+* Ability to use print or $r->print to send output
+
+* Built-in [redirect http://www.masonhq.com/docs/manual/Devel.html#external_redirects] method
+
+* [http://www.masonhq.com/docs/manual/Devel.html#subrequests Subrequests]
+
+* An overhauled class hierarchy designed for [http://www.masonhq.com/docs/manual/Subclassing.html subclassing]
+
+* A built-in [http://www.masonhq.com/docs/manual/CGIHandler.html CGI handler]
+
+* Compatibility with Apache/mod_perl 2.0 (at a basic level - see ApacheModPerl2).
+
+* Compatibility with the OreillyBook.
+
+See http://www.masonhq.com/code/history.html, all the way back to 1.09_01, for a comprehensive list of changes.
+
+*How hard is it to upgrade?*
+
+Most of the incompatible changes between 1.0x and 1.2x involve installation and configuration - generally the kind of work can happen in a single place behind the scenes. The few incompatible syntax changes involve deprecating old or hopelessly buggy syntax. See the [http://masonhq.com/docs/upgrading.html upgrade guide] for the comprehensive list, and note how small the "Syntax" section is. The vast majority of components should work without changes, especially if you use the backward compatibility cache mode.
+
+----
+
+Would there be any performance-related reasons?
+-- AdamSjøgren
+
+----
+No, in fact 1.2x was slightly slower...but upgrading to 1.3x, which will be out very shortly, will give all the benefits of 1.2x plus performance enhancements.

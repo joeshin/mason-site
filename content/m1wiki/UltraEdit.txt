@@ -1,0 +1,3 @@
+Ultra Edit is just a very cool text editor from ICM. It has unlimited coding support. Go and see http://www.ultraedit.com/
+
+See also EditPlus and TextPad for other popular Win32 text editors.

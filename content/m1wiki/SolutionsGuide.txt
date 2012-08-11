@@ -1,0 +1,63 @@
+NAME Mason Solutions Guide
+
+Description
+    This guide attempts to make the process of developing with mod_perl much
+    more transparent. We will accomplish this by providing a reference for
+    various high-level issues that generally come up in mod_perl
+    implementations, showing the options (which modules do what) and
+    providing examples of those approaches to get you going.
+
+Solutions
+  Logging
+  Authentication
+    Apache::AuthCookie
+
+  Authorization
+    Apache::AuthCookie
+
+  Sessions
+    Sessions allow you to track users and provide persistent information and
+    content to them across multiple requests. There are a number of ways
+    that you can do this with MP. You can use HTTP cookies or provide the
+    session identification information on the URL, and for persistence, you
+    can use files or a number of different database back-ends.
+
+    Apache::Session
+          ::MySQL
+
+    Apache::Util::Session
+          Apache::Util::Session::
+          ::CacheAny               Use Cache::* for Apache::Session storage     MIYAGAWA
+          ::Counted                Session management via a File::CounterFile  ANDK
+          ::Generate::ModUniqueId  use mod_unique_id for session ID generation MIYAGAWA
+          ::Generate::ModUsertrack mod_usertrack for session ID generation     MIYAGAWA
+          ::PHP                    glues Apache::Session with PHP::Session     MIYAGAWA
+          ::SharedMem              Session management via shared memory        SIMONW
+
+    Apache::Util::SessionX
+        Extented persistence framework for session data GRICHTER
+
+    Apache::Util::SecSess
+        Secure Apache session management library PLIAM
+
+    Apache::SessionManager
+    Apache::Session::DBI
+        Using Apache::Session you can use several database back-ends,
+        including Apache::Session::DBI.
+
+  Errors and Exceptions
+  autohandlers and dhandlers as dispatchers
+    Error qw(:try)
+
+  Object Caching
+    Cache::Cache
+
+Maintainers
+    * Eric D. Berg <eberg@bergbrains.com>
+
+Authors
+    * Eric D. Berg <eberg@bergbrains.com>
+
+    Only the major authors are listed above. For contributors see the
+    Changes file.
+

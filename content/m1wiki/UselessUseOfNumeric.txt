@@ -1,0 +1,18 @@
+Hi for all
+How can I resolve the trouble? 
+Thanks
+
+
+
+Error during compilation of /usr/home/http/wapp/tester/www/second.mas:
+Useless use of numeric lt (<) in void context at /usr/home/http/wapp/tester/www/second.mas line 8.
+
+      % foreach (my $c=0;$c++;$c<$num){	
+5: 	<TR>	
+6: 	<TD>Вопрос <% $c %> </TD>	
+7: 	<TD> <input type="text" name="ans<% $c %>" size=50> </TD>	
+8: 	<td> <input type="<% $btype %>" name="rstat<% $c %>"> 	
+9: 	</td>	
+10: 	</TR>	
+11: 	% }	
+12: 	<tr>

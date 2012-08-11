@@ -1,0 +1,27 @@
+No connection between Mason and Office 2003, you say?
+
+Not true!
+
+Office 2003 Professional (and maybe XP, though I never used that version) interferes with files with a *.mas* extension.  Access, the database component of Office 2003, likes to think it has ownership of that extension, and claims that the files are "Microsoft Access Stored Procedure" files.  The irksome part of this is that they are considered a special type of file, so the traditional attributes that are modifyable with a right click in a file navigation window are not presented.  You can't, for example, change the file extension without using the command line.
+
+Faced with this annoyance, I decided to rename all my *.mas files to *.masn, an extension that I know won't be "overwritten" anytime soon.  I know this is bad form if I want to stay 8.3 compliant, but you can't win 'em all.
+
+Anyhow, since this was actually a Samba share, I moved over to my Linux box and went to the htdocs root of the Mason site I'm working on and typed
+
+[= find . -name '*.mas' -ok mv {} {}n \; ] to add an "n" to the end of each file.
+
+I could have then used a little perl inline substitution on the site root...
+
+[= find /home/mymasonsite/ -type f | xargs perl -pi -e 's/\.mas/.masn/g' ]
+
+*Note - That's a little dangerous, so make sure you know what you're doing, and don't blame me if all hell breaks loose*
+
+If you want to be a little safer you can do this...
+
+[= find /home/mymasonsite/ -type f | xargs perl -pi.orig -e 's/\.mas/.masn/g' ]
+
+Which will back up your original files with a .orig extension.  Of course, you'll have to clean those up later, so I prefer the former method, but it's a little more hairy.
+
+I have to check on that PC again and re-do the installation perhaps. The PC on my [http://www.usstoragesearch.com/ self storage unit] is more useful than my laptop right now for installation purposes and compatibility function.
+
+--GordonMcCreight

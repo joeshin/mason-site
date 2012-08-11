@@ -1,0 +1,123 @@
+A component to quickly implement a page browsing paragraph along with your search results. It's very simple and can be quickly used out of the box ( See example in the documentation ).
+
+Example:
+ <& /browse.mas , nhits => 197, pagesize => 15 , offset => 0 , linkmodel  => { 's' => 'Mason job' , l => 'Acapulco' } &>
+
+Code:
+
+ <%doc>
+  Generates a browsing paragraph based on those parameters:
+  $nhits    : The number of results in your result set
+  $pagesize : The size of a result page
+  $offset   : Current offset of your result set
+  
+  $linkmodel: A reference on a hash describing the search parameters to
+              put in the link. 
+              for instance :  
+                 { 's' => 'foo bar' , 'l' => 'Acapulco' }
+              Default: {}
+
+  $baselink:  The base link of the search
+              For instance : '/search.html' ;
+              Default : ''
+
+  $varying:  The name of the varying offset parameter.
+              Default: 'offset' 
+  
+  $maxpages: The maximum number of page to reach .
+              Default: 100;
+
+
+  Depends on:
+    URI::Escape 
+
+  Example:
+
+  <& /browse.mas , nhits => 197, pagesize => 15 , offset => 0 , linkmodel  => { 's' => 'Foo bar' , l => 'Acapulco' } &>
+  
+ 
+ </%doc>
+
+ <%args>
+  $nhits => undef
+  $pagesize => undef
+  $offset   => undef
+  
+  $linkmodel => {}
+  $baselink  => ''
+  $varying  => 'offset'
+  $maxpages => 100 
+ </%args>
+ <%once>
+ # Just a local max function
+ my $max = sub { my ( $a , $b ) = @_ ; return ( $a > $b ) ? $a : $b ; } ;
+ </%once>
+
+ <%perl>
+ # Make sure linkmodel got variying inside
+    $linkmodel->{$varying} = 0 ;
+
+ # Compute n total page
+ my $ntotpage = int( ($nhits - 1) / $pagesize ) + 1  ;
+
+ # no more than 100 pages. Anything that wants pages above is a robot.
+ if ($ntotpage > $maxpages ) {
+    $ntotpage = $maxpages ;
+ }
+
+ if ( $ntotpage < 2 ){
+    return ;
+ }
+
+ # Compute current page
+ my $curpage  = int( $offset / $pagesize ) + 1 ;
+
+ my $lenbrowse = 9 ;
+ 
+
+
+ </%perl>
+
+ <p class="browse">
+ <% HTML::Entities::encode_entities('Page') %>: &nbsp;&nbsp;&nbsp;
+
+ % if ( $curpage > 1 ){
+ % $linkmodel->{$varying} = ( $curpage - 2 ) * $pagesize  ;
+  <&| SELF:renderlink , link => $linkmodel , base => $baselink&>&lt&lt</&>&nbsp;&nbsp;
+ % }
+
+ % for( my $page = &$max( 1 , $curpage - 5 )  ; $page < $curpage ; $lenbrowse-- , $page++ ){
+ % $linkmodel->{$varying} = ( $page - 1 ) * $pagesize  ;
+  <&| SELF:renderlink , link => $linkmodel , base => $baselink &><% $page  %></&><span class="gray"> |</span> 
+ % }
+ <% $curpage %>
+
+ % my $page = undef ;
+ % for ($page = $curpage + 1 ; $lenbrowse && $page <= $ntotpage ; $lenbrowse-- , $page++ ){
+ %  $linkmodel->{$varying}  =   ( $page - 1 ) * $pagesize ;
+ <span class="gray">| </span><&| SELF:renderlink , link => $linkmodel , base =>  $baselink &><% $page %></&>
+ %}
+
+ % unless ( $curpage >= $ntotpage  ){
+ %  $linkmodel->{$varying} =  $curpage * $pagesize  ;
+ &nbsp;&nbsp;<&| SELF:renderlink , link => $linkmodel , base => $baselink   &>&gt;&gt;</&></a>
+ % }
+
+
+ </p>
+
+
+ <%method renderlink>
+ <%args>
+    $link => {} 
+    $base => ''
+ </%args>
+ <%perl>
+    use URI::Escape qw( uri_escape_utf8 ) ;
+    my $url = $base.'?';
+    foreach my $key ( keys ( %{$link} ) ){
+        $url .= $key.'='.uri_escape_utf8($link->{$key}).'&amp;' ;
+    }    
+ </%perl>
+ <a href="<% $url %>"><% $m->content() %></a> 
+ </%method>

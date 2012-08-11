@@ -1,0 +1,3 @@
+Rodney Rindels -- I am an enthusiastic perl programmer. I am currently working on an open source project called carapace. When my POC is complete. I will probably start a sourceforge project. (I am using HTML::Mason for the front end, administration, and reporting. Have fun. Kwiki looks like a cool feature I might include in my project. 
+
+-- Rodney Rindels

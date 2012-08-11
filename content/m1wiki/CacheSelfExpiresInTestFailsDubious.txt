@@ -1,0 +1,32 @@
+I just tried to install HTML::Mason using the CPAN script, like this:
+
+$ perl -MCPAN -e shell
+> install HTML::Mason
+
+and I got this error during 'make test':
+
+t/10-cache....................ok 4/20                                        
+#   Failed test 'cache_self_expires_in'
+#   in /Users/jonathan/.cpan/build/HTML-Mason-1.3101/blib/lib/HTML/Mason/Tests.pm at line 595.
+t/10-cache....................ok 20/20# Looks like you failed 1 test of 20.  
+t/10-cache....................dubious                                        
+        Test returned status 1 (wstat 256, 0x100)
+DIED. FAILED test 5
+        Failed 1/20 tests, 95.00% okay
+
+and I fixed it by changing the cache_self_expires_in test in t/10-cache.t to return 1 instead of nothing if the $m->cache_self call returns a true value.
+
+So this:
+
+return if $m->cache_self( expires_in => '1s' );
+
+Became this:
+
+return 1 if $m->cache_self( expires_in => '1s' );
+
+and with that change the test passed.
+
+I'm pretty sure HTML::Mason is working as intended so I think this was just a mistake in the test script.
+
+Cheers,
+Jonathan

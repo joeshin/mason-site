@@ -1,0 +1,3 @@
+Develops fantasy sports games, making extensive use of Mason, for [ISM Fantasy Games http://www.ismgames.com].
+
+Currently looking to implement [MasonX::Interp::WithCallbacks http://search.cpan.org/~dwheeler/MasonX-Interp-WithCallbacks-1.11/lib/MasonX/Interp/WithCallbacks.pm] and [Class::DBI http://search.cpan.org/~tmtm/Class-DBI-0.95/lib/Class/DBI.pm] into our application. Looking very nice so far ...

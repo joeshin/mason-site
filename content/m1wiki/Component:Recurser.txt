@@ -1,0 +1,57 @@
+ <%doc>
+ Name:
+ recurser.comp
+ 
+ Synopsis:
+ % $m->comp('/tool/recurser.comp',filename => 'autonews.snip', execute => 'ok', collectall => 'ok');
+ % my $path = $m->comp('/tool/recurser.comp',filename => 'pleasegetit.html');
+ 
+ Description:
+ This is a simple script of mine, also influenced by william@netymology.com.
+ We use it to call components or search files through the file tree.
+ This is very useful to let the page inherit auto objects. The authors
+ only concentrate on a content object, and the rest is added by magic.
+ 
+ We use here autometa.snip, autoinfo.snip, autonews.snip as
+ automenu.snip. This makes sense, as long you have those not in a
+ database and you separate your themes strictly in different folders.
+ 
+ Parameters:
+ filename		#required
+ execute => undef	#mandatory if undef the path will be returend. With collectall the path is returnded as an arrayref. 
+ collectall => undef	#mandatory it takes all the file of the same name down the component root.
+ reverse => undef	#mandatory changes the execution order from down top to top down.
+ 
+ Author:
+ c.hauser@itassistance.ch
+ </%doc>
+ 
+ <%PERL>
+ my @folder = split('/',$m->base_comp->dir_path);
+ my @path = ();
+ 
+ while (@folder) {
+ 	$path = join('/',@folder)."/";
+ 	if ($m->comp_exists($path.$filename)) {
+ 		push(@path,$path.$filename);
+ 		last if !$collectall;
+ 	}
+ 	pop(@folder);
+ }
+ @path = reverse @path if ($reverse);
+ if ($execute) { 
+ 	for (@path) { $m->comp($_); }
+ }
+ else { $path[1] ? return \@path : return $path[0] }
+ </%PERL>
+ 
+ <%ARGS>
+ $filename
+ $execute => undef
+ $collectall => undef
+ $reverse => undef
+ </%ARGS>
+ 
+ <%ONCE>
+ my $path;
+ </%ONCE>

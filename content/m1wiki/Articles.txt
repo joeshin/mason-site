@@ -1,0 +1,46 @@
+External articles about Mason. *Warning*: Most articles are static by nature and thus get out of date. Be suspicious about any article's content in direct proportion to its age. If you notice a particularly outdated article here, remove it or at least add a warning.
+
+In Builder.com's "Perl Diving" series, articles by James Scheinblum:
+
+* [Advanced site building with HTML::Mason http://builder.cnet.com/webbuilding/0-7704-8-6121940-1.html] (June 2001)
+
+The "At The Forge" series in the Linux Journal, by Reuven M. Lerner:
+
+* [Building Sites with Mason http://www2.linuxjournal.com/lj-issues/issue74/4002.html] (June 2000)
+
+* [Press Releases with Mason http://www2.linuxjournal.com/lj-issues/issue75/4066.html] (July 2000)
+
+* Session management with Mason - (August 2000) - This well-meaning article is now so outdated with regard to Apache::Session that I'm not going to link to it. :) The WithApacheSession module now implements sessions for Mason.
+
+* [http://www2.linuxjournal.com/lj-issues/issue77/4168.html Content Management] (September 2000)| 
+
+The three-part series in !PerlMonth (a former online Perl magazine), by JonathanSwartz:
+
+[Part 1: Introduction to Mason http://www.zenbones.com/mason/perlmonth/mason1.html] (February 2000)
+
+[Part 2: Form handling, sessions, caching, redirects http://www.zenbones.com/mason/perlmonth/mason2.html] (March 2000)
+
+[Part 3: Templates, navigation, object-oriented techniques http://www.zenbones.com/mason/perlmonth/mason3.html] (April 2000)
+
+In Dr. Dobb's Journal Online, the three-part "Building Web Sites with Mason" series by Brent Michalski:
+
+[Part 1: Introduction http://www.ddj.com/documents/s=1498/ddj0109pl/] (September 2001)
+
+[Part 2: Syntax http://www.ddj.com/documents/s=1498/ddj0110pl/] (October 2001)
+
+[Part 3: An example http://ddj.com/documents/s=1498/ddj1008963035715/0112pl001.htm]
+
+On perl.com, December 2002: [Programming with Mason http://www.perl.com/pub/a/2002/12/11/mason.html] by Dave Rolsky.  A variety of recipes for tasks like controlling access, generating config files, and adding session ids to urls. Excerpted from chapter 11 of the MasonBook.
+
+In the February 2002 issue of the German technical journal iX: [Dynamische Webseiten mit Mason erzeugen http://www.heise.de/ix/artikel/2002/02/128/], by Peter Dintelmann. Component architecture, dhandlers, autohandlers, object-oriented templates.
+
+In the April 2001 "Perl Diving" segment of CNET Builder: [Simplify CGI with HTML::Mason http://builder.cnet.com/webbuilding/0-7704-8-5381388-1.html?tag=st.bl.3882.dir1.7704-8-5381388-1], by James Scheinblum. Basic installation and component syntax.
+
+In the February 2001 issue of Linux Magazine Germany: [Perl in Webseiten einbetten mit HTML::Mason http://www.linux-magazin.de/ausgabe/2001/02/Perl/perl.html], by Michael Schilli. Creating a tournament ranking system.
+
+In the Spring 2000 edition of the Perl Journal: [Beyond Hardcoded CGI with HTML::Mason http://www.samag.com/documents/s=1274/sam05010005], by Joe Johnston. Templates, parameter passing, dhandlers, and database access.
+
+In the July 2002 issue of "Linux & C." (Italian printed magazine) [mod_perl based frameworks http://www.perl.it/documenti/articoli/mod_perl1/tutorial/tutorial5.html] 
+by Enrico Sorcinelli. Part 5 of five mod_perl tutorial articles.
+
+See also [Books].

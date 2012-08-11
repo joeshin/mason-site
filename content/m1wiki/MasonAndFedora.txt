@@ -1,0 +1,18 @@
+[Fedora Extras http://fedoraproject.org/wiki/Extras] includes a Mason package.  Users of Fedora Core 4 and higher can simply [=yum install perl-HTML-Mason] to get started.  Edit [=/etc/httpd/conf.d/perl-HTML-Mason.conf] appropriately and [=service httpd restart], and you should have a working installation.
+
+
+
+Users of older versions of Fedora should seriously consider upgrading to at least Fedora Core 4.  Through Fedora Core 3, the version of mod_perl included in the distribution will cause problems (see ApacheModPerl2).
+
+-- StevenPritchard
+
+
+--
+The packages you will probably be wanting to yum install are:
+* perl-HTML-Mason
+* perl-libapreq2
+
+-- TimNelson
+
+
+

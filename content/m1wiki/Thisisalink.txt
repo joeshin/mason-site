@@ -1,0 +1,3 @@
+[WikiName]s that contain spaces or underscores are crushed together and capitalized, so that [[This is a link] becomes [[[http://www.masonhq.com/?Thisisalink ThisIsALink]].
+
+Wiki is and should be simple. This is why there is no need for complex HTML. You can get some effects, such as __bold text__ and ''italics'', but nothing very complex. Layout is the problem of the Wiki itself. There is more information in [Wiki TextFormattingRules].

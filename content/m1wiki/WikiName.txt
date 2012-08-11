@@ -1,0 +1,7 @@
+Your WikiName is the name that appears in page histories, and at the bottom of pages you've created or recently edited. Typically it's your full name as a WikiWord (also known as Camel Case: a word with at least two capital letters and one lower case letter). Of course, you can use whatever fake name you want, but most people seem to want credit for their contributions.
+
+Assuming your WikiName is in fact a WikiWord, then it will automatically link to a page in which you can write a bit about yourself.
+
+You can change your WikiName at any time on the [http://www.masonhq.com/account/edit_account.html edit account] page.
+
+See also http://c2.com/cgi/wiki?RealNamesPlease

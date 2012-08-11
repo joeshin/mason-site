@@ -1,0 +1,22 @@
+My Mason packages are [here  http://ftp.kspei.com/pub/kspei/add-ons/redhat/].  At the moment I have old packages for Red Hat 7.3 and current ones for Red Hat 8.0 and 9.  See MasonAndFedora for packages for Fedora Core 1.
+
+
+
+The easiest way to install the packages is to use apt, which can be found [here http://ftp.freshrpms.net/pub/freshrpms/redhat/9/apt/].  Install [apt-0.5.5cnc6-fr1.i386.rpm http://ftp.freshrpms.net/pub/freshrpms/redhat/9/apt/apt-0.5.5cnc6-fr1.i386.rpm] or whatever is newest, then edit [=/etc/apt/sources.list] and add the following:
+
+    rpm http://ftp.kspei.com/pub/apt redhat/9/en/i386 kspei
+
+Then just run [=apt-get update && apt-get install perl-HTML-Mason].  Edit [=/etc/httpd/conf.d/perl-HTML-Mason.conf] appropriately and [=service httpd restart], and you should have a working installation.
+
+Be aware that other people are saying this combination is broken (see ApacheModPerl2), but it seems to work well enough for me, using it lightly.
+
+-- StevenPritchard
+
+----
+
+These instructions worked fine for me. I ran into a few glitches with Apache:DBI at first but it was easily resolved. Thanks again.
+
+
+
+
+-- NickGerakines

@@ -1,0 +1,31 @@
+This site is a wiki, which means that you can edit its pages and create new pages right from your browser.
+
+*Navigation*: Page titles are WikiWords (mixed-case words). Every WikiWord in text is a link to a page with that title.
+
+*Browsing*: You can browse [http:/browse/all_nodes.html all pages] and [http:/browse/recent_changes.html recent changes].
+
+*Searching*: The search box in the upper left combines search results from wiki titles, wiki content, [http:/docs/manual documentation], [FAQ], and [http:/resources/bugs.html known bugs]. Or click on the page title to search for that title.
+
+*Editing a page*: Just click the Edit link to the left, and follow the WikiFormattingRules. Please use the SandBox for experimentation.
+
+You can also Edit as File to download and edit the page in your favorite editor.
+
+*Creating a new page*: Click the Create New Page under the Wiki menu to the left.
+
+===== Why aren't certain pages editable?
+
+Pages that haven't been wiki-fied include:
+
+* Those that implement wiki functions themselves.
+* Those that contain dynamic content, such as [http:/resources/todo/ To-do List] and [http:/resources/bugs.html/ Known Bugs].
+* Those that are taken straight from the Mason distribution, such as [http:/code/history.html Changes], [http:/about/credits.html Credits] and [http:/docs/manual/ Documentation].
+
+===== Where can I find out more about wikis in general?
+
+There is a vast collection of wisdom about wikis at the WikiWikiWeb, e.g. try [NewUserPages http://c2.com/cgi/wiki?NewUserPages].  Note that the traditional [TextFormattingRules http://c2.com/cgi/wiki?TextFormattingRules] you'll see on WikiWikiWeb are different than the WikiFormattingRules used on our site, but otherwise most of the guidelines should apply.
+
+===== See also
+
+* WikiImplementation
+* WikiLogin
+

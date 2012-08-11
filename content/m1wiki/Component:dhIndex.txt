@@ -1,0 +1,190 @@
+
+<%doc>
+ 
+ =pod
+ 
+ =head1 NAME
+ 
+ dhandler - XHTML 1.1 Strict Compliant Directory Listing DHandler
+ 
+ =head1 DESCRIPTION
+ 
+ Dhandler that generates XHTML compliant directory listings. Was written as a Mason replacement for Apache's mod_autoindex.
+ 
+ =head1 VERSION
+ 
+ $Revision: 1.2 $
+ 
+ =head1 AUTHOR
+ 
+ Nicola Elizabeth Worthington <nicolaworthington@msn.com>
+ 
+ http://www.nicolaworthington.com
+ 
+ $Author: nicolaw $
+ 
+ =cut
+ 
+ </%doc>
+ 
+ <%filter>
+   s,^([^/]),\t\t\t\t\t\t$1,mg;
+   s,^/,,mg;
+ </%filter>
+ 
+ <%method dhIndexCSS>
+ 
+     <style type="text/css">
+ 
+       div.dhIndex { font-family: Tahoma, sans-serif; font-size: 8pt; }
+       div.dhIndex img { margin-bottom: 1px; vertical-align: middle; border: 0px; width: 16px; height: 16px; }
+       div.dhIndex a, div.dhIndex a:visited { color: #000000; text-decoration: none; }
+       div.dhIndex a:hover { text-decoration: underline; }
+ 
+     </style>
+ 
+ </%method>
+ 
+ <table cellspacing="0" cellpadding="0" border="0">
+   <tr>
+     <td align="left" valign="top">
+        <div class="dhIndex">
+ 
+ %  for (my $i = 0; $i < @raw; $i++) {
+ %    my $file = $raw[$i];
+ 
+         <nobr><a href="<% $file |u %><% (-d "$dir/$file" ? '/' : '') %>">\
+ <img src="/<% $icons_dir %>/<% file2icon("$dir/$file",$index) %>.gif" width="16" height="16" alt="<% $file |h %>" /></a>\
+  <a href="<% $file |u %><% (-d "$dir/$file" ? '/' : '') %>" title="Type: <% (-d $file ? 'Directory' : $ft->checktype_filename($file)) %>
+ /Date Modified: <% Date::Format::time2str("%a %b %e %H:%M:%S %Y", (stat($file))[9]) %>
+ /Size: <% $format->format_bytes(-s $file,2) %>"><% $file |h %></a></nobr><br />
+ 
+ %    if ($columns > 1 && ($i+1) % $itemsPerColumn == 0 && @raw > 10) {
+ 
+       </div>
+     </td>
+     <td style="width: 50px;">&nbsp;</td>
+     <td align="left" valign="top">
+       <div class="dhIndex">
+ 
+ %    }
+ %  }
+ 
+       </div>
+     </td>
+   </tr>
+ </table>
+ 
+ <%init>
+ 
+   (my $uri = $r->uri) =~ s,^/,,;
+   (my $uri_file = $uri) =~ s,.*/,,;
+   my $path_info = $r->path_info;
+   my $dhandler_arg = $m->dhandler_arg;
+   my $dir = sprintf('%s/%s',$r->document_root,$dhandler_arg);
+ 
+   chdir $dir;
+   unless (-d $dir && opendir(DH,$dir)) {
+     # This doesn't work for some irritating reason! :-(
+     $m->clear_buffer;
+     my $s = $r->server;
+     $r->no_cache(1);
+     $r->header_out('Location', sprintf('http://%s', $s->server_hostname));
+     return MOVED;
+   }
+ 
+   my $icons_dir = 'lib/icons'; # Usually 'icons';
+ 
+   $r->content_type('text/html');
+   my @raw = grep(!/^(\.\.?([^\.].*)?|lib|icons|robots.txt|favicon.ico|thumbnail|dhandler|autohandler|$uri_file)$/,readdir(DH));
+   closedir(DH) || warn "Unable to close directory '$dir': $!";
+ 
+   my (@dirs,@files);
+   for (@raw) {
+     if (-d "$dir/$_") { push @dirs,$_ }
+     else { push @files,$_ }
+   }
+   @dirs = sort {lc $a cmp lc $b} @dirs;
+   @files = sort {lc $a cmp lc $b} @files;
+   unshift @dirs, '..' if $uri !~ m|^/?$|;
+   @raw = (@dirs,@files);
+ 
+   my ($columns, $maxFilenameLength) = (1,0);
+   for (@raw) { $maxFilenameLength = length($_) if length($_) > $maxFilenameLength; }
+   if    ( $maxFilenameLength <= 15) { $columns = 5; }
+   elsif  ( $maxFilenameLength <= 20) { $columns = 4; }
+   elsif  ( $maxFilenameLength <= 55) { $columns = 3; }
+   elsif  ( $maxFilenameLength <= 80) { $columns = 2; }
+   else                { $columns = 1; }
+   my $itemsPerColumn = @raw % $columns ? int(@raw/$columns)+1 : @raw/$columns;
+ 
+   my $index = {};
+   if (opendir(DH,sprintf('%s/%s',$r->document_root,$icons_dir))) {
+     foreach my $icon (grep(/^[a-z0-9]+\.(png|gif)$/i,readdir(DH))) {
+       (my $ext = $icon) =~ s/\..+$//;
+       $index->{$ext} = $ext;
+     }
+     closedir(DH);
+   }
+ 
+   similar_icons: {
+     my $similar = {
+           xsl  => [ qw(xml xslt) ],
+           htm  => [ qw(html shtml) ],
+           ra  => [ qw(rm ram) ],
+           zip  => [ qw(tgz tar gz bz2 arj lhz rar) ],
+           xls  => [ qw(csv tab) ],
+         };
+     for my $icon (keys %{$similar}) {
+       for my $ext (@{$similar->{$icon}}) {
+         $index->{$ext} = $icon unless exists $index->{$ext};
+       }
+     }
+   }
+ 
+   if (open(FH,sprintf('%s/%s/extensions.map',$r->document_root,$icons_dir))) {
+     while (<FH>) { next if /^\s*#/;
+       if (/^(\S+)\s+(\S+)\s*$/) {
+         $index->{$1} = $2;
+       }
+     }
+     close(FH);
+   }
+ 
+   my $ft = new File::Type;
+   my $format = new Number::Format(
+               KILO_SUFFIX => ' KB',
+               MEGA_SUFFIX => ' MB',
+               GIGA_SUFFIX => ' GB'
+             );
+ 
+   sub file2icon {
+     my ($file,$index) = @_;
+     my $icon = -d $file ? (-x $file ? '__dir' : '__dir_nox') : (-r $file ? '__unknown' : '__broken');
+     $icon = '__broken' if -l $file && !-e readlink($file);
+     $icon = '__back' if $file =~ m/\.\.$/;
+     if (-d $file) {
+       if ($file =~ m|/My Pictures$|i) { $icon = '__my_pictures'; }
+       elsif ($file =~ m|/My Videos$|i) { $icon = '__my_videos'; }
+       elsif ($file =~ m|/My Documents$|i) { $icon = '__my_documents'; }
+       elsif ($file =~ m|/My Music$|i) { $icon = '__my_music'; }
+     }
+     (my $ext = lc($file)) =~ s/.*\.//;
+     $icon = $index->{$ext} if exists $index->{$ext};
+     return $icon;
+   }
+ 
+ </%init>
+ 
+ <%once>
+ 
+   use Apache::Constants qw(:response);
+   use Number::Format ();
+   use Date::Format ();
+   use File::Type ();
+ 
+ </%once>
+
+
+
+

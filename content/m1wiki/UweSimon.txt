@@ -1,0 +1,47 @@
+= About me =
+I'm Uwe Simon from Germany. 
+
+My special subjects are databases, here especial oracle (http://www.oracle.com ). I startet with oracle 5.? about 14 years ago.
+I'm familiar with mysql (http://www.mysql.com ), DB2 ( http://www.ibm.com/db2 ), Ingres and some other databases too.
+
+My first web application was a tool to manage some hundred oracle databases.
+I developed it 1998 for the oracle application server using oracle pl/sql
+and it's still running. I have also developed some web applications 
+in Apple !WebObjects ( http://www.apple.com/webobjects/ ) using Java and oracle databases.
+
+My first HTML::Mason application was a managing application
+for our private home library of about 1300 books. I also use a HTML::Mason application to manage my private money investments.
+
+= Current project =
+== Description ==
+Last year I startet to develop a generator which
+generates HTML::Mason applications from a existing database structure (perhaps DB2Mason is a good name).
+The tables, columns and foreign keys are used as input. The output
+are HTML::Mason components.
+
+It's database independent and I tested it with
+* ORACLE
+* DB2
+* mysql
+
+This generator uses templates for the different forms.
+It generates forms for 
+* search
+* edit/create/delete
+* list
+
+The templates use some javascript stuff to 
+* validate input
+* handle a treeview
+* show a calendar
+* show a tabbed view
+
+The templates supports role based user authorization.
+This is very similar to the privileges used in databases.
+
+I implemented a multi lingual support and some Perl packages to support all this stuff.
+ 
+== Next steps ==
+* Now I work on an the installation for all this stuff and the documentation. If I have a first version I will publish it here.
+
+* Testing the new oracle 10g.

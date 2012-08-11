@@ -1,0 +1,166 @@
+Logging proposal for 1.3.
+
+Addition to Admin manual:
+
+   =head2 Logging
+   
+   Mason can log system-related messages at various severity levels
+   (fatal, error, warn, info, debug) and provide a method C<$m->log>
+   for components to log their own messages.
+   
+   Mason logging is designed to work well with the C<Log::Log4perl>
+   package, available from CPAN. However, you can also configure Mason
+   to work with logging modules like C<Log::Dispatch>.
+   
+   =head3 Using Log4perl (initialized by Mason)
+   
+   Set P<log_config> to have Mason load and initialize C<Log4perl>.
+   C<log_config> can contain a filename, e.g.
+   
+       MasonLogConfig /usr/local/httpd/log.conf
+   
+   where log.conf contains something like
+
+       log4perl.logger=WARN, A1
+       log4perl.appender.A1=Log::Dispatch::File
+       log4perl.appender.A1.filename=test.log
+       log4perl.appender.A1.mode=append
+       log4perl.appender.A1.layout=Log::Log4perl::Layout::PatternLayout
+       log4perl.appender.A1.layout.ConversionPattern=%d %p> %F{1}:%L %M - %m%n
+
+   Alternatively, C<log_config> can be passed as a scalar or hash
+   reference containing the same kind of information. See C<Log4perl>
+   documentation for details.
+   
+   =head3 Using Log4perl (initialized outside of Mason)
+   
+   If you don't specify P<log_config>, but C<Log4perl> is initialized
+   by the time the Mason interpreter is created, Mason will use the
+   already-initialized C<Log4perl> settings. This is useful, for
+   example, if you are embedding Mason in a larger application that
+   already uses C<Log4perl>.
+   
+   =head3 Using Log::Dispatch
+   
+   To use a C<Log::Dispatch> object for logging, create an
+   C<HTML::Mason::Log::Dispatch> object and pass it to P<log_object>.  This
+   class is a thin wrapper that inherits from C<Log::Dispatch> but implements
+   the necessary methods for Mason's logging.
+   
+       # Create and configure just like Log::Dispatch
+       my $dispatcher = HTML::Mason::Log::Dispatch->new ( ... );
+       $dispatcher->add( ... );
+   
+       my $interp = HTML::Mason::Interp->new (
+          log_object => $dispatcher,
+          ...
+       );
+
+   (Alternately, we could ask Log::Dispatch's author to add the methods below
+   to Log::Dispatch. :))
+   
+   =head3 Using another logging module
+   
+   To use another logging module, you'll need to create a wrapper class
+   that implements the following methods:
+   
+   =over
+   
+   =item * debug, info, warn, error, fatal - logs a message at the specified level
+   
+   =item * is_debug, is_info, is_warn, is_error, is_fatal - returns true if
+   a message at the specified level would be logged
+   
+   =back
+   
+   Then, pass an instance of this class to P<log_object> as in the previous section.
+
+Additional Interp methods:
+
+   =item log_config
+   
+   Specifies logging configuration to use with C<Log4perl>. If given,
+   Mason will load C<Log4perl> if necessary and call
+   C<Log::Log4perl::init_once()> with this value when the interpreter is
+   created.
+   
+   As per the C<Log4perl> documentation, the config can be specified in
+   one of three forms:
+   
+   =over
+   
+   =item * A filename, e.g. "/usr/local/httpd/log4perl.conf"
+   
+   =item * A reference to a scalar containing configuration text
+   
+   =item * A reference to a hash containing configuration key/value pairs
+   
+   =back
+   
+   Specifying a different C<log_config> value for subsequent
+   interpreters will have no effect since C<Log4perl> is meant to
+   initialize once. To change the logging configuration with each
+   request, you'll need to call C<Log::Logperl::init()> manually.
+   
+   =item log_object
+   
+   Specifies an object for Mason to use when logging. The object must
+   implement the following methods:
+
+   =over
+   
+   =item * debug, info, warn, error, fatal - logs a message at the specified level
+   
+   =item * is_debug, is_info, is_warn, is_error, is_fatal - returns true if
+   a message at the specified level would be logged
+   
+   =back
+   
+   You could specify an object returned from C<Log4perl::get_logger>,
+   but typically you'd use this option when you want to use a logging
+   module other than C<Log4perl>.
+
+   If you specify a code reference instead of an object, the code
+   reference will be called dynamically with a log category to get the log
+   object for that category.
+
+Additions to Request manual:
+
+   =item logger
+   
+   Returns a object that can be used to log messages from a component. e.g.
+
+      $m->logger->error("This is an error message");
+      $m->logger->warn("This is a warning message");
+      if ($m->logger->is_debug()) {
+          $m->logger->debug("This is a debug message: ",
+                            $complex_data_structure);
+      }
+
+   The logger object has the following methods:
+   
+   =over
+   
+   =item * debug, info, warn, error, fatal - takes a single message argument,
+   and logs the message at the specified level.
+   
+   =item * is_debug, is_info, is_warn, is_error, is_fatal - returns true if
+   a message at the specified level would be logged.
+   
+   =back
+   
+   The category for the messages is determined by the current
+   component's path. For example, if component /foo/bar/baz.html
+   executes
+   
+       $logger->debug("got here")
+   
+   this would be logged with category
+   "HTML::Mason::Component::foo::bar::baz.html". With C<Log4Perl>,
+   this allows the server administrator to turn on and off component
+   logging at any level of the component hierarchy.
+    *  It will be possible to enable or disable logging at run-time.
+    * It will be possible to control logging at a fairly fine granularity, so that logging can be enabled or disabled for specific functionality.
+    * The logging APIs will allow registration of logging services at run time, so third parties can add new log services.
+    * It will be possible to provide bridging services that connect the Java logging APIs to existing logging services (e.g. operating system logs).
+    * Where appropriate, the logging APIs will also support displaying high-priority messages to end users. 

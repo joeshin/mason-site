@@ -1,0 +1,2 @@
+Current information on mod_parrot is on http://www.smashing.org/mod_parrot/
+

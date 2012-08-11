@@ -1,0 +1,4 @@
+[http://somebox.com SomeBox.com] is a hosting and development company in New York City run by Jeremy Seitz.   Jeremy is a Mason and mod_perl programmer. Somebox hosts custom mod_perl sites on Tier-1 dedicated servers using Apache, MySQL, and advanced customizations such as Image::Magick, E-commerce, GPG, document conversion, PDF output, and customer libraries. 
+
+SomeBox also provides CVS repository services, shell access, and system management by a professional sysadmin company.
+

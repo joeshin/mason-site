@@ -1,0 +1,175 @@
+ <%doc>
+ Creates a client-side javascript photo gallery, based on a
+ directory structure.
+ 
+ Example:
+ The following dir structure creates a gallery with 3 categories
+ anything in the "Pics" root shows up in the $mainCategory.  The
+ other categorys are named the same as the dir that they are in.
+ 
+ /Pics
+         me.jpg
+         wife.jpg
+ /Pics/House
+         kitchen.jpg
+         den.jpg
+ /Pics/Party
+         keg.jpg
+         drunk.jpg
+ 
+ 
+ Component parameters:
+         $path => Path from root dir of webpage
+         $htdocs => Path to the htdocs folder
+         $mainCategory => The name for the default Category
+         $width => witdth of images
+ 
+ Copyright (c) Larry Owen 2001. All rights reserved. This program
+ is free software; you can redistribute it and/or modify it under
+ the same terms as Mason itself.
+ 
+ It would be nice if you give me a credit or link to my homepage:
+ http://www.scrudgeware.org/
+ </%doc>
+ 
+ <SCRIPT LANGUAGE="Javascript">
+ <!-- 
+ var Pix = new Array();
+ %	opendir(DIR, $htdocs . $path) or die "Open Failed";
+ %	$category{0} = $mainCategory;
+ %
+ %	while (defined($file = readdir(DIR))) {
+ %		next if $file =~ /^\./;
+ %
+ %		if(-d "/var/lib/apache/htdocs" . $path . "/" .$file) {
+ %			$key = $file;
+ %			$category{$count} = $key;
+ %			$subfirst = "Yes";
+ %
+ %			opendir(SUBDIR, "/var/lib/apache/htdocs" . $path . "/" .$file) or die "Open Failed";
+ %	
+ %			while (defined($file = readdir(SUBDIR))) {
+ %				next if $file =~ /^\./;
+ %
+ %				if ($subfirst eq "Yes") {
+ %					$subfirst = "No";
+ %					$string = "\"$path/$key/$file\"";
+ %				} else {
+ %					$string .= ", \"$path/$key/$file\"";
+ %				}
+ %			}	
+ %
+ %			closedir(SUBDIR);
+ Pix[<% $count %>] = new Array(<% $string %>);
+ %		} else {
+ %			if ($first eq "Yes") {
+ %				$first = "$path/$file";
+ %				$mainstring = "\"$path/$file\"";
+ %			} else {
+ %				$mainstring .= ", \"$path/$file\"";
+ %			}
+ %		}
+ %	}	
+ %
+ %	closedir(DIR);
+ Pix[0] = new Array(<% $mainstring %>);
+ 
+ var thisPic = 0; 
+ var lastPic = Pix[0].length - 1; 
+ var arrCategory = 0;
+ 
+ function processPrevious() {
+ 	if (document.images) {
+ 		if (thisPic==0) {
+ 			thisPic=lastPic;
+ 		} else {
+ 			thisPic--;                     
+ 		}
+ 
+ 		document.myPicture.src=Pix[arrCategory][thisPic];
+ 	}
+ }
+ 
+ function processNext() {
+ 	if (document.images) {
+ 		if (thisPic==lastPic) {
+ 			thisPic=0;
+ 		} else {
+ 			thisPic++;
+ 		}
+ 				
+ 		document.myPicture.src=Pix[arrCategory][thisPic];
+ 	}
+ }
+ 
+ function processCategory() {
+ 	if (document.images) {
+ 		var num = document.test.category.value;
+ 		lastPic = Pix[num].length - 1; 
+ 		thisPic=0;
+ 		arrCategory = num;
+ 		document.myPicture.src=Pix[arrCategory][thisPic];
+ 	}
+ }
+ 
+ // -->
+ </SCRIPT>
+ 
+ <TABLE BORDER="1" CELLSPACING="0" CELLPADDING="0">
+ <TR>
+ <TD COLSPAN="2">
+ 	<img src="<% $first %>" WIDTH="<% $width %>  name="myPicture" ALIGN="top">
+ </TD>
+ </TR>
+ <TR>
+ <TD>
+ 	<TABLE WIDTH="100%">
+ <FORM NAME="test" ID="test">
+ 	<TR>
+ 	<TD>
+ 			<INPUT type="BUTTON"  value="<<" name="left" onClick="processPrevious()">
+ 	</TD>
+ 	<TD ALIGN="center">
+ 		<SELECT NAME="category" ID="category" onChange="processCategory()">
+ %
+ %	while(($value, $key) = each(%category)) {
+ %
+ 			<OPTION VALUE="<% $value %>"><% $key %></OPTION>
+ %
+ %	}
+ %
+ 		</SELECT>
+ 	</TD>
+ 	<TD ALIGN="right">
+ 			<INPUT type="BUTTON"  value=">>" name="left" onClick="processNext()">
+ 	</TD>
+ 	</TR>
+ </FORM>
+ 	</TABLE>
+ </TD>
+ </TR>
+ </TABLE>
+ 
+ <%once>
+ 	my $key;
+ 	my $value;
+ 	my %category;
+ 	my $first = "Yes";
+ 	my $subfirst = "Yes";
+ 	my $file;
+ 	my $count;
+ 	my $mainstring;
+ 	my $string;
+ </%once>
+ 
+ <%init>
+ 	$count = 1;
+ </%init>
+ 
+ <%args>
+ 	$path => '/pics'
+ 	$htdocs => '/var/lib/apache/htdocs'
+ 	$mainCategory => 'Getting Ready'
+ 	$width => '200'
+ </%args>
+

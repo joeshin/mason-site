@@ -1,0 +1,5 @@
+Hi, I'm Mahlon.
+
+I own [Spime http://www.spime.net/ ], a small hosting company in the Northwest, and run [StaticCling http://www.staticcling.org/ ], a Dynamic DNS service.
+
+Both entities use Mason heavily.

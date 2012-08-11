@@ -1,0 +1,78 @@
+A useful piece of documentation is a diagram of the component tree, listing what components call which ones. This allows the developer to quickly and easily understand how the site is built. Unfortunately it's also a lot of work to create manually, and if you change the site, to update.
+
+Leon Brocard's GraphViz series of modules are ideal for our purposes, they allow a diagram of nodes and edges to be created using a minimum of perl code, with the GraphViz program doing the layout and formatting to Postscript, so I used that as the basis of my program.
+
+   #!/usr/bin/perl -w
+   use GraphViz;
+   use strict;
+
+   my %call;
+   my %count;
+
+   while(<>){
+    chomp;
+    my ($parent,$child)=split(/\cA/);
+    $call{$parent}{$child}++;
+    $count{$parent}+=0;
+    $count{$child}++;
+   }
+
+   my $g = GraphViz->new(directed=>1,pagewidth=>8.5,pageheight=>11,
+     rankdir=>1,randomstart=>1,epsilon=gt1/1000)
+
+   foreach my $parent (keys %call){
+    node($parent);
+    foreach my $child (keys %{$call{$parent}}){
+     node($child);
+     $g->add_edge($parent => $child,weight=>$call{$parent}{$child});
+    }
+   }
+
+   print $g->as_ps;
+
+   sub node {
+    my $id=shift;
+    $g->add_node($id,label=>"$id ($count{$id})");
+   }
+
+This program reads a log similar to this:
+
+   /parent\cA/child
+   /child\cA/subchild
+   /parent\cA/sibling
+
+and places a node for each component, with edges joining each child to it's parent. In other words, it draws our component tree.
+
+Now to produce that log, I wrote a component called 'log', which can be called by any component to store itself and it's parent in the log:
+
+   <%args>
+   $me
+   $parent
+   </%args>
+
+   <%perl>
+   open(DEB,">>/home/httpd/mason/etc/comp_log");
+   print DEB $parent,"\cA",$me,"\n";
+   close(DEB);
+   </%perl>
+
+Finally, I want to call this component from every component in my site. I could do this by adding it manually to them all, but that's a lot of work. Let's use Mason's features to make life easier for us. The parser has an option called 'postamble', which is automatically added to the end of each component's code. By setting this, we can automatically add it to all the components. I added this line to my httpd.conf, cleared mason's obj cache, and restarted.
+
+   PerlSetVar MasonPostamble "unless($m->current_comp->title eq '/log')
+       { my $parent=$m->callers(1); if(defined($parent)){ 
+         $m->comp('/log',me=>$m->current_comp->title,parent=>$parent->title); 
+         } };"
+
+I've put it in multiple lines here for readability, but for Apache to understand it I had to make it one long line. If you are using a handler.pl, then you'll want to modify it so that the parser is called something like this:
+
+   my $base_parser = new HTML::Mason::Parser(postamble=>
+        "unless($m->current_comp->title eq '/log')
+       { my $parent=$m->callers(1); if(defined($parent)){ 
+         $m->comp('/log',me=>$m->current_comp->title,parent=>$parent->title); 
+         } };");
+
+Either way my log component is called automatically at the end of each component, with the title of the current component and the parent component, unless it is the log component, and only if the component has a parent.
+
+A few passes over my site, and had a nice call tree generated.
+
+-- AlanBarclay

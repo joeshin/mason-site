@@ -1,0 +1,27 @@
+No longer using kwiki per se - now using a Mason-powered wiki with the kwiki formatting engine and syntax.
+
+WikiImplementation elucidates this (I think)...  -- RickBolen
+
+------
+
+
+When I decided to create a Mason wiki, I looked at the available Perl-based options and boiled them down to twiki, CGI::Wiki, and Kwiki.
+
+* twiki is without a doubt the most powerful and established wikis. However it is also, apparently and not surprisingly, one of the more challenging wikis to install and maintain. And the code itself is, shall we say, aging quite a bit. (Actually, DaveRolsky practically turned to stone when he first looked at the code, so I just trusted him and stayed away.)
+* CGI::Wiki is a respectable wiki framework written by Kate "Kake" Pugh.  It implements the backend functionality -- as Kate puts it, the boring bits -- of the wiki while giving the developer a pretty free hand in designing the front end.
+* Kwiki is a package by BrianIngerson that specializes in being as easy to install as possible. Install the package, run a script, and you've got a working wiki. Unlike the other database-backed wikis, Kwiki uses the filesystem as a database and the traditional Unix filesystem utilities for searching and versioning.
+
+Originally I decided to go with CGI::Wiki because
+
+* I liked the strict separation between backend and template
+* The database backend seemed like it would better support complex features
+* This is a Mason site, after all, so shouldn't we use Mason?
+** Please, write a [KwikiPlugin http://kwiki.org/?KwikiPlugin] - or patch? - for Mason.
+
+But I found that the process was dragging on much longer than it should have. It wasn't CGI::Wiki - the API could be better, but it does an adequate job. It wasn't the Mason coding - I've gotten pretty good at that. No, what bogged me down was all the damned /design decisions/.  There are hundreds of wiki clones, and each of them do things a little differently. So it's hard to tell what the right thing to do is. Do I use logins or just a username cookie? Locking or conflict resolution? Should Edit be a link or a button?! etc. I have no basis for these decisions, since I have little experience using wikis and none at all running them.
+
+So I decided to go with Kwiki first. As promised, it was incredibly easy to install, and it saved me from all those decisions. Perhaps six months down the road, we'll go ahead and implement the Mason wiki. Or perhaps kwiki will continue to be good enough. Anyway, thanks Brian!
+
+-- JonathanSwartz
+
+Is this still running 0.18 (I know, I should be able to tell..)? I get the impression having just tried to install a Kwiki that the current version 0.33 still doesn't work as well as the old one? --AndrewCates

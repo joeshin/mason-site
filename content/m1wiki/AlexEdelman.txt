@@ -1,0 +1,7 @@
+Senior Software Engineer at [IMDb http://imdb.com].
+
+Before that, Chief Technology Officer at [Findory http://findory.com].
+
+Before that, software engineer and webby guy at AmazonDotCom.  I was on the team which proposed that Mason be used for Amazon's website layer.  Then we had the fun of actually implementing it!
+
+Contact: me@alexedelman.net

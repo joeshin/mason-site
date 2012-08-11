@@ -1,0 +1,12 @@
+First of all, there is a vast collection of wisdom about wikis at the WikiWikiWeb, e.g. try [NewUserPages http://c2.com/cgi/wiki?NewUserPages].  Note that the traditional [TextFormattingRules http://c2.com/cgi/wiki?TextFormattingRules] you'll see on WikiWikiWeb are different than the WikiFormattingRules used on our site, but otherwise most of the guidelines should apply.
+
+*Navigation*: Page titles are WikiWords (mixed-case words). Click any page title to see a list of all pages WHIch link to the page. Every WikiWord in text is a link to a page with that title. See RecentChanges to keep track of modifications. This also seems to be the only built-in way to list all wiki pages (anyone?)
+
+*Editing a page*: Just click the Edit button. When finished, you can preview your changes or just save if you're confident. If you're just experimenting with wiki formatting, please use the SandBox.
+
+*Creating a new page*: There are two easy ways to create a page. 
+0 Create a WikiWord link on an existing page, and then follow the link.
+0 Go to the NewPage page, copy it to a new name and replace its content.
+
+*Signing your work*:
+Before creating or editing your first page we recommend that you create a KwikiUserName, which is just your name as a WikiWord (e.g. JonathanSwartz or AlfredENewman). Then sign your pages or your comments with two dashes, a space, and your name - e.g. "-- JonathanSwartz". This will make the wiki so much more useful and friendly. Besides, don't you want credit for your contributions?

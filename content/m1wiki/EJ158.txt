@@ -1,0 +1,2 @@
+Perl for the Web is a book I wrote that was published by New Riders in August 2001. It provides tools and strategies to improve the performance of existing Web applications in Perl. It also provides principles and ideas that help Web programmers create an extensible framework for future growth. 
+

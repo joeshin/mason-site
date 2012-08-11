@@ -1,0 +1,67 @@
+This seems like it may be a bad idea, but I'm not experienced enough to really understand why, so I'm putting it up here for comments or potential refactoring.  I've read the section about putting this type of code in modules, but it seems like for a simple one-off, that might be a little too much.  Please feel free to brutally critique this thing... there's only one way for guys like me to learn. --GordonMcCreight
+
+
+----
+
+ <% $sleep_log %>
+
+ <%method title>
+ Sample XML parsing with anonymous subroutines
+ </%method>
+
+ <%args>
+    $xml => ''
+ </%args>
+
+ <%init>
+    $xml = $xml || qq~<boring_element><interesting_element>This could be interesting text.</interesting_element></boring_element>~;
+
+    my $i_am_lucid = 0;
+    my $sleep_log = "Started off sleeping<br>\n";
+
+    my $go_to_sleep = sub {
+        #nothing is interesting, you might as well snore.
+        $i_am_lucid = 0;
+        $sleep_log .= "I nodded off again<br>\n";
+    };
+
+    my $wake_up = sub {
+        #something's interesting... wake up.
+        $i_am_lucid = 1;
+        $sleep_log .= "I woke up for something interesing<br>\n";
+    };
+
+    my $xstart = sub {
+        my $p  = shift;
+        my $el = shift;
+        if ($el eq 'interesting_element'){
+            #wake up... something's intersting
+            &$wake_up();
+        }
+    };
+
+    my $xend = sub {
+        my $p  = shift;
+        my $el = shift;
+        if ($el eq 'interesting_element'){
+            #no longer interesting
+            &$go_to_sleep ();
+        }
+    };
+
+    my $xchar = sub {
+        my $p  = shift;
+        my $char = shift;
+        #do something with the $char
+        #what you do is up to you.
+    };
+
+    #The use XML::Parser was loaded earlier as part of a loading module.
+    #See chapter 8 of the Mason Book for more details on loading modules.
+    my $parser = new XML::Parser(    Handlers => {    Start => \&$xstart,
+                                            End   => \&$xend,
+                                            Char  => \&$xchar});
+
+    $parser->parse(qq~<?xml version="1.0" encoding="ISO-8859-1"?>$xml~);
+
+ </%init>

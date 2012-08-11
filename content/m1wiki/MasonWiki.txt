@@ -1,0 +1,20 @@
+=== Welcome to the Mason Wiki  ===
+
+A wiki for users of the [Mason web development system http://www.masonhq.com/].
+
+A wiki allows users to freely create and edit web pages in any
+browser. This site is based on [Kwiki http://www.kwiki.org/], a
+Perl package created by BrianIngerson. (WhyKwiki?)
+
+Places to go from here:
+
+* Read GettingStartedInMasonWiki
+* Play in the SandBox
+* Set your KwikiUserName
+* Take a look at the PagesFromCM, the pages that used to be in the MasonHQ contributed docs section.
+* Check out RecentChanges to see new pages, which may not yet be linked elsewhere.
+* Read about the [People]
+
+Comments to mason-users@lists.sourceforge.net, or if you want to be private about it, site-feedback@masonhq.com.
+
+This wiki was launched August 30, 2003.

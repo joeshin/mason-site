@@ -1,0 +1,89 @@
+= Installation Recipes for various Linux Distributions =
+
+This page contains installation recipes how to get Mason up and running on your favourite distro in your favourite environment. Hopefully it will mean relief to those struggling with complicated setup and outdated docs.
+
+== !SuSE Linux - Versions 9.x and later ==
+
+For a different approach see MasonOnOpenSuse10
+
+We'll cover Mason deployment on Apache2/mod_perl2 infrastructure. If you
+want to run Mason under a non-mod_perl2 infrastructure, this should be
+easy and straightforward.
+
+To make a Apache2/mod_perl2 infrastructure, perform these steps:
+
+* first abandon all apache2/mod_perl2 related packages that come with the !SuSE distribution. Do so by either deselecting them (and all packages that depend on them) in !YaST or by doing a manual rpm -e <package_name>
+
+* fetch the current stable Apache2, mod_perl2, libapreq2 sources. You get these at
+Apache2 Server: http://httpd.apache.org/download.cgi (version 2.0.54 as of this writing)
+ModPerl2: http://perl.apache.org/download/index.html (version 2.0.1 as of this writing)
+libapreq2: Search for Apache2::Request on CPAN
+http://search.cpan.org/search?query=Apache2%3A%3ARequest&mode=all (version 2.06-dev as of this writing)
+
+* compile the apache2 server and place it somewhere where it does not collide with the suse packaging structure. I.e.
+./configure --prefix=/opt/apache2; make; make install
+
+* create a script to fake the SuSE look&feel of rcapache2 (start|stop|restart|...) under /usr/sbin/rcapache2
+#!/bin/bash
+/opt/apache2/bin/apachectl $1
+
+* compile mod_perl2, giving path to apxs:
+perl Makefile.PL MP_APXS=/opt/apache2/bin/apxs; make && make test; make install
+
+* compile libapreq2 the CPAN/perlish way (see INSTALL)
+perl Makefile.PL --with-apache2-apxs=/opt/apache2/bin/apxs; make test install
+
+/Don't panic if one of the make test bails out with some error message.
+Simply invoke make test again. For me it worked the second time./
+
+* Now glue all the compiled components together. Add these lines to /etc/ld.so.conf:
+/opt/apache2/lib
+/opt/apache2/modules
+And run ldconfig -v
+Also don't forget to load the perl and apreq2 DSO modules to apache2:
+LoadModule apreq_module modules/mod_apreq2.so
+LoadModule perl_module modules/mod_perl.so
+(Search for DSO in /opt/apache2/conf/httpd.conf)
+
+* Now install via CPAN the HTML::Mason and all required modules for your project. A simple testing VirtualHost configuration at the end of /opt/apache2/conf/httpd.conf could look like this:
+<VirtualHost rawmason.test.com>
+ServerName rawmason.test.com
+ServerAlias rawmason
+ServerAdmin admin@test.com
+
+DocumentRoot /data/rawmason/document_root
+ErrorLog /var/log/apache2/rawmason-error_log
+CustomLog /var/log/apache2/rawmason-access_log common
+
+PerlModule HTML::Mason::ApacheHandler
+
+### configure Mason
+
+PerlAddVar MasonCompRoot "main => /data/rawmason/document_root"
+PerlAddVar MasonCompRoot "private => /data/rawmason/mason_components"
+PerlSetVar MasonDataDir /data/rawmason/mason_data_cache
+PerlSetVar MasonDeclineDirs 0
+PerlSetVar MasonArgsMethod mod_perl
+
+<FilesMatch "\.(cgi|m)$">
+SetHandler perl-script
+PerlHandler HTML::Mason::ApacheHandler
+</FilesMatch>
+
+</VirtualHost>
+
+* restart apache2
+
+Your basic mason scripts should work now. I say basic, because as of this  I still encounter problems with MasonX::Request::WithApacheSession. See also word of caution at the beginning of this. 
+
+== SuSE Linux - pre-9.x versions ==
+
+These versions include Apache1/mod_perl1 and it is highly recommended,
+that you use these as basis infrastructure for your Mason deployment and.
+If you insist on using Apache2/mod_perl2, much of what is written above for the 9.x versions also applies, as you have to compile the sources yourself.
+
+== RedHat ==
+
+I assume much of what applies for !SuSE, will probable be true for !RedHat also
+as both are quite similar distros and in both cases you should compile
+your own packages.

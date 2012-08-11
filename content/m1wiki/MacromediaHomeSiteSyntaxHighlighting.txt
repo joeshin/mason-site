@@ -1,0 +1,234 @@
+Below is a Mason Syntax Colorizer for Allaire/Macromedia HomeSite. It could do more than it does, but it doesn't :) It should work most of the time - the default ASP parser does highlighting wrongly *most* of the time for Mason code.
+
+http://www.webelement.net/homesite/tutorial1.htm
+
+This page has instructions for installing your parser into homesite (about 3/4 of the way down). Be sure you're using the correct area of the registry, based on your version of homesite (for instance, I had older versions under HKCU->Software->Allaire, but my current version is under HKCU->Software->Macromedia).
+
+Be sure to follow the instructions at the above URL to register the parser with Homesite. Also, you'll need the Macromedia source for these parsers, available at their website. Just unpack the .zip file into your Parsers directory.
+
+http://www.macromedia.com/software/homesite/download/scripts/syntax.html
+
+There's one problem where a <% %> mason tag inside an HTML attribute won't be highlighted. Like this: <h1 class="<% $class_name %>">. I can't do anything about it except disabling HTML colorization by commenting out the line "#include ....html.cs" near the bottom of this syntax parser... you can pick whether you want HTML colorization or better Mason colorization - just edit the attached Mason.sc and pick whether to enable or disable that line (near the end of the file).
+
+Once you've installed the parser, assign it to *.html, *.htm, *.m files, and set it as default. Enjoy!
+
+----
+
+ /******************************************************************************
+         Color Coding Script Base File
+         by B. Collier Jones
+         Version 4.5.1
+         Copyright (c) 1997-2002 Macromedia, Inc. All Rights Reserved. Consult Software License Agreement for more details.
+
+         updated 3/2003 Randy Harmon - added Mason highlighting
+
+ ******************************************************************************/
+
+ // Uncomment to allow highlighting of HTML Attributes
+ //#define SHOW_HTML_ATTRIBS
+
+ // Ranges
+ #define DEFAULT_ELEMENT_BASE           0
+ #define DEFAULT_ELEMENT_MAX                    4
+ #define SERVER_SIDE_SCRIPT_BASE                5
+ #define SERVER_SIDE_SCRIPT_MAX         39
+ #define HTML_ATTRIBUTE_BASE                    40
+ #define HTML_ATTRIBUTE_MAX                     54
+ #define HTML_ELEMENT_BASE                      55
+ #define HTML_ELEMENT_MAX                       114
+ #define CLIENT_SIDE_SCRIPT_BASE                115
+ #define CLIENT_SIDE_SCRIPT_MAX         149
+ #define STYLE_SHEET_BASE                       150
+ #define STYLE_SHEET_MAX                                164
+ #define MASON_BASE                             165
+
+ // Elements
+ #define DEFAULT_BASE                           DEFAULT_ELEMENT_BASE
+ #define DEFAULT                                                DEFAULT_BASE + 0
+ #define NULL                                           255
+
+ // States
+ #define IN_DEFAULT                                     DEFAULT_BASE + 0
+ #define IN_NULL                                                255
+
+ // Common Elements
+ #define ALPHA                                          '[_A-Za-z0-9]'
+ #define NOT_ALPHA                                      '[^_A-Za-z0-9]'
+ #define ALL_CHARS                                      '[\x00-\xFF]'
+ #define NUM_START                                      '[0-9]'
+ #define NOT_NUM_START                          '[^0-9]'
+ #define NUM_CONTAINS                           '[0-9.]'
+ #define NOT_NUM_CONTAINS                       '[^0-9.]'
+ #define ID_START                                       '[a-zA-Z_]'
+ #define NOT_ID_START                           '[^a-zA-Z_]'
+ #define ID_CONTAINS                                    '[a-zA-Z_0-9]'
+ #define NOT_ID_CONTAINS                                '[^a-zA-Z_0-9]'
+ #define NO_CHARS                                       '[]'
+ #define DONT_CARE                                      ALL_CHARS
+ #define ALL_STATES                                     [0..255]
+ #define DEFAULT_BACKGROUND                     clWhite
+ #define DEFAULT_FOREGROUND                     clBlack
+
+ // Additional Colors
+ // Default color for server-side scripting background
+ #define clLtSilver                                     15329769
+ #define clOrange                                       33023
+ #define clSoftBlue                                     12615680
+
+ // Language Declaration
+ %%language
+ Name                                                   =       'Mason'
+ Case                                                   =       __INSENSITIVE
+ StartState                                             =       [IN_DEFAULT]
+ Anchor                                                  =      [DEFAULT]
+ //ContextStates                                        =       (DEFAULT [IN_DEFAULT])
+ //BoundStates                                          +=      []
+ EditableStyles                                         ('Default Text'                                 , DEFAULT)
+ ExampleText                                            =       'Default Text\n'
+
+ %%effects
+ DEFAULT                                        []                                      DEFAULT_FOREGROUND              DEFAULT_BACKGROUND
+
+ %%map
+ DEFAULT                                        DEFAULT
+
+
+
+ // Elements
+ #define MASON_PERL_SECTION                             MASON_BASE + 29
+ #define MASON_SECTION_START                            MASON_BASE + 30
+ #define MASON_SECTION_STOP                             MASON_BASE + 31
+
+ #define MASON_PERL_LINE                                        MASON_BASE + 32
+ #define MASON_COMP_CALL                                        MASON_BASE + 33
+ #define MASON_COMP_CONTENT                             MASON_BASE + 34
+ #define MASON_COMP_CONTENT_STOP                                MASON_BASE + 35
+ #define MASON_DOC                                      MASON_BASE + 36
+
+ #define MASON_ARGS_SECTION                             MASON_BASE + 37
+ #define MASON_COMMENT                                  MASON_BASE + 38
+ #define MASON_TAG                                      MASON_BASE + 39
+
+ // States
+ #define IN_DEFAULT                             0
+
+
+ %%words
+ '&lt;%args&gt;'                                DONT_CARE                       MASON_ARGS_SECTION
+ '&lt;%init&gt;'                                DONT_CARE                       MASON_PERL_SECTION
+ '&lt;%shared&gt;'                              DONT_CARE                       MASON_PERL_SECTION
+ '&lt;%once&gt;'                                DONT_CARE                       MASON_PERL_SECTION
+ '&lt;%cleanup&gt;'                             DONT_CARE                       MASON_PERL_SECTION
+ '&lt;%perl&gt;'                                DONT_CARE                       MASON_PERL_SECTION
+ '&lt;%doc&gt;'                         DONT_CARE                       MASON_DOC
+
+
+ '\n%#'                                 DONT_CARE                       MASON_COMMENT
+ '\n% #'                                        DONT_CARE                       MASON_COMMENT
+
+ '&lt;%method '                         DONT_CARE                       MASON_SECTION_START
+ '&lt;%def '                            DONT_CARE                       MASON_SECTION_START
+ '&lt;/%'                                       DONT_CARE                               MASON_SECTION_STOP
+
+
+ '&lt;%'                                        ' '                             MASON_TAG
+ '&lt;&amp;|'                                   DONT_CARE                       MASON_COMP_CALL
+ '&lt;&amp;'                                    DONT_CARE                       MASON_COMP_CALL
+ '\n%'                                  DONT_CARE                       MASON_PERL_LINE
+
+ %%handlers
+ MASON_ARGS_SECTION                     DONT_CARE       '&lt;/%a'               _use_
+ MASON_PERL_SECTION                     DONT_CARE       '&lt;/%[a-zA-Z]'        _use_
+ MASON_PERL_LINE                                DONT_CARE       '\n'            _discard_
+
+ MASON_DOC                              DONT_CARE       '&lt;/%d'               _use_
+ MASON_COMMENT                          DONT_CARE       '\n'            _discard_
+
+ MASON_SECTION_START                    DONT_CARE       '&gt;'          _use_
+ MASON_SECTION_STOP                     DONT_CARE       '&gt;'          _use_
+ MASON_COMP_CALL                                DONT_CARE       '\&amp;&gt;'            _use_
+ MASON_COMP_CONTENT_STOP                        DONT_CARE?      '&lt;'          _discard_
+
+ MASON_TAG                              DONT_CARE       '%&gt;'         _use_
+
+ %%effects
+ MASON_ARGS_SECTION             [fsBold]                clGreen                 DEFAULT_BACKGROUND*
+ MASON_PERL_LINE                        []                      DEFAULT_FOREGROUND*     clYellow
+
+ MASON_DOC                      [fsBold,fsItalic]       clBlue                  DEFAULT_BACKGROUND*
+
+ MASON_SECTION_START            [fsBold]                clNavy                  clYellow
+ MASON_COMP_CALL                        []                      DEFAULT_FOREGROUND*     clAqua
+ MASON_TAG                      [fsBold,fsItalic,fsUnderline]           clGreen                 DEFAULT_BACKGROUND*
+
+ %%language
+ Name   = 'Mason'
+ Case = __INSENSITIVE
+ StartState = [IN_DEFAULT]
+ EditableStyles                                         ('Mason Args Section', MASON_ARGS_SECTION ),
+                                                         ('Mason Perl Lines'    , MASON_PERL_LINE ),
+                                                         ('Mason Comments and Docs', MASON_DOC ),
+                                                         ('Mason Section (start/stop tag\)', MASON_SECTION_START ),
+                                                         ('Mason Component Call &lt;&amp; &amp;&gt;', MASON_COMP_CALL ),
+                                                         ('Mason Tag &lt;% %&gt;', MASON_TAG )
+
+
+ ExampleText                                            +=      '-------  Mason -------\n\
+                                                                 \&lt;%args&gt;\n\
+                                                                 \$foo =&gt; \'bar\'\n\
+                                                                 \&lt;/%args&gt;\n\
+                                                                 \&lt;% $foo %&gt;\n\
+                                                                 \&lt;td&gt;&lt;h1&gt;Header in HTML&lt;/h1&gt;&lt;/td&gt;\n\
+                                                                 \% my $perl_line = 42;\n\
+                                                                 \% my $perl_line2 = 43;\n\n\
+                                                                 \&lt;p&gt;Text&lt;/p&gt;\n\
+                                                                 \&lt;&amp; SELF:title &amp;&gt;&lt;!-- component call --&gt;\n\
+                                                                 \% # a comment line\n\
+                                                                 \&lt;%method title&gt;Example Title Method&lt;/%method&gt;\n\
+                                                                 \&lt;%perl&gt;\n\
+                                                                 \my $var = 13;\n\
+                                                                 \&lt;/%perl&gt;\n\
+                                                                 \&lt;%doc&gt;Some docs&lt;/%doc&gt;\n\
+                                                                 \&lt;%def something&gt;&lt;%args&gt;$sub =&gt; \'args\'&lt;/%args&gt;A subcomponent&lt;/%def&gt;
+                                                                 \&lt;&amp;| /some_comp &amp;&gt;Some content for it&lt;/&amp;&gt;\n\
+                                                                 \Just some Text\n\
+                                                                 \&lt;&amp; /redir.m,\n\
+                                                                 \     uri =&gt; \'/welcome.html\' &amp;&gt;\n'
+
+
+
+ %%map
+ MASON_PERL_LINE                        MASON_PERL_LINE
+ MASON_PERL_SECTION             MASON_PERL_LINE
+
+ MASON_SECTION_START            MASON_SECTION_START
+ MASON_SECTION_STOP             MASON_SECTION_START
+
+ MASON_COMP_CALL                        MASON_COMP_CALL
+ MASON_COMP_CONTENT_STOP                MASON_COMP_CALL
+
+ MASON_DOC                      MASON_DOC
+ MASON_COMMENT                  MASON_DOC
+
+ MASON_ARGS_SECTION             MASON_ARGS_SECTION
+
+ MASON_TAG                      MASON_TAG
+
+
+ /*******************************************************************************
+         Begin Language Includes
+ *******************************************************************************/
+
+
+ // comment out the following line if you want to trade HTML colorization for better
+ // colorization of &lt;% %&gt; tags within HTML attributes, i.e., &lt;tr class=&quot;&lt;% $myclass %&gt;&quot;&gt;
+
+ #include &lt;languages/html/html.sc&gt;
+
+ #include &lt;languages/css/css.sc&gt;
+ #include &lt;languages/client/javascript.sc&gt;
+
+ // Include attributes last so that all &quot;virtual&quot; elements can be defined
+ #ifdef SHOW_HTML_ATTRIBS
+ #include &lt;languages/html/attributes.sc&gt;
+ #endif

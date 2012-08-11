@@ -1,0 +1,32 @@
+ %# Can be used to do whois lookups. Requires jwhois to be configured and in path. Allows you to surf on norid & ripe ids
+ <form method="GET" action="<%$r->uri%>">
+ <p>Enter the domain you want to check against the whois db</p>
+ <table border="0" cellspacing="1" cellpadding="1" bgcolor="#ffffff">
+ <tr><td bgcolor="#cccccc">domain</td><td bgcolor="#cccccc"><input type="text" name="domain" value="<%$domain%>"></td></tr>
+ <tr>
+   <td bgcolor="#cccccc">&nbsp;</td>
+   <td bgcolor="#cccccc" align="right"><input type="submit" border="0" value="Search"></td>
+ </tr>
+ </table>
+ </form>
+ 
+ %if ($domain) {
+ <pre>
+ <%$whois%>
+ </pre>
+ %} 
+ 
+ <%init>
+ $domain =~ /^([\w\-.]+)/;
+ $domain = $1;
+ my $whois = `jwhois $domain` if $domain;
+ if ($whois) {
+   my $url=$r->uri.'?domain=';
+   $whois =~ s/([\w-]+NORID)$/<a href=\"$url$1\">$1<\/a>/mg;
+   $whois =~ s/([\w-]+RIPE)$/<a href=\"$url$1\">$1<\/a>/mg;
+ }
+ </%init>
+ <%args>
+ $domain=>""
+ </%args>
+

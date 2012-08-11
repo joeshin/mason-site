@@ -1,0 +1,11 @@
+I am the maintainer of the Mason package (perl-HTML-Mason) in [Fedora http://fedoraproject.org/].
+
+For more information about me, see the following:
+
+http://www.kspei.com/
+
+http://www.silug.org/~steve/
+
+I can be reached at steve@silug.org.
+
+For some ancient information, see MasonAndRedHat and MasonAndFedora (still mostly correct).  Also see [this page http://fedoraproject.org/wiki/Perl/perl-HTML-Mason] on the Fedora wiki.

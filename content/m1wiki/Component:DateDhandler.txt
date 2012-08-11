@@ -1,0 +1,178 @@
+ <%doc>
+ DATE-DHANDLER
+ 
+ This dhandler splits up URLs which contain a date 
+ formatted in a specific pattern. After processing 
+ the URL the hash %date will contain the keys year, 
+ month, day, weekofyear, dayofyear and id with the 
+ appropriate values. All other elements of the URL 
+ will be stored in the @urlparts. If the file name 
+ at the end of the URL starts with index or default, 
+ it wont be stored in @urlparts.
+ 
+ Following date patterns can be used:
+ 
+ * YYYYMMDDCCC - 20030101007 - date and id combined
+ * YYMMDDCCC - 030101007 - year with only 2 digits
+ * YYYY/MM/DD/CCC - 2003/01/01/007 - date and id
+ * YYYY/MM/DD - 2003/01/07 - date without id
+ * YYYY/MMM - 2003/M01 - prefix M => month
+ * YYYY/WWW - 2003/W02 - prefix W => week of year
+ * YYYY/DDDD - 2003/D56 - prefix D => day of year
+ * YYYY/MM - 2003/01 - value between 1 - 12 => month
+ * YYYY/WW - 2003/14 - value between 13 - 52 => week of year
+ * YYYY/DD - 2003/70 - value between 53 - 356 => day of year
+ * YYYY/DD/CCC - 2003/70/007 - day of year with an id
+ * YYYY - 2003 - year with 4 digits
+ * YY - 03 - year with 2 digits
+ 
+ Note for the Mason configuration:
+ 
+ A good approach is the following. It will handle all 
+ locations which don't seem to be files (with a dot) 
+ or directories (with a slash at the end):
+ 
+ <LocationMatch "^[^\.]*[^\/]$">
+   SetHandler perl-script
+   PerlHandler MyHandler
+ </LocationMatch>
+ 
+ 
+ Version 0.12 (2003.03.28)
+ Copyright 2003 by Wolfgang Gruber <w.gruber AT urldirect.at>
+ </%doc>
+ 
+ <%init>
+ # BEGIN CONFIGURATION
+ 
+ # Length of year in the URL
+ my $year_input_digits = 4; # 2 or 4
+ 
+ # Length of year stored in the date hash
+ my $year_output_digits = 2; # 2 or 4
+ 
+ # How to interpret the value after the year
+ # This value will override the setting in the url
+ my $second_as = "m"; # (M)onth, (W)eek, (D)ay or (A)uto
+ 
+ # How to match the ID
+ my $id_match = '\-?\d{3}';
+ 
+ # File extensions to match
+ my @extensions = ("html","htm","mc","mas");
+ 
+ # END CONFIGURATION
+ 
+ my (%date, @urlparts);
+ my $state = 0;
+ my $path = $m->dhandler_arg();
+ my @parts = split("/",$path);
+ my $extlist = "(\\.".join("|\\.",@extensions).")";
+ $second_as = uc($second_as);
+ while (@parts)
+ {
+   my $extension;
+   my $part = shift(@parts);
+   if ($part =~ /^([^\.]*)$extlist?/i)
+   { $part = $1; $extension = $2; }
+   study($part);
+   if (($state == 0) && ($part =~ /^(\d{$year_input_digits})$/))
+   { $date{"year"} = $1; $state = 1; }
+   elsif (($state == 1) && ($part =~ /^([mwd]?)(\d{1,3})$/i))
+   {
+     my $op;
+     if ($second_as ne "A") { $op = $second_as; }
+     else { $op = $1; }
+     if ($op eq "M")
+     {
+       if (($2 > 0) && ($2 <= 12))
+       { $date{"month"} = sprintf("%02u",$2); $state = 2; }
+     }
+     elsif ($op eq "W")
+     {
+       if (($2 > 0) && ($2 <= 52))
+       { $date{"weekofyear"} = sprintf("%02u",$2); $state = 4; }
+     }
+     elsif ($op eq "D")
+     {
+       if (($2 > 0) && ($2 <= 366))
+       { $date{"dayofyear"} = sprintf("%03u",$2); $state = 3; }
+     }
+     else
+     {
+       if ($2 <= 12) { $date{"month"} = sprintf("%02u",$2); $state = 2; }
+       elsif (($2 > 12) && ($2 <= 52)) { $date{"weekofyear"} = sprintf("%02u",$2); $state = 4; }
+       elsif (($2 > 52) && ($2 <= 366)) { $date{"dayofyear"} = sprintf("%03u",$2); $state = 3; }
+     }
+   }
+   elsif (($state == 2) && ($part =~ /^(\d{1,2})$/) && ($1 > 0) && ($1 < 32))
+   { $date{"day"} = sprintf("%02u",$1); $state = 3; }
+   elsif (($state == 3) && ($part =~ /^($id_match)$/))
+   { $date{"id"} = $1; $state = 4; }
+   elsif (($state == 0) && ($part =~ /^(\d{$year_input_digits})(\d{2})(\d{2})($id_match)$/))
+   { $date{"year"} = $1; $date{"month"} = $2; $date{"day"} = $3; $date{"id"} = $4; }
+   elsif (($part =~ /^index$/i) || ($part =~ /^default$/i))
+   { $state = 5; }
+   else
+   { push(@urlparts,$part.$extension); }
+ 
+   # If the part has a file extension, it's the end of the url
+   if ($extension =~ /^$extlist$/i) { last; }
+ }
+ 
+ # Transform the value for year based on the configuration
+ if (($year_input_digits == 4) && ($year_output_digits == 2))
+ { $date{"year"} = substr($date{"year"},-2,2); }
+ elsif (($year_input_digits == 2) && ($year_output_digits == 4))
+ {
+   if ($date{"year"} > 50) { $date{"year"} = 1900 + $date{"year"}; }
+   else { $date{"year"} = 2000 + $date{"year"}; }
+ }
+ 
+ # Debug
+ if ($DEBUG)
+ {
+   $r->content_type("text/html");
+   $m->print("<html><head><title>DHANDLER debug message</title></head><h2>DHANDLER debug message</h2>");
+   $m->print("<b>Year:</b> ".$date{"year"}."<br>");
+   $m->print("<b>Month:</b> ".$date{"month"}."<br>");
+   $m->print("<b>Day:</b> ".$date{"day"}."<br>");
+   $m->print("<b>Week of year:</b> ".$date{"weekofyear"}."<br>");
+   $m->print("<b>Day of year:</b> ".$date{"dayofyear"}."<br>");
+   $m->print("<b>ID:</b> ".$date{"id"}."<br>");
+   $m->print("<b>Other parts of the URL:</b> ".join(" ",@urlparts)."<br>");
+   $m->print("</body></html>");
+   $m->flush_buffer();
+   $m->abort(200);
+ }
+ 
+ # Here comes the other stuff (calling components based on the date values)
+ 
+ # Some examples:
+ 
+ # Mason subrequest
+ #$r->content_type("text/html");
+ #$m->subexec("/index.mc", id => $year.$month.$day.$id);
+ 
+ # Internal redirect
+ #$r->internal_redirect("/index.mc?id=".$date{"year"}.$date{"month"}.$date{"day"}.$date{"id"});
+ #$m->auto_send_headers(0);
+ #$m->clear_buffer;
+ #$m->abort;
+ 
+ # External redirect (with 302 status)
+ #$m->redirect("http://www.example.com/index.mc?id=".$date{"year"}.$date{"month"}.$date{"day"}.$date{"id"});
+ 
+ </%init>
+ 
+ 
+ <%flags>
+   inherit => undef
+ </%flags>
+ 
+ <%args>
+   $DEBUG => 0
+ </%args>
+ 
+ 
+

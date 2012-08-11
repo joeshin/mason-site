@@ -1,0 +1,62 @@
+I personally have been using a couple of accounts on http://www.ipowerweb.com/ hosting because it is cheap and has lots of space, plus download speeds seem reasonable from Oceania. 
+
+
+
+I was wondering how to get HTML::Mason going, and I finally did, albeit via CGI. (They don't support mod_perl.. I asked and they replied so).
+
+So how did I do this?
+
+First I downloaded HTML::Mason from CPAN, and unzipped it. I then uploaded the /lib directory contents to my account (I created a directory called /lib/perl/mason on my ipowerweb account and put it all there).
+
+
+Then I followed the instructions in: http://www.masonhq.com/docs/manual/CGIHandler.html
+
+i.e. I created an exact replica of mason_handler.cgi and put it in my /public_html/cgi-bin directory. I added the following line to my mason_handler.cgi file:
+
+  use lib $ENV{"DOCUMENT_ROOT"} . "/../lib/perl/mason";
+
+(if I didn't do that then it wouldn't find my Mason libraries).
+
+Actually, my mason_handler.cgi file looked like the following:
+
+  #!/usr/bin/perl
+  
+  use lib $ENV{"DOCUMENT_ROOT"} . "/../lib/perl/mason";
+  use HTML::Mason::CGIHandler;
+  
+  my $h = HTML::Mason::CGIHandler->new(
+  	          data_dir  => '/tmp/mason_data',
+  		  allow_globals => [qw(%session $u)],
+  	);
+  			
+  $h->handle_request; 
+
+I then created a .htaccess file and put it in my chosen MASON directory (/public_html/mason). That file contained the following:
+
+  <FilesMatch "\.html$">
+    Action html-mason /cgi-bin/mason_handler.cgi
+    SetHandler html-mason
+    
+    Order allow,deny
+    Allow from all
+  </FilesMatch>
+  
+  <FilesMatch "(autohandler|dhandler)$">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+  
+Everything was ready to serve HTML::Mason .html files in /public_html/mason. But one problem: the ipowerweb server needed a few more modules.
+
+No worries, I went to CPAN and found the following native perl modules and put them in my /lib/perl/mason directory:
+
+  Exception/Class.pm
+  Devel/StackTrace.pm
+  Class/Container.pm
+  Class/Data/Inheritable.pm
+  Params/Validate.pm *
+  Params/ValidatePP.pm *
+
+(the files marked with a * are those that I downloaded from CPAN and used the command perl Makefile --pm to force native perl code generation).
+
+Bingo, all works.. now serves MASON files from /public_html/mason!

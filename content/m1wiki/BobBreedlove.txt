@@ -1,0 +1,7 @@
+== Introduction ==
+
+I am new to Mason. I am implementing a new website for my work which will use Mason and am just getting into the product. I am a long-time perl hacker and template user, so I anticipate that things will be OK.
+
+You can follow my exploits on my site [http://bobbreedlove.com/cgi-bin/usemod/wiki.pl?Mason wiki].
+
+[http://bobbreedlove.com HomePage]

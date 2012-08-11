@@ -1,0 +1,4 @@
+"Kwartz is a template system which realized the concept of 'Separation of Presentation Logic and Presentaion data' (SoPL/PD) or 'Independence of Presentation Logic'(IoPL)."
+http://www.kuwata-lab.com/kwartz/
+
+Currently there is not support for writing out to mason components, but it doesn't look like adding such support should be too hard.  I'm in the process of working on it.  --BenTucker

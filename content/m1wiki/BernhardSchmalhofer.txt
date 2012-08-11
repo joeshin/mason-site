@@ -1,0 +1,4 @@
+Playing with ANTLR and Parrot.
+Working with Mason and bioinformatics.
+
+http://use.perl.org/~Bernhard/

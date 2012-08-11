@@ -1,0 +1,78 @@
+/I originally wrote this node after having some problems/
+/populating the [$submit] value on a couple of components/
+/I was working on. It turns out that the problem/
+/was *not* Mason, but some funky Apache behavior on my test/
+/box. Everything now works fine by declaring the/
+[=$submit] /variable in the/ [=%args] /section./
+/The technique below still/
+/works, but it's a bit redundant. I have removed erronous/
+/information./
+
+There are times I've wanted to have multiple submit buttons on a form, each one with a different purpose. For example, you might have a delete and save button on a user entry form. Each of these should submit the form, but the form processing component might perform different actions depending on what the submit value is.
+
+Back when I used PHP, this was relatively simple; PHP populated the submit value for you and you just had to reference it. Mason, does exactly the same thing, it appears. 
+
+== The Code ==
+Below, we have a simple form that doesn't do a whole bunch; it's just a couple of submit buttons. 
+
+ <form name="myform" method="POST" action="/">
+ <input type="submit" name="submit" value="Save">
+ <input type="submit" name="submit" value="Delete">
+ </form>
+
+And, we'll need a component to play with the form. 
+
+ <%init>
+ my $reqargs = $m->request_args;
+ my $submitValue = $reqargs->{submit};
+ </%init>
+ The value of the Submit button is <% $submitValue %>
+
+Mason provides the current request's [HTML::Mason::Request] object for you and stores it in the [$m] variable. Using the [request_args] function, you can get a _hashref_ or _list_ of all of the HTTP request arguments. I'm using a hashref in this example because it's more intuitive.
+
+Once we have our values, it's a simple matter of querying the hashref for what we want. In this case the [submit] element, since that's what we named our submit button; we could just as easily named it "Save" or "Fred" if we'd wanted to.
+
+As you can see, the technique itself is not that difficult. All that's required is a bit of knowledge about the [HTML::Mason::Request] object .
+
+-- TimAdamec
+
+------------------------------
+
+Tim, I just tried this on my own system, and you can just do:
+
+ <%args>
+ $submit
+ </%args>
+
+If it's not working I'd double check your code, and/or post a bug report.
+
+-- DaveRolsky
+
+------------------------------
+
+Strange. I tried for hours to get the following code, in various incarnations, to work:
+
+ <form name="test" method="post" action="<% $r->uri %>">
+ <input type="submit" value="Save" name="save">
+ <input type="submit" value="No Save" name="save">
+ </form>
+ <%init>
+ if( $save eq 'save' ) {
+  print STDERR "save value: $save\n";
+ }
+<%init>
+ <%args>
+ $save => ''
+ </%args>
+
+I never could seem to get it right. It works fine. All I can guess is that I had something funky with Apache when I was testing. I've since restarted Apache several times. I should know by now: when things are acting funny, restart Apache *first*.
+
+The above code /does/ work just fine, but it's now a bit redundant.
+
+Should this node be deleted?
+
+-----
+
+Perhaps just link it into a list at MasonTutorials.
+
+-- AnilGulati

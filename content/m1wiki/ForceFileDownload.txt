@@ -1,0 +1,83 @@
+== With Apache::!SubRequest ==
+
+Jonathan Swartz provides this "make the user download $file" boilerplate:
+
+      use Apache::SubRequest;
+      my $subr = $r->lookup_file($file);
+      return 404 unless -f $file and $subr->status == 200;
+      $r->content_type($subr->content_type);
+      $r->send_http_header;
+      return 200 if $r->header_only;
+      $subr->run;
+      $m->abort;
+
+== Without Apache::!SubRequest ==
+
+Downloading files should be a simple matter, though you need to be careful in how you build your page in order to enable the transfer to work.  We ran into a problem when using what we thought was a very simple process, when we used the Apache::Request method "header_out" through the $r object. 
+
+All we wanted to do was to "force" the browser to accept the page as a file download, and take the appropriate action (e.g. opening a browser file download dialog).  The symptoms of our problem included creating beautiful (and seemingly garbage filled pages) as our binary file was being parsed by the browser.  The CPU utilization peaked as the browser tried to figure out what we wanted.
+
+So then, how does one force the browser to view the coming page as a file download, and not as a page to be handed to the rendering engine?  
+
+This is how we solved it (with much assistance from the mailing list denizens)
+
+1st: remember, its the header ....
+
+You want to control the header.  Mason will happily generate a header for you if you don't alter the process early.  One of the most helpful suggestions came when it was suggested to place the correct header modification in an <%init> block at the top of the file:
+
+  <%init>
+  $r->content_type('application/octet-stream');
+  </%init>
+
+Now anything tossed down to the browser will be assumed to be part of the file. Of course the content_type should be set according to the type of file being downloaded. If you are unsure what this should be, use the [Live HTTP Headers http://livehttpheaders.mozdev.org/] Firefox Extension and download the file outside of Mason.
+
+2nd: Keep It Simple ... (the KISS principle)
+
+You want to send the file, and a short set of meta data that will give the browser some hints on naming the downloaded data.  This example is specific to unix (in the path-splitting) but the idea could be trivially extended to a non-unix like OS quite trivially.
+
+a) declare variables and parse file path.
+
+  my (@full,$xbase,$fh,$line,$disp);
+  @full           = split(/\//,$file);
+  $xbase          = pop @full;
+
+@full will contain the fully qualified file path after the split, so
+   
+  $file='/home/landman/files/big.data.zip';
+
+will be mapped into
+ 
+  @full = [ '','home','landman','files','big.data.zip'];
+
+Which as you can see, happily places the base name of the file (big.data.zip) without the rest of the path, as the last element of the array.  Quite convienent for popping off into a variable.  Which we do (e.g. the filename without the path is saved in $xbase)
+
+b) set the content disposition to give the browser file naming hints.
+
+  $r->header_out('Content-disposition' => ("attachment;  filename=$xbase")); 
+
+This simply adds a line to the header of:
+
+   Content-disposition: attachment; filename=big.data.zip
+
+This line tells the browser that the download is named big.data.zip, and to use that name as the default when it pops open its file download window.  If you don't use this (and you do not have to), your download will be named (by default) the same name as your page.  Ours happened to be "download.html", which presented problems as we were downloading zip files.
+
+c) dump the data.
+
+This doesnt need to be anything fancy.  We recommend that you keep it simple.
+
+  open($fh,"<".$file) or $m->redirect('file_open_failed.html?name='.$file);
+  while(<$fh>) { $m->print($_); }
+  close $fh;
+  return;
+
+The 
+
+  open( ) or $m->redirect(...) 
+
+gives you a fighting chance to recover from failed file downloads, and send error information back to the user and admins.  You do not need to use the  'or $m->redirect(...' bit, though it would be quite helpful (to you) if your code did catch errors by some mechanism.
+
+What this gets the end user is a nice dialog box asking them to ok a
+download with the name as indicated.  They get the control of whether or
+not to do this, where to put it and what to name it.
+
+What we didn't cover (though we do have this in our code) are file existence testing, path accessibility testing (can the apache process read the file, look at the directory, etc).  You will likely encounter many odd permissions errors that would be wise to test the file and path for in advance of opening the file.

@@ -1,0 +1,3 @@
+Configuration of Mason via directives in your httpd.conf file, such as:
+
+  PerlSetVar  MasonCompRoot  /var/www

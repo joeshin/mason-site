@@ -1,0 +1,13 @@
+Our MailingLists get hit with a large amount of spam every day (just like
+most of your mailboxes, no doubt). Unfortunately, the version of mailman at SourceForge offers few spam protections and requires each questionable email to
+be manually approved. This was generating a lot of tedium for the core team, and our reluctance to tend to the approval process was causing many-day delays for emails.
+
+So, we are now automatically rejecting any non-subscriber emails with a [http://ry4an.org/unblog/msg00016.html cron script] that runs every few hours. If you want to post to the lists, you'll have to subscribe with the same email address. You can subscribe here:
+
+* http://lists.sourceforge.net/mailman/listinfo/mason-users
+
+* http://lists.sourceforge.net/mailman/listinfo/mason-devel
+
+Note that you do *not* have to receive email when subscribed - just edit your preferences for the list and check "Disable mail delivery". So "subscribing" can be just a way of registering your name and getting past the spam filter.
+
+Sorry for the inconvenience. We remain hopeful for a Utopian future when spam is eliminated (or greatly curtailed) and we can loosen this policy.

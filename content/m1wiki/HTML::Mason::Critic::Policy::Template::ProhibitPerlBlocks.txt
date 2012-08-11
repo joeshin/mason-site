@@ -1,0 +1,1 @@
+This policy will emit a violation if any <%perl> (or <%init>) blocks exist in a Mason template.

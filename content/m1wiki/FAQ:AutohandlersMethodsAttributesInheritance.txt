@@ -1,0 +1,65 @@
+[&TOC FAQ:AutohandlersMethodsAttributesInheritance]
+
+=== Can I set a page's inheritance dynamically at request time (e.g. based on URL arguments)? ===
+No. Inheritance is a fixed property of a component, determined once when the component is loaded. Dynamic inheritance is on the todo list.
+
+=== How can I tell Mason to use autohandlers or dhandlers when calling one component from another component (i.e. internal redirect)? ===
+Usually this situation arises when a top-level component makes a run-time decision to use a second component as the "real" page, and calls it via <& &> or $m->comp.
+
+Autohandlers and dhandlers are only triggered for the top-level component of a request. In 1.1, you can use an Apache internal redirect or a Mason subrequest ($m->subexec) to solve the problem.
+
+In 1.0x, your best bet is to use an Apache internal redirect, but see bug http://www.masonhq.com/resources/todo/access.html?id=292.
+
+=== I added a simple autohandler to a directory and now my pages don't appear. ===
+Make sure to include a call to $m->call_next somewhere in the autohandler.
+
+=== Where does a dhandler inherit from? Can I change it to inherit based on the URL path? ===
+A dhandler's inheritance is determined by its location in the hierarchy, not by the URL that invoked it.
+
+Consider a site with the following components:
+
+       /autohandler
+       /dhandler
+       /products/autohandler
+
+and suppose a request comes in for /products/index.html. /dhandler will handle the request but will still inherit from /autohandler.
+
+This is not always the desired behavior, but there is no easy way to change it. If you want /products/* requests to use /products/autohandler, you'll need to create /products/dhandler as well.
+
+See http://www.masonhq.com/resources/todo/view.html?id=520
+
+=== Can I change the value of an attribute dynamically, based on the request? ===
+No, attributes are static. The closest thing to a dynamic attribute is a method. If you've been using an attribute widely and don't want to change it to a method everywhere, consider using an attribute/method combination. Suppose your attribute is called 'bgcolor'. Create a default method called 'bgcolor' in the autohandler:
+
+       <%method bgcolor>
+       <%init>
+       return $m->base_comp->attr('bgcolor');
+       <%init>
+       </%method>
+
+Then replace every other
+
+       $m->base_comp->attr('bgcolor');
+
+with
+
+       $m->base_comp->call_method('bgcolor')
+
+or
+
+       <& SELF:bgcolor &>
+
+Now you can leave the attribute definitions alone, but define a method if and when you need a dynamically computed value.
+
+=== When using multiple component roots and autohandlers, does every autohandler in every root get called, and in what order?
+
+Mason will try each autohandler path in turn, e.g.
+
+   /foo/bar/baz/autohandler
+   /foo/bar/autohandler
+   /foo/autohandler
+   /autohandler
+
+For each path, it will search all of the component roots, and only run the *first* autohandler found. Some of the autohandlers might come from one root and some from another.  However, there is no way that multiple autohandlers would be run for the same path (/foo/autohandler, for example.) There is also no way for /foo/autohandler in root 1 to explicitly call /foo/autohandler in root 2 - see the final question in http://www.masonhq.com/?FAQ:Components about multiple component roots.
+
+People sometimes ask for this behavior to be changed. We feel it's a bad idea because multiple component roots, right now, are very clean in both behavior and implementation. Trying to run multiple autohandlers for the same path would require a complex set of precedence rules that would almost certainly lead to unpredictable behavior. (Think about multiple versions of multiple autohandlers at different directory levels, and trying to predict which order they'd run in.)

@@ -1,0 +1,9 @@
+How this wiki is implemented:
+
+* The main site is driven by Mason.
+* The text formatting is provided by [http://kwiki.org/ CGI::Kwiki::Formatter].
+* The data is kept in a MySQL database, with a schema adapted from that used by [http://search.cpan.org/~kake/CGI-Wiki/ CGI::Wiki].
+* The class APIs are generated with [http://search.cpan.org/~tmtm/Class-DBI/ Class::DBI].
+* The search is provided by [http://www.swish-e.org/ Swish-E].
+
+See all the code for yourself at SourceForThisSite.

@@ -1,0 +1,37 @@
+Hi Gang, I was hoping I could get a pie-in-the-sky overview of Mason and Perl6.  Yes, I know I'm jumping the gun by a lot, but it's the weekend... time to sit back, relax, and think big without actually having to do anything about the big thoughts.
+
+I'm guessing that by the time Perl 6 is in moderately wide use the level of Apache2 adoption for Mason users will also be relatively high.
+
+Is the thought that if it were to use Perl6 Mason would run in Apache2 using something like Mod_Parrot?  If so, does the development roadmap look like this:
+
+* Finish Parrot
+* Get Ponie (Perl5 on Parrot) working
+* Get Perl6 on Parrot working
+* Get Mod_Parrot working in Apache2
+* Port Mason Modules to Perl6
+
+I'm a little confused about the details, but would love to learn more.
+
+Please feel free to refactor this page into more of an answer and less of a question if you feel so inclined.  Cheers --GordonMcCreight
+
+--------
+
+The idea of "porting" Mason to Perl 6 may or may not make sense.  Perl 6 may be different enought that things we do in Mason one way would be better done another way.  This might take a while to discover, as Perl 6 idioms aren't going to develop over night.
+
+Also, since Perl 6 is supposed to run Perl 5 as well, it might be possible to use the Perl 5 Mason core code, but write your components using Perl 6.
+
+But what it really comes down to is that I don't think we have any real plans related to Perl 6, because it's a long ways away at this point.
+
+-- DaveRolsky
+
+--------
+
+Thanks for the insight Dave.  From the look of things you're absolutely right about Perl 6 still being a long ways off.  I was in the gym about a year ago (here in Mountain View, CA), and to my extreme surprise Larry Wall was doing crunches next to me.  Perhaps he was attempting to increase Perl's core strength. ;)
+
+-- GordonMcCreight
+
+--------
+
+I'm sure we'll do a pretty significant overhaul of Mason for Perl 6. Perhaps it'll be called Mason 2.0. Some of the core code has been around awhile and is due for a cleaning anyway, so this'll provide a good excuse. Perl 6 will have better (or just different) ways to do a lot of things.
+
+-- JonathanSwartz

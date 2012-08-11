@@ -1,0 +1,52 @@
+See also SamplePlugins.
+ 
+I noticed recently that a lot of the modifications I
+wanted to make to Mason could be done very efficiently
+through Plugins.
+
+Something like aspect programming, a Mason Plugin is
+an object that gets its methods called before and
+after each request and each component.
+
+This can more elegantly handle cases where the
+deprecated "event_hooks" and (existing) "preamble/postamble" were used.  Plugin classes are
+better because they can be easily shared as perl
+classes on CPAN.  They can easily added by
+configuration, even those who configure Mason via
+httpd.conf.  And a user can use multiple plugins
+without worrying about multiple-inheritance (as
+required with subclassing) or conflicts.
+
+Personally I was able to get three different pieces of
+functionality that I had subclassed for into small
+separate plugin objects that I can now add and remove
+by configuration; I'm a lot happier with these than my
+old clunky subclasses.
+
+I think adding this feature to Mason will greatly
+encourage people who have been leery of subclassing,
+or of the MasonX extensions, to create and distribute
+small plugins - and relieve some of the pressure on
+the Core for those many requests for small features.
+
+Plugin.pm has quite a bit of perldoc associated that
+describes exactly how plugins work;  the synopsis
+contains a complete plugin that records component
+timings; the unit tests contain a dozen more sample
+plugins.
+
+Plugin classes tend to be shorter, simpler, and
+clearer than the equivalent subclasses.  New plugin
+classes would inherit from HTML::Mason::Plugin. Plugin
+objects can be recreated for each request, or live for
+the lifetime of the $interp object.
+
+See also SamplePlugins.
+
+-DougTreder
+
+-----
+
+This has been part of the HEAD (dev) branch for a while now.  Thanks, Doug.
+
+-DaveRolsky

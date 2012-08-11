@@ -1,0 +1,16 @@
+To set a global variable in httpd.conf 
+add this line:
+
+ PerlSetVar MasonAllowGlobals $varname
+
+The result is, that you can use the variable 
+in every component without declaring it.
+
+If you want to have more than one global, then
+add the following after the above line:
+
+ PerlAddVar MasonAllowGlobals $othervarname
+
+Then you can get more than one.
+
+When you are setting or adding variables in the Apache  configuration file, remember you're not in Perl. If you add a semi-colon (*;*) you'll cause a parse error.

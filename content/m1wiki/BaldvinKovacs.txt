@@ -1,0 +1,27 @@
+Hi!
+
+1st: I never have time. So just in headlines :)
+
+= About me =
+
+* I love mason.
+* I am currently developing a billing and database handling program in it, building on Request Tracker's technology (and extending it to be a lovely xmlized thing :)
+
+= My projects =
+
+[ShellForMason]: A shell around mason that allows the user to use mason from outside of apache.
+
+And lots of others.
+
+= My $0.2 =
+
+I think there are two _HUGE_ problems with mason: 
+
+* 1st: that it is anything but trivial to figure out how to install it as a per-virtual server way
+
+* 2nd: it has a steeper hill to climb for starting experience with it. So starters    just stick with php.
+
+I didn't think about the first one. I am actually planning to create a mason-starter package that adresses the second...
+
+Best Regards,
+Baldvin Kovacs

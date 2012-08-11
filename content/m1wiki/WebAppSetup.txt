@@ -1,0 +1,93 @@
+After half a day's trawling through documentation, mailing lists and code I've finally got an absolutely basic [MasonX::WebApp http://search.cpan.org/~drolsky/MasonX-WebApp-0.11/lib/MasonX/WebApp.pm] setup working. I'll describe it here, to possibly save someone else (or myself at a later date) a bit of frustration.
+
+I'll assume that Mason is already set up far enough to serve pages normally, and that the !WebApp modules are installed. If that's not the case, see Mason's normal documentation for setting it up, and the CPAN Perl module for installing modules.
+
+This is the massively complex page that we aim to get working:
+
+ <html>
+   <head>
+   <title>MasonX::WebApp Test Page</title>
+   </head>
+   <body>
+ <% $App->session->{foo}++ %>
+   </body>
+ </html>
+
+If it works, we'll get a page consisting of a number that increases every time we reload the page. Not rocket science, but enough to prove a point.
+
+In order to get there, we need to mess about with three files: the Apache [=httpd.conf] file and two freshly written Perl modules, which we will call Foo::Handler and Foo::!WebApp.
+
+In [=httpd.conf], simply change the !PerlHandler line that specifies the Mason handler to point at your own Foo::Handler instead. If your Mason setup is that from the Synopsis section in the manual, this means you now end up with this:
+
+ <Location />
+     SetHandler perl-script
+     PerlHandler Foo::Handler
+ </Location>
+
+That done, we write the modules. Foo::Handler looks like this:
+
+ package Foo::Handler;
+
+ use Foo::WebApp;
+
+ sub handler {
+    my $apr = Apache::Request->new(shift);
+    my $ah = MasonX::WebApp::ApacheHandler->new(
+                                                data_dir => "/opt/mason/data",
+                                                comp_root => "/opt/mason/htdocs",
+                                                allow_globals => ['$App']
+                                               );
+    my $args = $ah->request_args($apr);
+    my $app = Foo::WebApp->new(
+                               apache_req => $apr,
+                               args => $args
+                              );
+
+    return REDIRECT if $app->redirected;
+
+    local $HTML::Mason::Commands::App = $app;
+
+    my $return = eval { $ah->handle_request($apr) };
+    my $e = $@;
+
+    $app->clean_session;
+
+    die $e if $e;
+
+    return $return;
+ }
+
+ 1;
+
+You'll have to change the paths to suit your own installation, of course.
+
+Much of this code was stolen from [Rudesind http://search.cpan.org/~drolsky/Rudesind/]. That's a reasonably understandable !WebApp application, if you'd like to have a look at something rather larger and more complex than what I describe here.
+
+The second module, Foo::!WebApp, looks like this:
+
+ package Foo::WebApp;
+
+ use base 'MasonX::WebApp';
+
+ use Apache::Session::Wrapper;
+
+ __PACKAGE__->SessionWrapperParams({
+                                   class => 'DB_File',
+                                   always_write => 1,
+                                   use_cookie => 1,
+                                   cookie_name => "wantacookie",
+                                   file_name => "/opt/mason/data/sessions",
+                                   lock_directory => "/opt/mason/data/lock"
+                                  });
+
+ sub _init {
+    my $self = shift;
+
+    
+ }
+
+ 1;
+
+Again, the paths need to be adjusted. The _init function doesn't do anything (as you can easily see). It's just there to demonstrate where you can put your own !WebApp functions.
+
+With this, you should be able to restart your Apache and have that page shown at the beginning work as intended.

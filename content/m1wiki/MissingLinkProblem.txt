@@ -1,0 +1,56 @@
+A long time ago, on a www site (http://maztravel.com/) far far away, I
+made the mistake of using very bad names for some of my static files.
+For example, in a page that reviewed restaurants in Mazatlan, Mexico,
+I was stupid enough to call it RESTRNT.HTM rather than
+restaurants.html, which is much easier to remember and type.
+Unfortunately, thanks to the wonders of search engines, my mistakes
+are forever enshrined in their indexes, as well as www sites around
+the world that happened to link to me while *I was such dutz.* I used
+to try to keep everything in order using symlinks, but after learning
+about Mason, I found a much easier way.  You've probably already
+thought of this, but just in case you haven't, here is an easy way to
+/solve the missing link problem./
+
+In the directory in which you want to *correct* this problem, create a
+dhandler component like this:
+
+ <%init>
+ my $uri = $ENV{REQUEST_URI};
+ my @uri = split(/\//,$uri);
+ shift @uri;			    # get rid of leading /
+ my $file = lc(pop @uri);            # I wish I never used UPPER CASE!
+ if ( $file =~ m/(\w+)\.s?html?/) {  # get file name portion
+   $file = $mapping{$1} || $1;       # map bad name to good name
+   $file .= '.html';                 # and add .html to the end
+ }
+ push @uri,$file;
+ my $location;
+ my $redirect_file;
+ foreach my $dir (['put', 'your', 'directories' ],
+ 		 [ 'where', 'things', 'are', 'now']k
+ 		 ['here/so/that' , 'we/can/find/them']
+ 		) {
+   $redirect_file = File::Spec->catdir('/base/directory/of/DocumentRoot/',
+ 				      @$dir,@uri);
+   if (-e $redirect_file) {
+     $location = '/' . join('/',@$dir,@uri);
+     last;
+   }
+ }
+ $location = '/missing.html' unless (-e $redirect_file);  # It just  isn't there
+ $m->redirect($location);
+ 
+ </%init>
+ <%once>
+ my %mapping = 
+ qw( old_file_name new_file_name);
+ </%once>
+ 
+Notes:
+
+I assume you've already loaded File::Spec in your startup routine.  Of
+course you should adapt this to fit your needs, but you get the basic
+idea.  All of a sudden, a bunch of no longer valid !URLs become valid,
+and a lot of 404 errors disappear from my server log.  Life is good.
+
+-- HenryLaxen

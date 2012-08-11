@@ -1,0 +1,5 @@
+My Real Name is Miguel Figueiredo and I'm from Lisbon, Portugal.
+I'm a perl newbie but allready in love with Mason and eager to contribute to
+this project.
+
+I'm a huge fan of The hitchiker's guide to the Galaxy! :P

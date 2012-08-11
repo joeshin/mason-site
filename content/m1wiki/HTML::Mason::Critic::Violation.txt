@@ -1,0 +1,3 @@
+The HTML::Mason::Critic::Violation module defines the structure of an HTML::Mason::Critic::Policy violation.
+
+HTML::Mason::Critic::Violation is conceptually based on [http://search.cpan.org/~elliotjs/Perl-Critic-1.078/lib/Perl/Critic/Violation.pm Perl::Critic::Violation].

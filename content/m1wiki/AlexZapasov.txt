@@ -1,0 +1,4 @@
+I am a .Net developer learning Perl and Mason.
+Currently   I am running (just for testing) VISTA ULTIMATE 64 bit, IIS 7.0, ActivePerl, MASON, PHP5. 
+I will try to post instructions on how to for anyone running under win environments.
+

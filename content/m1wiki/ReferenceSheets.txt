@@ -1,0 +1,12 @@
+Handy reference sheets, in PDF format, starting from Mason version 1.21:
+
+0 [Mason 1.21 (pdf, 200 kB) http://www.zerofive.co.uk/mason/refcards/mason-1_21.pdf]
+0 [Mason 1.22 (pdf, 200 kB) http://www.zerofive.co.uk/mason/refcards/mason-1_22.pdf] - new method: $m->has_content
+0 [Mason 1.23 (pdf, 200 kB) http://www.zerofive.co.uk/mason/refcards/mason-1_23.pdf] - new methods added to the FakeApache ($r) object when using the CGIHandler
+0 1.24, 1.25, 1.26, 1.27, 1.28 - no interface changes
+0 [Mason 1.31 (pdf, 177kB) http://www.zerofive.co.uk/mason/refcards/mason-1_31.pdf] - Mason plugins, $m->clear_and_abort, several new config parameters
+
+Error reports and suggestions for things to put in the remaining space will be gladly accepted by 
+dave at riverside-cms.co.uk.
+
+-- DavidRBaird 

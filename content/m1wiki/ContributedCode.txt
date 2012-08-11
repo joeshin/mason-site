@@ -1,0 +1,25 @@
+===== Contributed components
+
+[&wiki_title_search Component:]
+
+===== Adding your components
+
+When you add your own useful components, name them Component:/something/
+so that they'll appear in the above list.
+
+Add a space before every line of the source so that they'll format correctly in wiki. 
+
+We're partial towards components that either generate HTML, or provide
+something uniquely useful to Mason.  Code that performs general Perl
+tasks, like interfacing with a database or validating a credit card
+number, probably belongs in a function or module.
+
+
+===== Contributed modules 
+
+See MasonX.
+
+===== Requests
+
+See [Requests]
+

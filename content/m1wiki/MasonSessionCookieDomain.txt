@@ -1,0 +1,5 @@
+Version 0.30
+
+To Set the Cookie Domain Use a mod_perl variable in your httpd.conf
+
+PerlSetVar MasonSessionCookieDomain .mydomain.com

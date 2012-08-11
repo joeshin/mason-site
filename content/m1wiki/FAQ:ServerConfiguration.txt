@@ -1,0 +1,245 @@
+[&TOC FAQ:ServerConfiguration]
+
+=== Why are my config file changes not taking effect? ===
+1. After changing an httpd.conf or handler.pl or other server configuration file, make sure to do a FULL stop and start of the server. By default, the server will not reread Perl scripts or configuration when using "apachectl restart" or when sending a HUP or USR1 signal to the server.
+
+For more details see "Server Stopping and Restarting" in the mod_perl guide.
+
+2. Note that you cannot use Mason httpd parameters (MasonCompRoot, MasonErrorMode, etc.) and a handler.pl script that creates an ApacheHandler object at the same time. Depending on how you declare your PerlHandler, one or the other will always take precedence and the other will be ignored. For more details see "Site Configuration Methods" in the Admin manual.
+
+=== What filename extensions should I use for Mason components? ===
+
+Unlike many templating systems, Mason comes with no obvious filenaming standards. While this flexibility was initially considered an advantage, in retrospect it has led to the proliferation of a million different component extensions (.m, .mc, .mhtml, .mcomp, ...) and has made it more difficult for users to share components and configuration.
+
+The Mason team now recommends a filenaming scheme with extensions like .html, .txt, .pl for top-level components, and .mhtml, .mtxt, .mpl for internal (non-top-level) components. See http://www.masonhq.com/docs/manual/Admin.html#controlling_access_via_filename_#controlling_access_via_filename_ for justification and configuration examples.
+
+Whatever naming scheme you choose should ideally accomplish three things:
+
+* Distinguish top-level from internal components. This is obviously crucial for security.
+
+* Distinguish output components from those that compute and return values. This improves clarity, and forces the component writer to decide between outputting and returning, as it is bad style to do both. 
+
+* Indicate the type of output of a component: text, html, xml, etc. This improves clarity, and helps browsers that ignore content-type headers (such as IE) process non-HTML pages correctly. 
+
+=== Can I serve images through a HTML::Mason server? ===
+If you put images in the same directories as components, you need to make sure that the images don't get handled through HTML::Mason. The reason is that HTML::Mason will try to parse the images and may inadvertently find HTML::Mason syntax (e.g. "<%"). Most images will probably pass through successfully but a few will cause HTML::Mason errors.
+
+The simplest remedy is to have HTML::Mason decline image and other non-HTML requests, thus letting Apache serve them in the normal way. See http://masonhq.com/docs/manual/Admin.html#controlling_access_via_filename_.
+
+Another solution is to put all images in a separate directory; it is then easier to tell Apache to serve them in the normal way. See the next question.
+
+For performance reasons you should consider serving images from a completely separate (non-HTML::Mason) server. This will save a lot of memory as most requests will go to a thin image server instead of a large mod_perl server. See Stas Bekman's mod_perl guide and Vivek Khera's performance FAQ for a more detailed explanation. Both are available at http://perl.apache.org/
+
+=== How can I prevent a particular subdirectory from being handled by HTML::Mason? ===
+Suppose you have a directory under your document root, "/plain", and you would like to serve these files normally instead of using the HTML::Mason handler. Use a Location directive like:
+
+      <Location /plain>
+        SetHandler default-handler
+      </Location>
+
+Or suppose you have a "/cgi-bin" that you want to process via CGI:
+
+      <Location /cgi-bin>
+        SetHandler cgi-script
+      </Location>
+
+When you have multiple Location directives, the latest ones in the configuration have the highest precedence. So to combine the previous directive with a typical Mason directive:
+
+      <Location />
+        SetHandler perl-script
+        PerlHandler HTML::Mason
+      </Location>
+
+      <Location /cgi-bin>
+        SetHandler cgi-script
+      </Location>
+
+More generally, you can use various Apache configuration methods to control which handlers are called for a given request. Ken Williams uses a FilesMatch directive to invoke Mason only on requests for ".html" files:
+
+       <FilesMatch  "\.html$">
+         SetHandler perl-script
+         PerlHandler HTML::Mason
+       </FilesMatch>
+
+Or you could reverse this logic, and write FilesMatch directives just for gifs and jpegs, or whatever.
+
+If you are using a handler.pl, you can put the abort decision in your handler() routine. For example, a line like the following will produce the same end result as the <Location /plain> directive, above.
+
+      return -1 if $r->uri() =~ m|^/plain|;
+
+However, performance will not be as good as the all-Apache configuration.
+
+=== Why am I getting 404 errors for pages that clearly exist? ===
+The filename that Apache has resolved to may not fall underneath the component root you specified when you created the interpreter in handler.pl. HTML::Mason requires the file to fall under the component root so that it can call it as a top-level component. (For various reasons, such as object file creation, HTML::Mason cannot treat files outside the component root as a component.)
+
+If you believe the file is in fact inside the component root and HTML::Mason is in error, it may be because you're referring to the Apache document root or the HTML::Mason component root through a symbolic link. The symbolic link may confuse HTML::Mason into thinking that two directories are different when they are in fact the same. This is a known "bug", but there is no obvious fix at this time. For now, you must refrain from using symbolic links in either of these configuration items.
+
+The same thing could also happen in any context with more than one way to specify a canonical filename. For example, on Windows, if your document root starts with "C:" and your component root starts with "c:", you might have this problem even though both paths should resolve to the same file.
+
+With Mason 0.895 and above, if you set Apache's LogLevel to warn, you will get appropriate warnings for these Mason-related 404s.
+
+=== Some of my pages are being served with a content type other than text/html.  How do I get HTML::Mason to properly set the content type? ===
+HTML::Mason doesn't actually touch the content type -- it relies on Apache to set it correctly. You can affect how Apache sets your content type in the configuration files (e.g. srm.conf). The most common change you'll want to make is to add the line
+
+      DefaultType text/html
+
+This indicates that files with no extension and files with an unknown extension should be treated as text/html. By default, Apache would treat them as text/plain.
+
+=== Microsoft Internet Explorer displays my page just fine, but Netscape or other browsers just display the raw HTML code. ===
+The most common cause of this is an incorrect content-type. All browsers are supposed to honor content-type, but MSIE tries to be smart and assumes content-type of text/html based on filename extension or page content.
+
+The solution is to set your default content-type to text/html. See previous question.
+
+=== My configuration prevents HTML::Mason from processing anything but html and text extensions, but I want to generate a dynamic image using HTML::Mason.  How can I get HTML::Mason to set the correct MIME type? ===
+Use mod_perl's $r->content_type function to set the appropriate MIME type. This will allow you to output, for example, a GIF file, even if your component is called dynamicImage.html. However there's no guarantee that every browser (e.g. Internet Explorer) will respect your MIME type rather than your file extension. Make sure to test on multiple browsers.
+
+=== How do I bring in external modules? ===
+
+Use the PerlModule directive in your httpd.conf, or if you have a startup.pl file, put the 'use module' in there. If you want components to be able to refer to symbols exported by the module, however, you'll need to use the module inside the HTML::Mason::Commands package. See the "External modules" section of the Administrator's Guide:
+
+    http://www.masonhq.com/docs/manual/Admin.html#external_modules
+
+=== How do I adjust Perl's INC path so it can find my modules? ===
+
+You can do this:
+
+    <Perl>
+    use lib ...
+    </Perl>
+
+or this:
+
+    PerlSetEnv PERL5LIB /path/one:/path/two:... 
+
+=== How do I use Mason in conjunction with UserDir to support Mason in user's home directories? ===
+The idea is to create one ApacheHandler for each user, dynamically. You will need to use a handler.pl or other wrapper code (see "Writing a Wrapper" in the Adminstrator's Manual).
+
+Outside your handler subroutine:
+
+       # $user_regexp: a regexp that matches the root directory of Mason.
+       #               Make sure there is one arg in parens that represents
+       #               the actual username--the handler uses this.
+       my $user_regexp = qr'/Users/([^/]*)/(?:public_html|Sites)';
+       my %user_handlers;
+   
+       # Create base ApacheHandler object at startup.
+       my $base_ah = new HTML::Mason::ApacheHandler( comp_root => $comp_root,
+                                                  data_dir  => $data_dir );
+
+Inside your handler subroutine:
+
+       sub handler
+       {
+           my $r=$_[0];
+           ...
+           #
+           # Have a different handler for each home directory
+           #
+           my $curr_ah;
+           my $filename = $r->filename();
+           if($filename =~ m!$user_regexp!) {
+               my $user_name = $1;
+               $curr_ah = $user_handlers{$user_name};
+               if(!$curr_ah) {
+                   $filename =~ m!($user_regexp)!;
+                   my $user_dir = $1;
+                   $curr_ah = new HTML::Mason::ApacheHandler(comp_root=>[[$user_name => $user_dir]],
+                                                             data_dir=>$data_dir);
+                   $user_handlers{$1} = $curr_ah;
+               }
+           } else {
+               $curr_ah = $base_ah;
+           }
+           my $status = $curr_ah->handle_request($r);
+       
+           return $status;
+       }
+
+=== How do I connect to a database from Mason? ===
+The short answer is that most any perl code that works outside Mason, for connecting to a database, should work inside a component. I sometimes do draft development and quick debugging with something like:
+
+      <%once>
+      use DBI;
+      </%once>
+
+      <%init>
+      my $dbh = DBI->connect ( blah, blah );
+      ...
+      </%init>
+
+The long answer is, of course, longer. A good deal of thought should be put into how a web application talks to databases that it depends on, as these interconnections can easily be both performance bottlenecks and very un-robust.
+
+Most people use some sort of connection pooling -- opening and then re-using a limited number of database connections. The Apache::DBI module provides connection pooling that is reliable and nearly painless. If Apache::DBI has been use'd, DBI->connect() will transparently reuse an already open connections, if it can.
+
+The "right" place to ask Apache::DBI for database handles is often in a top level autohandler.
+
+For example:
+
+      <%init>
+      my $dbh = DBI->connect('dbi:mysq:somedb', 'user', 'pw');
+      ... # other processing
+      $m->call_next( %ARGS, dbh => $dbh );
+      </%init>
+
+Alternately, $dbh could be a global variable which you set via MasonAllowGlobals.
+
+You can use Apache::DBI in your httpd.conf file quite easily simply by adding:
+
+      PerlModule Apache::DBI
+
+If you want to do more with Apache::DBI, like call connect_on_init, you can use a <Perl> section
+
+      <Perl>
+      use Apache::DBI;
+      Apache::DBI->connect_on_init('dbi:mysql:somedb', 'user', 'pw');
+      Apache::DBI->setPingTimeOut('dbi:mysql:somedb', 0);
+      </Perl>
+
+Others may simply use a handler.pl file. Georgiou Kiriakos writes:
+
+      You can connect in the handler.pl - I find it convenient to setup a
+      global $dbh in it.  You just need to make sure you connect inside
+      the handler subroutine (using Apache::DBI of course).  This way a)
+      each httpd gets it's own connection and b) each httpd reconnects if
+      the database is recycled.
+
+Regardless of whether you set up global $dbh variables in handler.pl, the static sections of handler.pl should set up Apache::DBI stuff:
+
+      # List of modules that you want to use from components (see Admin
+      # manual for details)
+      {
+         package HTML::Mason::Commands;
+         use Apache::DBI;
+         # use'ing Apache::DBI here lets us connect from inside components
+         # if we need to.
+         # --
+         # declare global variables, like $dbh, here as well.
+       }
+
+      # Configure database connection stuff
+      my $datasource = "DBI:blah:blah";
+      my $username = "user";
+      my $password = "pass";
+      my $attr = { RaiseError=>1 ,AutoCommit=>1 }; 
+      Apache::DBI->connect_on_init($datasource, $username, $password, $attr);
+      Apache::DBI->setPingTimeOut($datasource, 0);
+
+=== How come a certain piece of Perl code runs fine under "regular" perl, but fails under Mason? ===
+Mason is usually a red herring in this situation. Mason IS "regular" perl, with a very simple system to translate Mason component syntax to Perl code.  You can look at the object files Mason creates for your components (in the obj/ subdirectory of the Mason data directory) to see the actual Perl code Mason generates.
+
+If something suddenly stops working when you place it in a Mason environment, the problem is far more likely to rest with the following environmental changes than with Mason itself:
+
+* With mod_perl, the server is running under a different user/group and thus has different permissions for the resource you're trying to access
+
+* With mod_perl, code can stay resident in the perl interpreter for a long time.
+
+* Your headers may be sent differently under mod_perl than under your previous CGI situation (or whatever it was)
+
+Mason does not have anything to do with sending mail, or accessing a database, or maintaining user accounts, or server authentication, so if your problems are in areas like these, your time will be better spent looking at other environmental changes like the ones mentioned above.
+
+=== I'm using HTML::Mason::!ApacheHandler and I have decline_dirs disabled and am using a dhandler to handle directory requests. But when a request comes in without the final slash after the directory name, relative links are broken. What gives? ===
+
+Mason has always incorrectly handled such directory requests; this issue will be resolved in the 1.3 release. The reason it will only be fixed in the next major version is that some folks may have come to rely on this functionality. So it's considered breaking backwards compatibility. But if you need it to do the right thing now, fear not! There are a number of workarounds to ensure that Apache adds a slash and redirects the browser to the appropriate URL. See HandlingDirectoriesWithDhandlers for all the juicy details.
+
+
+

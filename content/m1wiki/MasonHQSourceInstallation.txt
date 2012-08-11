@@ -1,0 +1,594 @@
+= MasonHQ Installation Journal
+
+This document is a journal of how the MasonHQ code was installed and
+used for setting up an infranet wiki site. The site was installed on a
+fairly old Solaris 8 machines where other packages and libraries could
+not be updated. For this reason MasonHQ and all it's dependencies were
+installed as a completely self-contained packages for . 
+
+Everything is installed in [=/apps/wiki/] . Disk space
+required is 830MB .
+
+Not all packages are completely installed in one go. Sometimes I had to
+go back and forth as I discovered more and more dependencies between
+packages. The installation can likely be optimized.
+
+== Dependencies, part 1
+
+  mkdir -p /apps/wiki/src
+  export PATH=/apps/wiki/bin:$PATH
+
+=== gcc
+gcc is necessary for xml:
+
+  $ cd /apps/wiki/src
+  $ wget \
+    ftp://ftp.sunfreeware.com/pub/freeware/sparc/8/gcc-2.95.3-sol8-sparc-local.gz
+  $ gunzip gcc-2.95.3-sol8-sparc-local.gz
+  $ su
+  # pkgadd -d gcc-2.95.3-sol8-sparc-local
+  $ exit
+
+=== Perl
+
+Perl install:
+
+  cd /apps/wiki/src
+  wget http://www.perl.com/CPAN/src/stable.tar.gz
+  gunzip -dc stable.tar.gz | tar -xf -
+  cd perl-5.8.5
+  sh Configure -Dprefix=/apps/wiki -d
+  make
+  make test
+  make install
+
+Tune CPAN:
+
+  $ LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 perl -MCPAN -e shell
+  CPAN build and cache directory? [/home/dossisor/.cpan] /apps/wiki/.cpan
+  Cache size for build directory (in MB)? [10] 50
+  Your terminal expects ISO-8859-1 (yes/no)? [yes] no
+  (or just hit RETURN to keep your previous picks) [] 4 6 3 1 2 5
+  cpan> o conf prerequisites_policy follow
+  cpan> install Bundle::CPAN
+  cpan> reload cpan
+  cpan> install Module::Build
+  cpan> reload cpan
+
+Modules for wiki. [=Apache::Session] semi-automatic, the rest completely
+automatically:
+
+  cpan> look Apache::Session
+  $ /apps/wiki/bin/perl Makefile.PL
+  $ make install clean
+  $ ^D
+  cpan> install CGI CGI::Cookie CGI::Kwiki Carp::Assert Class::DBI DBI \
+        Date::Format DateTime DateTime::Format::Builder \
+        DateTime::Format::MySQL Digest::MD5 File::Spec HTML::FillInForm \
+        HTML::Mason HTML::Paginator HTTP::BrowserDetect List::Util \
+        MasonX::Request::WithApacheSession Module::Versions::Report \
+        Storable Text::Diff Text::Wrap Time::HiRes MIME::Types \
+        HTML::Template Template YAML MLDBM Devel::Symdump Bundle::LWP \
+        Apache::Reload
+  cpan> force install Apache::Request
+  cpan> quit
+
+=== Apache
+
+Apache mod_auth_db requires berkely db. I downloaded the patches but
+could not immediately figure out how to apply them.
+
+  cd /apps/wiki/src/
+  wget ftp://sleepycat1.inetu.net/releases/db-3.3.11.tar.gz
+  wget http://www.sleepycat.com/webforms/patchdl.php?src=patch.3.3.11.1
+  wget http://www.sleepycat.com/webforms/patchdl.php?src=patch.3.3.11.2
+  mv patchdl.php\?src\=patch.3.3.11.1 patch.3.3.11.1
+  mv patchdl.php\?src\=patch.3.3.11.2 patch.3.3.11.2
+  gunzip -dc db-3.3.11.tar.gz | tar -xf -
+  cd db-3.3.11
+  cd build_unix/
+  ../dist/configure --prefix=/apps/wiki/bdb
+  make
+  make install
+
+Apache installation.
+
+  $ export LD_LIBRARY_PATH=/apps/wiki/bdb/lib
+  $ cd /apps/wiki/src/
+  $ wget \
+    http://sunsite.tus.ac.jp/pub/apache/httpd/apache_1.3.32.tar.gz
+  $ gunzip -dc apache_1.3.32.tar.gz | tar -xf -
+  $ CFLAGS="-I/apps/wiki/include -L=/apps/wiki/lib" ./configure \
+    --enable-shared=max --with-perl=/apps/wiki/bin/perl \
+    --prefix=/apps/wiki --enable-module=so --enable-module=info \
+    --enable-module=proxy --enable-module=rewrite \
+    --enable-module=auth_anon --enable-module=auth_db \
+    --enable-module=digest --enable-module=expires \
+    --enable-module=headers --enable-module=usertrack
+  $ make
+  $ make install
+  $ src/httpd -l
+  Compiled-in modules:
+    http_core.c
+    mod_so.c
+  suexec: disabled; invalid wrapper /apps/wiki/apache/bin/suexec
+  $ ls /apps/wiki/libexec/
+  httpd.exp       mod_auth_anon.so  mod_expires.so     mod_negotiation.so
+  libproxy.so     mod_auth_db.so    mod_headers.so     mod_rewrite.so
+  mod_access.so   mod_autoindex.so  mod_imap.so        mod_setenvif.so
+  mod_actions.so  mod_cgi.so        mod_include.so     mod_status.so
+  mod_alias.so    mod_digest.so     mod_info.so        mod_userdir.so
+  mod_asis.so     mod_dir.so        mod_log_config.so  mod_usertrack.so
+  mod_auth.so     mod_env.so        mod_mime.so
+  $
+
+=== mod_perl
+
+  cd /apps/wiki/src
+  /apps/wiki/perl/bin/perl -MCPAN -e 'install Bundle::LWP'
+  wget \
+    http://perl.apache.org/dist/mod_perl-1.0-current.tar.gz
+  gunzip -dc mod_perl-1.0-current.tar.gz | tar -xf -
+  cd mod_perl-1.29
+  perl Makefile.PL USE_APXS=1 WITH_APXS=/apps/wiki/bin/apxs EVERYTHING=1
+  make
+  make install
+
+== First Test
+
+Verify [http://www.sykes-gala.com Fulfillment] that all installed fine and Mason can run:
+
+  perl -MCPAN -e 'test HTML::Mason'
+
+Configure apache to run mason code by inserting into
+[=/apps/wiki/conf/httpd.conf] :
+
+  PerlModule HTML::Mason::ApacheHandler
+  <Location />
+    SetHandler perl-script
+    PerlHandler HTML::Mason::ApacheHandler
+  </Location>
+
+Create [=/apps/wiki/apache/htdocs/masontest.html] test page
+
+  <h3>Environment Variables</h3>
+  % while (my($k,$v) = each %ENV){
+  <% $k %>: <% $v %><br>
+  % }
+
+Start apache:
+
+  apachectl start
+
+Load the page to test: http://hostname/masontest.html
+
+== Dependencies, part 2
+
+=== Swish, part 1
+
+libxml is necessary for swish.
+
+  cd /apps/wiki/src/
+  wget http://xmlsoft.org/sources/libxml2-2.6.14.tar.gz
+  gunzip -dc libxml2-2.6.14.tar.gz | tar -xf -
+  cd libxml2-2.6.14
+  ./configure --prefix=/apps/wiki --without-zlib
+  make
+  make install
+
+Install swish, the search tool:
+
+  $ cd /apps/wiki/src/
+  $ wget http://swish-e.org/Download/swish-e-2.4.2.tar.gz
+  $ gunzip -dc swish-e-2.4.2.tar.gz | tar -xf -
+  $ cd swish-e-2.4.2
+  $ ./configure --prefix=/apps/wiki
+  $ make
+  $ make install
+  $ swish-e -V
+  SWISH-E 2.4.2
+
+Build the perl module:
+
+  $ cd /apps/wiki/src/swish-e-2.4.2/perl
+  $ perl Makefile.PL CCFLAGS=-I/apps/wiki/include \
+    LIBS="-L/apps/wiki/lib -lswish-e" CC=gcc
+  $ make
+  $ make install
+  $ perl -e '' -MSWISH::API
+  $
+
+== MasonHQ content, part 1
+
+Masonhq latest code installation. wget doesn't work (!!??) so use a
+browser and copy to [=/apps/wiki/src/] . Download from
+http://www.masonhq.com/?SourceForThisSite
+
+Extract and install:
+
+  cd /apps/wiki/src/
+  gunzip -dc masonhq-code-latest.tar.gz | tar -xvf -
+  mkdir /apps/wiki/masonhq
+  rsync -av /apps/wiki/src/masonhq/lib/ /apps/wiki/masonhq/lib/
+  rsync -av /apps/wiki/src/masonhq/conf/ /apps/wiki/masonhq/conf/
+  rsync -av /apps/wiki/src/masonhq/filters/ /apps/wiki/masonhq/filters/
+  cd /apps/wiki/
+  mv htdocs htdocs.bkup
+  rsync -av /apps/wiki/src/masonhq/comps/ /apps/wiki/htdocs/
+  mkdir /apps/wiki/masonhq/bin
+  cp /apps/wiki/src/masonhq/bin/svrctl /apps/wiki/masonhq/bin/
+  mkdir /apps/wiki/masonhq/db
+  echo masonhq > /apps/wiki/masonhq/db/access
+  cd /apps/wiki/masonhq/conf/
+  cp conf.dat.skel conf.dat
+  cp make make.orig
+
+Edit [=conf.dat] to match system settings. Almost all paths have to
+change. In [=/apps/wiki/masonhq/conf/make] and
+[=/apps/wiki/masonhq/bin/svrctl] change path for perl to
+[=/apps/wiki/bin/perl] Add inside
+[=/apps/wiki/masonhq/conf/httpd-shared.conf.src] :
+
+  LoadModule perl_module        <% $MHQ::conf->ap_modules_dir %>/libperl.so
+
+Then run configuration:
+
+  vi conf.dat
+  ./make
+
+Try to start with:
+
+  export LD_LIBRARY_PATH=/apps/wiki/lib
+  /apps/wiki/bin/httpd -d /apps/wiki/masonhq \
+    -f /apps/wiki/masonhq/conf/httpd-dev.conf
+
+Doesn't work yet.
+
+== A few fixes, part 1
+
+Continue to debug installation. [=handler-shared.pl.src] needs to be
+changed to:
+
+  --- snip
+  #$MHQ::cgi             = new CGI ({});
+
+  #
+  # Get original host and IP address from supplemental proxy headers
+  #
+  sub parse_proxy_headers
+  {
+      my ($r) = @_;
+      $MHQ::cgi             = CGI->new($r);
+  --- snap
+
+To fix style-sheet, add to [=/apps/wiki/htdocs/template/style.css] :
+
+  <%init>
+  $r->content_type("text/css");
+  </%init>
+
+== Dependencies, part 3
+
+=== Mysql
+
+Install mysql from source:
+
+  cd /apps/wiki/src/
+  wget \
+    'http://dev.mysql.com/get/Downloads/MySQL-4.1/mysql-4.1.7.tar.gz/from/http://www.softagency.co.jp/MySQL/'
+  gunzip -dc mysql-4.1.7.tar.gz | tar -xf -
+  cd mysql-4.1.7
+  make clean
+  CC=gcc CFLAGS="-O3 -fno-omit-frame-pointer" CXX=gcc \
+    CXXFLAGS="-O3 -fno-omit-frame-pointer -felide-constructors \
+    -fno-exceptions -fno-rtti" ./configure --prefix=/apps/wiki \
+    --with-extra-charsets=complex --enable-thread-safe-client \
+    --enable-local-infile --with-named-curses-libs=-lcurses \
+    --without-server --enable-assembler
+  make
+  make test
+  make install
+
+[=make test] was 100% successful.
+
+Continuing with [=DBD::mysql]
+
+  LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 perl -MCPAN -e shell
+  cpan> look DBD::mysql
+  LD_LIBRARY_PATH=/apps/wiki/lib:/apps/wiki/lib/mysql \
+    PATH=/apps/wiki/bin:$PATH perl Makefile.PL CC=gcc \
+    --cflags=-I/apps/wiki/include/mysql
+  make
+  make test
+  make install
+  exit
+  cpan> exit
+
+make test mostly fails. It complains about that it needs a running
+server with write permissions. Nevertheless
+[=/apps/wiki/testscripts/simplemysql.pl] seems to work.
+
+Website can start up and run fine with a remote database.
+
+Installing and running mysqld locally.
+
+  /apps/wiki/bin/mysql_install_db
+  cd /apps/wiki ; /apps/wiki/bin/mysqld_safe &
+  /apps/wiki/bin/mysqladmin -u root password 'root'
+  /apps/wiki/bin/mysqladmin -u root -h hostname password 'root'
+  cd /apps/wiki/sql-bench/
+  /apps/wiki/bin/perl run-all-tests
+
+The [=run-all-tests] takes long time. Finished successfully though. 
+
+=== Swish, part 2
+
+Search does not work. To fix:
+
+  mkdir /apps/wiki/masonhq/swish
+  cd /apps/wiki/masonhq/swish
+  cp /apps/wiki/share/doc/swish-e/examples/conf/example7.config swish.conf
+  vi swish.conf
+  mkdir /apps/wiki/masonhq/scripts
+  cd /apps/wiki/masonhq/scripts
+  cp -p ../../src/masonhq/scripts/swish_index.pl .
+  vi swish_index.pl  # Change path to perl binary, don't index manual
+  vi /apps/wiki/lib/swish-e/swishspider # Change path to perl binary
+  export PATH=/apps/wiki/bin:$PATH
+  /apps/wiki/masonhq/scripts/swish_index.pl
+
+And search works. I suppose a cron job to index from time to time is
+necessary.
+
+== A few fixes, part 2
+
+Fixed some stylesheet problems. Fixed
+[=/apps/wiki/masonhq/scripts/swish_index.pl] to not scan for faq entries
+or bugs. Rewrote [=index.html] and [=create/create.html] .
+
+Tried to start apache with [=httpd-prod.conf] instead of
+[=httpd-dev.conf] but it complained about missing [=mod_rpaf.so] . So
+edited [=/apps/wiki/masonhq/conf/httpd-prod.conf.src] to not use [=RPAF]
+and ran [=make] again. That worked.
+
+  /apps/wiki/bin/httpd -d /apps/wiki/masonhq \
+    -f /apps/wiki/masonhq/conf/httpd-prod.conf
+
+== MasonHQ content, part 2
+
+Create local database:
+
+  $ mysql -u root --password=root
+  Welcome to the MySQL monitor.  Commands end with ; or \g.
+  Your MySQL connection id is 30028 to server version: 4.1.7
+
+  Type 'help;' or '\h' for help. Type '\c' to clear the buffer.
+
+  mysql> connect mysql
+  Reading table information for completion of table and column names
+  You can turn off this feature to get a quicker startup with -A
+
+  Connection id:    30029
+  Current database: mysql
+
+  mysql> create database masonhq;
+  Query OK, 1 row affected (1.01 sec)
+
+  mysql> show databases;
+  +----------+
+  | Database |
+  +----------+
+  | masonhq  |
+  | mysql    |
+  | test     |
+  +----------+
+  3 rows in set (0.31 sec)
+
+  mysql> grant all on masonhq.* to 'masonhq'@'localhost';
+  Query OK, 0 rows affected (0.56 sec)
+
+  mysql> GRANT ALL PRIVILEGES ON *.* TO 'masonhq'@'localhost'
+      -> IDENTIFIED BY 'masonhq' WITH GRANT OPTION;
+  Query OK, 0 rows affected (0.04 sec)
+
+  mysql> GRANT ALL PRIVILEGES ON *.* TO 'masonhq'@'%'
+      -> IDENTIFIED BY 'masonhq' WITH GRANT OPTION;
+  Query OK, 0 rows affected (0.00 sec)
+
+  mysql> ^D
+
+I had the data loaded somewhere else, so I tranferes from there.
+
+  mysqldump -h otherhost -u masonhq --password=masonhq masonhq | \
+  mysql -u masonhq --password=masonhq masonhq
+
+Remove data no longer needed:
+
+  # mysql -u masonhq --password=masonhq masonhq
+  mysql> delete from mhq_persistent_values;
+  mysql> delete from sessions;
+  mysql> delete from tracker_contributors;
+  mysql> delete from tracker_history;
+  mysql> delete from tracker_options;
+  mysql> delete from tracker_search_queries;
+  mysql> delete from tracker_tasks;
+  mysql> delete from tracker_users;
+  mysql> delete from wiki_nodes where name="Test1" or name="Test2";
+  mysql> delete from wiki_versions where node_id=1 or node_id=2;
+
+To use local database, changed [=conf.dat] to:
+
+  db_source:      "DBI:mysql:masonhq:localhost
+
+Fixed up swish indexing and searching.
+
+Changed masonhq and root password in mysql.
+
+== A few fixes, part 3
+
+To avoid warning messages, changed
+[=/apps/wiki/masonhq/lib/MHQ/Wiki/Node.pm] from
+
+  __PACKAGE__->has_many ( ... { sort => 'id' });
+
+must be changed to
+
+  __PACKAGE__->has_many ( ... { order_by => 'id' });
+
+For keeping some legacy applications, add
+
+  ScriptAlias /cgi-bin/ "/apps/wiki/cgi-bin/"
+  <Directory "/apps/wiki/cgi-bin">
+    AllowOverride None
+    Options None
+    Order allow,deny
+    Allow from all
+  </Directory>
+
+into [=/apps/wiki/masonhq/conf/httpd-shared.conf.src], then run [=make]
+and restart apache.
+
+To keep legacy static pages working, I created [=htdocs/doc/] with this
+autohandler:
+
+  <%flags>
+  inherit=>undef
+  </%flags>
+  <% $m->call_next %>
+
+== init.d script
+
+Created this script for starting, stopping etc.
+
+  #!/bin/sh
+
+  # RC script for starting and stopping wiki
+  #
+
+  PATH=/apps/wiki/bin:$PATH ; export PATH
+  LD_LIBRARY_PATH=/apps/wiki/lib:/apps/wiki/lib/mysql ; export LD_LIBRARY_PATH
+
+  case "$1" in
+  'start')
+      /apps/wiki/bin/mysqld_safe --user=wiki &
+      echo Started mysql
+      /apps/wiki/bin/httpd -d /apps/wiki/masonhq \
+        -f /apps/wiki/masonhq/conf/httpd-prod.conf
+      echo Started apache
+      ;;
+  'stop')
+      if [ -r /apps/wiki/logs/httpd.pid ] ; then
+        kill `cat /apps/wiki/logs/httpd.pid`
+        echo Stopping apache
+        while [ -r /apps/wiki/logs/httpd.pid ] ; do
+          echo "Waiting for httpd PID" `cat /apps/wiki/logs/httpd.pid`
+          sleep 1
+        done
+      else
+        echo Apache not running
+      fi
+      PIDFILE=`/usr/bin/hostname`.pid
+      if [ -r /apps/wiki/var/$PIDFILE ] ; then
+        kill `cat /apps/wiki/var/$PIDFILE`;
+        echo Stopping mysql
+        while [ `pgrep -x mysqld` ] ; do
+          echo "Waiting for mysqld PID" `pgrep -x mysqld`
+          sleep 1
+        done
+      else
+        echo mysql not running
+      fi
+      ;;
+  'index')
+      /apps/wiki/masonhq/scripts/swish_index.pl
+      ;;
+  'reconfigure')
+      ( cd /apps/wiki/masonhq/conf && ./make )
+      ;;
+  'rotate')
+      YESTERDAY=`/apps/wiki/bin/perl -e '@T=localtime(time-86400);printf("%04d-%02d-%02d",$T[5]+1900,$T[4]+1,$T[3])'`
+      for log in access error images ; do
+        if [ -r /apps/wiki/logs/$log ] ; then
+          mv /apps/wiki/logs/$log /apps/wiki/logs/$log.$YESTERDAY
+        fi
+      done
+      if [ -r /apps/wiki/logs/httpd.pid ] ; then
+        # Graceful restart of apache
+        kill -USR1 `cat /apps/wiki/logs/httpd.pid`
+      fi
+      sleep 600
+      for log in access error images ; do
+        if [ -r /apps/wiki/logs/$log.$YESTERDAY ] ; then
+          gzip /apps/wiki/logs/$log.$YESTERDAY
+        fi
+      done
+      find /apps/wiki/logs -type f -mtime +30 | grep -v pid | xargs rm -f
+      ;;
+  'restart')
+      kill -USR1 `cat /apps/wiki/logs/httpd.pid`
+      ;;
+  'sqldump')
+      /apps/wiki/bin/mysqldump -h localhost -u wiki \
+      --password=`cat /apps/wiki/masonhq/db/access` unixwiki | \
+      gzip > /apps/wiki/var/unixwiki.mysqldump.gz
+      ;;
+  'configtest')
+      /apps/wiki/bin/httpd -d /apps/wiki/masonhq \
+        -f /apps/wiki/masonhq/conf/httpd-prod.conf -t
+      ;;
+  *)
+      echo "Usage: $0 { start | stop | index | reconfigure | rotate | restart | sqldump | configtest }"
+      exit 1
+      ;;
+  esac
+  exit 0
+
+== A few fixes, part 4
+
+Fix for [=/apps/wiki/masonhq/lib/MHQ/Persistent.pm]
+
+  $ diff Persistent.pm Persistent.pm.dist
+  2,3c2
+  < use base qw(MHQ::Class::DBI);
+  < use MHQ::DBI qw(:exec);
+  ---
+  > use MHQ::Class::DBI;
+  6a6
+  > use base qw(MHQ::Class::DBI);
+  $
+
+Fix for [=/apps/wiki/masonhq/lib/MHQ/Wiki.pm]
+
+  $ diff Wiki.pm Wiki.pm.2005-03-29
+  20d19
+  < # is_valid_name is not necessary for a link
+  30,31c29
+  <     #} elsif (MHQ::Wiki::Node->is_valid_name($name)) {
+  <     } else {
+  ---
+  >     } elsif (MHQ::Wiki::Node->is_valid_name($name)) {
+  33,34c31,32
+  <     #} else {
+  <       #$link = $name;
+  ---
+  >     } else {
+  >       $link = $name;
+  $
+
+And several changes and additions to
+[=/apps/wiki/masonhq/lib/MHQ/CGI/Kwiki/Formatter.pm] to, among other
+things, allow links to static files on local site and to smb shares.
+
+== Remaining problems
+
+When saving new content, old content still shows up. When editing new
+content, the old content is in form.
+
+Frequently get Internal Server errors[. http://www.google.com/notebook/user/06546670233514738014]
+
+Both problems went away with making change in
+[=/apps/wiki/masonhq/conf/httpd-prod.conf.src] to:
+
+  MaxRequestsPerChild 1
+
+Unfortunately makes website very slow. But everything works.

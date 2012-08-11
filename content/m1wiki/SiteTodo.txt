@@ -1,0 +1,11 @@
+* Write a WhyUseMason page, linked from the home page, for folks exploring Mason. Link to [Features], MasonPoweredSites, etc.
+
+* Put home page in wiki
+
+* Allow history-preserving renaming of pages
+
+* Format Perl modules specially
+
+* Replace People node with automated page showing all users with a page
+
+* Categories support

@@ -1,0 +1,26 @@
+Technology Coordinator
+Kentfield School District
+Kentfield, Calif.
+
+I've not yet written one line of Mason code, but I'm thinking about rearchitecting a very dumb portal that I hand-coded in PHP for the school district I work for.  
+
+http://www.kentfieldschools.org
+
+Coming from a software development background, I like the idea of getting down and dirty with Mason.  I'd be interested in finding out about how others got their first taste of Mason.  I'm thinking of taking the MasonHQ source code and trying to modify it.  I'd like to see if there are easy-to-integrate modules for:
+
+* user classes or roles (sysadmin, teachers, students, public)
+* LDAP as well as SQL based authentication
+* FTP frontend (file manager) for user files
+* event and reservation calendars
+* bulletin boards
+* search engine friendly !URLs
+* places for static pages inserted into the dynamic site
+* do-it-yourself forms and databases (personal databases for teachers)
+* managing content that is posted simultaneously to three different sites
+* RSS feeds
+* archiving of old content
+* search engine for all content
+
+PHP is a trailer park compared with the elegance of Mason, but for someone like me who is a one-man part-time web shop, it's easy to find almost all of these pieces and get the functionality I need, even if it isn't pretty. 
+
+The Wiki included in !MasonHQ is instantly useful to my teachers and administrators of course (too bad I can't figure out how to add a simple <br> or newline to format my job description, employer and city in the first paragraph above).

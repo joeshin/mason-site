@@ -1,0 +1,29 @@
+See also SourceForThisSite.
+
+===== April 24, 2005
+
+* I have finally purged all remnants of Apache::Session from the code. Redirecting back to the original page on login finally works, and we should be able to run at a reasonable number of requests-per-child without hitting mysql errors. I know that some people use and like Apache::Session, but I just can't make it work for me...
+
+
+===== January 20, 2004
+
+* The site is now an integrated wiki, with most pages editable by any user. See WikiIntro for a summary. Here's a breakdown on how things were moved over:
+** Contributed how-tos were moved to individual wiki pages.
+** Contributed components were moved to individual wiki pages, summarized on ContributedCode. | 
+** The Mason-powered sites were moved to a single wiki page (MasonPoweredSites). I've reluctantly dropped the images and structured format in favor of a simple list that will scale better to the large number of Mason sites out there. The old page was getting too unwieldy.
+** The [FAQ] is now a series of wiki pages, one per section.
+
+
+* The type-structured content management system is gone, replaced by the much simpler wiki.
+
+* You must log in before editing or creating wiki pages. Your existing masonhq account will still work; if not, registering is very quick and painless. See WikiLogin.
+
+* The site search now combines results from wiki titles, wiki content, documentation, FAQ, and known bugs.
+
+
+* Some simple design changes - cleaner font, no more dhtml menus. Thanks to Matt Jalbert of [http://www.sparklejet.com/ Sparklejet].
+
+
+
+* Announcements are gone from the home page. I'm not sure whether or how to replace them. They were mostly new version announcements, which are virtually useless when you've got the download page and CPAN. And we don't have a marketing department to generate promotional "news". :)
+

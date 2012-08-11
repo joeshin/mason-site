@@ -1,0 +1,15 @@
+Some of Mason's features:
+
+* *Simple embedded Perl syntax.* Infuse your HTML pages with the full power of Perl: variables, arrays and data structures, conditionals, iteration, and the wide variety of freely available Perl modules. ([More... http://www.masonhq.com/docs/manual/Devel.html#inline_perl_sections])
+
+* *Modular pages with components.* Build pages from components that call one another and pass values back and forth like subroutines.  Encapsulate common design elements (headers, footers, menus, logos) into shared components that need only change once to affect the whole site.
+
+* *Parameter handling.* Access GET/POST parameters directly as lexical ("my") variables. Assign default values or trigger error conditions when parameters are omitted. ([More...  http://www.masonhq.com/docs/manual/Devel.html#passing_parameters])
+
+* *Templates and filters.* Assign a common template, filter, or piece of code to an entire site (or a particular section) with a single well-placed file. ([More... http://www.masonhq.com/docs/manual/Devel.html#autohandlers])
+
+* *Object-oriented techniques.* Define your own methods and attributes on pages; access them from templates for increased flexibility.  ([More... http://www.masonhq.com/docs/manual/Devel.html#objectoriented_techniques])
+
+* *Caching.* Cache HTML and data, from small page elements to entire pages or complex data structures. Automatically expire elements after a certain time period or when a certain condition occurs.  ([More... http://www.masonhq.com/docs/manual/Devel.html#data_caching])
+
+* *Staging/production modes.* Adjust configuration settings to maximize ease of development on a staging server and raw performance on a live server.

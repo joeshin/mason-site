@@ -1,0 +1,26 @@
+http://www.tntteam.com/photos/faces/thumbs/29.jpg
+
+=== Contributions
+* Code
+** [http://www.kwiki.org/index.cgi?ViewMultipleWikiSites View Multiple Kwiki Site Changes]
+*** If you're like me, you now have a lot of Kwiki sites that you're tracking.  Track them all on one .cgi page with this little script. /link to kwiki.org/
+
+**** Update.  The tracker no longer works with MasonHQ, as they have shifted from a simple implementation of kwiki to a more full featured version with a different "Recent Changes" syntax.  I may or may not allow for Plugins that would allow different syntaxes to be gathered into a global list in the future.  Not anytime soon, though.
+
+
+----
+
+=== I like Mason and Kwiki
+
+/Enter Mason/
+
+I came across Mason initially while trying out RT (Request Tracker) a couple of years ago.  I was relatively new to web application development at the time, but figured that if an application as slick as RT used Mason it must be good stuff... so I stored Mason away as something to look into, and continued coding traditional perl CGI pages.
+
+Over the next year or so I would bump into Mason in various articles online, and occasionally as an article in a magazine.  However, it was when I read that Mason was about to be released as an O'Reilly book that I decided to get serious about learning it.  I can't stress enough how nice it is to have a comprehensive guide to read through as you begin working with a platform.  As an aside, I left the book on top of my car in the middle of nowhere (long story) and it flew off, lost forever.  I bought another copy as soon as I could.  Yeah... it's all on the website (a very classy move), but it's too nice having soft copy.
+
+I took a week to port an application over from traditional CGI, and in the process it became much more clearly seperated, and a heck of a lot faster.  The auto/default handlers and the inheritance chain have made a true believer out of me.  It's just a great environment to work in, and has allowed me to conceptualize at a level I wouldn't have been able to do before.
+
+/Enter Kwiki/
+
+I came across Kwiki after reading all the praise it received from the people who used it at YAPC earlier this year.  Again, I had heard about wiki earlier, but was slow to move, and frankly didn't really "get it".  The amazing amount of praise aimed at the YAPC wiki was enough to push me over the edge to explore kwiki.  I was simply blown away by how easy it was to set up and get working.  Because of this, I've been setting up wikis for a lot of friends now, and have recently developed a meta-wiki tracker, which has been useful for tracking the sites of both friends, work projects, and most recently MasonHQ itself.
+

@@ -1,0 +1,11 @@
+HTML::Mason::Critic is a static analysis framework for detecting and warning of coding standards, best practices and security policy violations.
+
+The framework is conceptually based on [http://search.cpan.org/~elliotjs/Perl-Critic-1.078/lib/Perl/Critic.pm#THE_Perl::Critic_PHILOSOPHY Perl::Critic], which fills the same role for every day Perl code.
+
+Policies are defined in modules under the [HTML::Mason::Critic::Policy] namespace.
+
+Policy violations are represented as [HTML::Mason::Critic::Violation] objects.
+
+== Policy Ideas ==
+
+Add your ideas for policies to [HTML::Mason::Critic::Policy]
