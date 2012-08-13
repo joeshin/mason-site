@@ -1,8 +1,9 @@
 <%class>
 has 'subtitle';
+has 'wiki_root' => ( default => $poet->path("content/m1wiki") );
 
 method title () {
-    $.subtitle ? "Mason: " . $.subtitle : "Mason";
+    $.subtitle ? "Mason+Poet: " . $.subtitle : "Mason+Poet";
 }
 
 method TrimLines () {
@@ -12,6 +13,7 @@ method TrimLines () {
         return $_;
     };
 }
+
 </%class>
 
 <%augment wrap>
@@ -19,7 +21,9 @@ method TrimLines () {
 <html>
   <head>
     <meta charset="utf-8">
-    <title><% $.title %></title>
+% $.Defer {{    
+    <title><% $.title |H %></title>
+% }}    
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
     <link href="/static/css/style.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="/static/css/arta.css">
@@ -50,6 +54,12 @@ method TrimLines () {
 </html>
         
 </%augment>
+
+<%method cpan>
+% my ($module, $display_as) = @_;
+% $display_as ||= $module;
+<a href="https://metacpan.org/module/<% $module %>"><% $display_as %></a>
+</%method>
 
 <%filter MasonCode>
 <pre><code>

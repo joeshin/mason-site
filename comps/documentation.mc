@@ -1,5 +1,7 @@
 % $.subtitle = "Docs";
 
+<h2>Documentation</h2>
+
 <div class="section">
   Documentation is contained as <a href="http://perldoc.perl.org/perlpod.html">POD</a>
   within the Poet and Mason distributions. As with any CPAN distributions, you can read the

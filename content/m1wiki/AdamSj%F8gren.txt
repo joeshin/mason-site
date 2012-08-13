@@ -1,9 +1,0 @@
-I use Mason on a daily basis.
-
-    * http://koldfront.dk/ - my weblog (in english)
-    * http://asjo.org/ - my pictures 
-
-With(in) Catalyst:
-
-    * http://kammeratadam.dk/ - my weblog (in danish)
-    * http://vantbanken.se/ - where lost gloves and mittens find each other.
