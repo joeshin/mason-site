@@ -1,6 +1,6 @@
 <%class>
 has 'subtitle';
-has 'wiki_root' => ( default => $poet->path("content/m1wiki") );
+has 'wiki_root' => ( default => $poet->path("etc/m1wiki") );
 
 method title () {
     $.subtitle ? "Mason+Poet: " . $.subtitle : "Mason+Poet";
