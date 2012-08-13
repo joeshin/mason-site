@@ -10,9 +10,9 @@ body {
 	background-color: #222;
 	background-image: url('../images/menu_bg.png');
 	list-style: none;
-	font-size: 17px;
+	font-size: 16px;
 	margin:0;
-	padding-left:35px;
+	padding-left:20px;
 }
 #menu li {
 	display: inline-block;
@@ -23,7 +23,7 @@ body {
 	display: inline-block;
 	color: white;
 	text-decoration: none;
-	padding: 15px 20px;
+	padding: 15px 10px;
 	-webkit-border-top-left-radius: 5px;
 	-webkit-border-top-right-radius: 5px;
 	-moz-border-radius-topleft: 5px;
@@ -70,10 +70,10 @@ body {
 	font-size: 52px;
 }
 .description {
-	font-size: 21px;
+	font-size: 16px;
 	color: white;
 	display: inline-block;
-	padding-left: 20px;
+	padding-left: 80px;
 }
 #main {
 	padding: 15px;

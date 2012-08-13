@@ -34,10 +34,7 @@ method TrimLines () {
 
     <div id="header">
       <span class="logo">Mason + Poet</span>
-    </div>
-
-    <div id="sub-header">
-      <span class="description">Powerful Perl-based web framework and templating</span>
+      <span class="description">Powerful Perl-based web templating</span>
     </div>
 
     <& menu.mi &>
@@ -58,7 +55,9 @@ method TrimLines () {
 <%method cpan>
 % my ($module, $display_as) = @_;
 % $display_as ||= $module;
+% $.Trim {{
 <a href="https://metacpan.org/module/<% $module %>"><% $display_as %></a>
+% }}
 </%method>
 
 <%filter MasonCode>

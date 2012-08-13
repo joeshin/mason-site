@@ -21,7 +21,8 @@ See a <a href="http://www.openswartz.com/2011/02/21/announcing-mason-2/">summary
 Below are archived, frozen pages from the old masonhq.com wiki. They are almost exclusively about HTML::Mason (Mason 1) and mod_perl.
 <br/><br/>
 
-<b>Warning</b>: These pages have not been edited in years and may well be out of date/inaccurate. Recommend that you use them as a starting point for further investigation, rather than gospel.
+<& mason1/warning.mi &>
+
 </div>
 
 <ul>

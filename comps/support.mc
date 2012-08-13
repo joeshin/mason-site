@@ -18,8 +18,3 @@
 <div class="section">
      File bug and feature requests at RT for <a href="http://rt.cpan.org/NoAuth/Bugs.html?Dist=Mason">Mason</a> and <a href="http://rt.cpan.org/NoAuth/Bugs.html?Dist=Poet">Poet</a>.
 </div>
-
-<h2>Source code</h2>
-<div class="section">
-     The latest source code is on github: <a href="http://github.com/jonswar/perl-mason">jonswar/perl-mason</a> and <a href="http://github.com/jonswar/perl-poet">jonswar/perl-poet</a>.
-</div>

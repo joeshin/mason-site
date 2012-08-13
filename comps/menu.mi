@@ -2,8 +2,11 @@
 % my $uri = $m->req->path;
 % sub { s/<li>(<a href="$uri">)/<li class="current">$1/; $_ } {{
     <li><a href="/">Home</a></li>
-    <li><a href="/documentation">Documentation</a></li>
+    <li><a href="/install">Install</a></li>
+    <li><a href="/quickstart">Quick Start</a></li>
+    <li><a href="/documentation">Docs</a></li>
     <li><a href="/support">Support</a></li>
+    <li><a href="/sites">Sites</a></li>
     <li><a href="/mason1">HTML::Mason</a></li>
 % }}      
 </ul>
