@@ -1,4 +1,4 @@
-#!/usr/local/bin/csperl -w
+#!/usr/bin/perl -w
 use Poet::Script qw($poet $conf :file);
 use Server::Control::Starman;
 use strict;
