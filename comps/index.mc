@@ -36,4 +36,5 @@
     </%text>
 % }}
 
+    Mason was created by Jonathan Swartz and Dave Rolsky.
 </div>
