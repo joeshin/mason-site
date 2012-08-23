@@ -21,13 +21,13 @@ See a <a href="http://www.openswartz.com/2011/02/21/announcing-mason-2/">summary
 Below are archived, frozen pages from the old masonhq.com wiki. They are almost exclusively about HTML::Mason (Mason 1) and mod_perl.
 <br/><br/>
 
-<& mason1/warning.mi &>
+<& htmlmason/warning.mi &>
 
 </div>
 
 <ul>
 % foreach my $name (@names) {
-  <li><a href="/mason1/wiki/<% $name %>"><% $name |H %></a></li>
+  <li><a href="/htmlmason/wiki/<% $name %>"><% $name |H %></a></li>
 % }
 </ul>
 
