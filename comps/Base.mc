@@ -33,7 +33,7 @@ method TrimLines () {
   <body>
 
     <div id="header">
-      <span class="logo">Mason + Poet</span>
+      <span class="logo">Mason + Poet</span><br />
       <span class="description">Powerful Perl-based web templating</span>
     </div>
 
@@ -61,26 +61,14 @@ method TrimLines () {
 </%method>
 
 <%filter MasonCode>
-<pre><code>
-% $.TrimLines {{
-  <% $yield->() %>
-% }}
-</pre></code>
+<pre><code><% $m->filter($.TrimLines, $yield->()) %></code></pre>
 </%filter>
 
 <%filter PerlCode>
-<pre><code>
-% $.TrimLines {{
-  <% $yield->() %>
-% }}
-</pre></code>
+<pre><code><% $m->filter($.TrimLines, $yield->()) %></code></pre>
 </%filter>
 
 <%filter ShellCode>
-<pre><code>
-% $.TrimLines {{
-  <% $yield->() %>
-% }}
-</pre></code>
+<pre><code><% $m->filter($.TrimLines, $yield->()) %></code></pre>
 </%filter>
 

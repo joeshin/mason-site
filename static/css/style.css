@@ -24,32 +24,37 @@ body {
 	color: white;
 	text-decoration: none;
 	padding: 15px 10px;
+	/*
 	-webkit-border-top-left-radius: 5px;
 	-webkit-border-top-right-radius: 5px;
 	-moz-border-radius-topleft: 5px;
 	-moz-border-radius-topright: 5px;
 	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
+	border-top-right-radius: 5px;*/
 	margin-right: 7px;
 	margin-top: 7px;
+	border: none;
 }
 #menu li.current a {
-	background-color: #000;
+	/*background-color: #000;*/
+	background-color: #083D68;
 	border: none;
 }
 #menu li a:hover {
-	background-color: #000;
-	background-color: ##083D68;
+	/*background-color: #000;*/
+	background-color: #083D68;
 	border: none;
 }
 #header {
 	position: relative;
 	padding: 15px;
+	padding-top: 20px;
 	padding-left: 30px;
+	line-height: 25px;
 	text-shadow: 1px 1px 1px black;
 	min-width: 1050px;
 	color: white;
-	padding-bottom: 0;
+	padding-bottom: 5px;
 	background-color: black;
 	background-image: url('../images/brick-blue-bg.jpg');
 }
@@ -72,21 +77,23 @@ body {
 .description {
 	font-size: 16px;
 	color: white;
-	display: inline-block;
-	padding-left: 80px;
+	/*display: inline-block;*/
+	/*padding-left: 80px;*/
 }
 #main {
 	padding: 15px;
-	padding-top: 18px;
+	padding-top: 8px;
 	background-color: black;
 }
 
 #main .inner {
 	padding: 5px 30px 20px 30px;
 	background-color: white;
+	/*
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
 	border-radius: 10px;
+	*/
 }
 h2 {
 	color: #092B61;
@@ -132,4 +139,26 @@ a:hover {
 }
 #sub-header .description {
 	font-size: 18px;
+}
+
+.mason-sites {
+	list-style: none;
+}
+
+.mason-sites li {
+	margin-bottom: 20px;
+	position: relative;
+}
+
+.mason-sites li table tr td.logo {
+	width: 68px;
+	font-size: 0;
+}
+
+.mason-sites li table {
+	border-spacing: 0;
+}
+
+.mason-sites li table tr td {
+	vertical-align: top;
 }
