@@ -81,8 +81,7 @@ body {
 	/*padding-left: 80px;*/
 }
 #main {
-	padding: 15px;
-	padding-top: 8px;
+	padding: 8px 0px 0px 0px;
 	background-color: black;
 }
 
