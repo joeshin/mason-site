@@ -6,7 +6,8 @@ Author: pumbur <pumbur@pumbur.net>
 pre code
 {
   display: block; padding: 0.5em;
-  background: #222;
+  background: #022;
+  font-size: 14px;
 }
 
 pre .profile .header *,
