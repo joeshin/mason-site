@@ -36,5 +36,6 @@
     </%text>
 % }}
 
-    Mason was created by Jonathan Swartz and Dave Rolsky.
+    Mason and Poet were created by Jonathan Swartz with help from
+    Dave Rolsky and Ken Williams.
 </div>
