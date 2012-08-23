@@ -36,6 +36,8 @@
     </%text>
 % }}
 
-    Mason and Poet were created by Jonathan Swartz with help from
-    Dave Rolsky and Ken Williams.
+    Mason and Poet were created
+    by <a href="http://www.openswartz.com/">Jonathan Swartz</a> with help
+    from <a href="http://urth.org/">Dave Rolsky</a>
+    and <a href="http://www.linkedin.com/in/kenahoo">Ken Williams</a>.
 </div>

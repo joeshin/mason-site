@@ -27,8 +27,13 @@ method TrimLines () {
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
     <link href="/static/css/style.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="/static/css/arta.css">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js" type="text/javascript"></script>
     <script src="/static/js/highlight.pack.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
+    <script>
+      $(function() {
+        $('.perlcode,.masoncode').each(function(i, e) {hljs.highlightBlock(e)});
+      });
+    </script>
   </head>
   <body>
 
@@ -61,14 +66,13 @@ method TrimLines () {
 </%method>
 
 <%filter MasonCode>
-<pre><code><% $m->filter($.TrimLines, $yield->()) %></code></pre>
+<pre><code class="masoncode"><% $m->filter($.TrimLines, $yield->()) %></code></pre>
 </%filter>
 
 <%filter PerlCode>
-<pre><code><% $m->filter($.TrimLines, $yield->()) %></code></pre>
+<pre><code class="perlcode"><% $m->filter($.TrimLines, $yield->()) %></code></pre>
 </%filter>
 
 <%filter ShellCode>
-<pre><code><% $m->filter($.TrimLines, $yield->()) %></code></pre>
+<pre><code><div class="shellcode"><% $m->filter($.TrimLines, $yield->()) %></div></code></pre>
 </%filter>
-

@@ -10,6 +10,11 @@ pre code
   font-size: 14px;
 }
 
+pre code .shellcode
+{
+  color: #6c6;
+}
+
 pre .profile .header *,
 pre .ini .title,
 pre .nginx .title
