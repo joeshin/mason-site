@@ -50,8 +50,9 @@
     initially built with Mason.
 % }}
 
-% $.Site('DynDNS', 'www.dyndns.org', 'dyndns.jpg') {{
-    One of the world's larges providers of free and premium Dynamic DNS services.
+% $.Site('Dyn', 'dyn.com', 'dyn.jpg') {{
+    One of the world's largest providers of free and premium Dynamic DNS
+    and email delivery services.
 % }}
 
 % $.Site('Shutterstock', 'www.shutterstock.com', 'shutterstock.jpg') {{
