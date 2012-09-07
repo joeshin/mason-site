@@ -31,7 +31,7 @@ body {
 	-moz-border-radius-topright: 5px;
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;*/
-	margin-right: 7px;
+	/*margin-right: 7px;*/
 	margin-top: 7px;
 	border: none;
 }
@@ -150,7 +150,7 @@ a:hover {
 }
 
 .mason-sites li table tr td.logo {
-	width: 68px;
+	width: 150px;
 	font-size: 0;
 }
 
@@ -160,4 +160,7 @@ a:hover {
 
 .mason-sites li table tr td {
 	vertical-align: top;
+	padding: 10px;
+	padding-bottom: 25px;
+	border-bottom: 1px dashed #cecece;
 }
