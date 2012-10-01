@@ -31,7 +31,7 @@
 % $.MasonCode {{
     <%text>
     % foreach my $name ('Mason', 'Poet') {
-    Welcome to <% $name %>!
+    <p>Welcome to <% $name %>!</p>
     % }
     </%text>
 % }}
