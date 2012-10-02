@@ -7,5 +7,5 @@
     <li><a href="/support">Support</a></li>
     <li><a href="/sites">Sites</a></li>
     <li><a href="/htmlmason">HTML::Mason</a></li>
-% }}      
+% }}
 </ul>

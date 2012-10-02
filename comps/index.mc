@@ -24,8 +24,8 @@
     <br/>
 
     Mason can also be used as the templating layer for other Perl web frameworks
-    like <% $.cpan('Catalyst::View::Mason2', 'Catalyst') %>
-    and <% $.cpan('Dancer::Template::Mason2', 'Dancer' ) %>.
+    like <% $.cpan( 'Catalyst::View::Mason2', 'Catalyst' ) %>
+    and <% $.cpan( 'Dancer::Template::Mason2', 'Dancer' ) %>.
     <br/>
 
 % $.MasonCode {{

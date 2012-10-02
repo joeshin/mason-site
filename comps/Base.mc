@@ -13,7 +13,6 @@ method TrimLines () {
         return $_;
     };
 }
-
 </%class>
 
 <%augment wrap>
@@ -21,9 +20,9 @@ method TrimLines () {
 <html>
   <head>
     <meta charset="utf-8">
-% $.Defer {{    
-    <title><% $.title |H %></title>
-% }}    
+% $.Defer {{
+    <title><% $.title | H %></title>
+% }}
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css' />
     <link href="/static/css/style.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="/static/css/arta.css">
@@ -58,7 +57,7 @@ method TrimLines () {
 </%augment>
 
 <%method cpan>
-% my ($module, $display_as) = @_;
+% my ( $module, $display_as ) = @_;
 % $display_as ||= $module;
 % $.Trim {{
 <a href="https://metacpan.org/module/<% $module %>"><% $display_as %></a>
@@ -66,13 +65,13 @@ method TrimLines () {
 </%method>
 
 <%filter MasonCode>
-<pre><code class="masoncode"><% $m->filter($.TrimLines, $yield->()) %></code></pre>
+<pre><code class="masoncode"><% $m->filter( $.TrimLines, $yield->() ) %></code></pre>
 </%filter>
 
 <%filter PerlCode>
-<pre><code class="perlcode"><% $m->filter($.TrimLines, $yield->()) %></code></pre>
+<pre><code class="perlcode"><% $m->filter( $.TrimLines, $yield->() ) %></code></pre>
 </%filter>
 
 <%filter ShellCode>
-<pre><code><div class="shellcode"><% $m->filter($.TrimLines, $yield->()) %></div></code></pre>
+<pre><code><div class="shellcode"><% $m->filter( $.TrimLines, $yield->() ) %></div></code></pre>
 </%filter>

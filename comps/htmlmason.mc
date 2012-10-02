@@ -27,11 +27,12 @@ Below are archived, frozen pages from the old masonhq.com wiki. They are almost 
 
 <ul>
 % foreach my $name (@names) {
-  <li><a href="/htmlmason/wiki/<% $name %>"><% $name |H %></a></li>
+  <li><a href="/htmlmason/wiki/<% $name %>"><% $name | H %></a></li>
 % }
 </ul>
 
 <%init>
-my $length = length($.wiki_root) + 1;
-my @names = map { substr($_, $length, -4) } glob($.wiki_root . "/*.txt");
+my $length = length( $.wiki_root ) + 1;
+my @names =
+  map { substr( $_, $length, -4 ) } glob( $.wiki_root . "/*.txt" );
 </%init>

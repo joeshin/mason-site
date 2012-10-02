@@ -4,15 +4,12 @@ use Poet::Moose;
 
 extends 'Poet::Mason';
 
-# Add customizations to Poet::Mason here.
-#
-# e.g. Add plugins
-#
-# override 'get_plugins' => sub {
-#     return ( super(), 'LvalueAttributes', 'TidyObjectFiles' );
-# }
-
-# You can also create Mason subclasses in MHQ/Mason, e.g.
-# MHQ::Mason::Request, and they will be autodetected by Mason.
+override 'get_plugins' => sub {
+    my @extra_plugins;
+    if ( $conf->is_development ) {
+        push( @extra_plugins, 'TidyObjectFiles' );
+    }
+    return ( super(), @extra_plugins );
+};
 
 1;
